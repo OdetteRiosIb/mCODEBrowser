@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>mCODE Taxonomy Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+    <style>
+        body { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; display: flex; background: #fff; font-family: Arial, sans-serif; }
+        
+        /* Left Sidebar Layout styling */
+        #protege-sidebar { width: 380px; border-right: 2px solid #b5c7de; padding: 15px; background: #f4f7fa; display: flex; flex-direction: column; box-sizing: border-box; }
+        #protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
+        #protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
+        #protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; }
+        
+        /* Upload Area styling */
+        .upload-container { background: #eef3f9; border: 2px dashed #104e8b; border-radius: 4px; padding: 10px; margin-bottom: 15px; text-align: center; }
+        #fileInput { width: 100%; font-size: 0.85em; }
+
+        /* Right Inspector Panel display styling */
+        #protege-inspector { flex: 1; padding: 20px; overflow-y: auto; box-sizing: border-box; background: #fff; }
+        .class-title { font-size: 1.6em; font-weight: bold; color: #104e8b; margin-bottom: 15px; border-bottom: 1px solid #b5c7de; padding-bottom: 5px; }
+        .yellow-card { border: 1px solid #e6db55; padding: 12px; margin-bottom: 12px; background: #fffbe6; border-radius: 4px; }
+        .card-label { font-weight: bold; margin-bottom: 5px; color: #104e8b; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-value { color: #333; font-size: 0.95em; }
+        .value-link { display: inline-block; margin: 2px 0; color: #0056b3; font-weight: bold; }
+        
+        /* Slot Properties Table styling */
+        .slot-section-title { font-size: 1.3em; font-weight: bold; color: #104e8b; margin-top: 20px; margin-bottom: 10px; }
+        .slot-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        .slot-table th { background: #f4f7fa; border: 1px solid #b5c7de; padding: 8px; text-align: left; color: #104e8b; }
+        .slot-table td { border: 1px solid #b5c7de; padding: 8px; vertical-align: top; }
+        .slot-icon { width: 10px; height: 10px; display: inline-block; border-radius: 50%; margin-right: 6px; }
+        .prop-tag { font-size: 0.8em; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="protege-sidebar">
+        <h3>1. Browse & Load File</h3>
+        <div class="upload-container">
+            <input type="file" id="fileInput" accept=".json" />
+        </div>
+
+        <h3>2. Class Hierarchy</h3>
+        <input type="text" id="protege-search" placeholder="Search classes...">
+        <div id="protege-tree"></div>
+    </div>
+
+    <div id="protege-inspector">
+        <div class="class-title">Taxonomy Inspector</div>
+        <div class="yellow-card">
+            <div class="card-value" style="color: #666; font-style: italic;">
+                Please click the "Choose File" button on the sidebar to read an ontology JSON file directly from your laptop.
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        let globalNodeRegistry = {};
+
+        // 1. Listen for local file selection via browser
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsedData = JSON.parse(evt.target.result);
+                    processOntologyData(parsedData);
+                } catch (err) {
+                    alert("Parsing Error: The file is not valid JSON.");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Helper function to pull multilingual strings securely
+        function extractAnnotation(field) {
+            if (!field) return '';
+            if (typeof field === 'object') {
+                return field.en || field['en-us'] || field['undefined'] || Object.values(field)[0] || '';
+            }
+            return field;
+        }
+
+        // 2. Parse ontology arrays and balance labels vs structure keys
+        function processOntologyData(vowlData) {
+            globalNodeRegistry = {}; // reset registry on new upload
+            
+            let rawClasses = vowlData.class || [];
+            let attributesList = vowlData.classAttribute || [];
+            let propertiesList = vowlData.property || [];
+            let propertyAttributes = vowlData.propertyAttribute || [];
+
+            // First Pass: Extract labels and set structural parents
+            rawClasses.forEach(classObj => {
+                const uniqueId = classObj.id;
+                const attr = attributesList.find(a => a.id === uniqueId) || {};
+                
+                if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+
+                let rdfsLabel = extractAnnotation(attr.label);
+                let prefLabel = '';
+                let altLabel = '';
+                let skosDef = extractAnnotation(attr.description || attr.comment);
+
+                // Scan nested annotations arrays for explicit skos identifiers
+                if (attr.annotations) {
+                    for (let key in attr.annotations) {
+                        let cleanKey = key.toLowerCase();
+                        let targetArray = attr.annotations[key];
+                        let extractedVal = '';
+                        
+                        if (Array.isArray(targetArray) && targetArray.length > 0) {
+                            extractedVal = targetArray[0].value || targetArray[0];
+                        } else {
+                            extractedVal = targetArray;
+                        }
+
+                        if (cleanKey.includes('preflabel')) prefLabel = extractedVal;
+                        if (cleanKey.includes('altlabel')) altLabel = extractedVal;
+                        if (cleanKey.includes('definition')) skosDef = extractedVal;
+                    }
+                }
+
+                // Focus directly on choosing human labels over numbers
+                let fallbackName = (classObj.iri || uniqueId).split('#').pop().split('/').pop().replace(/_/g, ' ');
+                let displayName = prefLabel || rdfsLabel || fallbackName || uniqueId;
+
+                // Configure tree nesting hierarchy directly via vowl array properties
+                let parentNodeId = (attr.superClasses && attr.superClasses.length > 0) ? attr.superClasses[0] : '#';
+
+                globalNodeRegistry[uniqueId] = {
+                    id: uniqueId, 
+                    text: displayName, 
+                    parent: parentNodeId, 
+                    meta: { 
+                        type: 'Class', 
+                        iri: classObj.iri || attr.iri || uniqueId, 
+                        rdfsLabel: rdfsLabel || 'N/A',
+                        prefLabel: prefLabel || 'N/A',
+                        altLabel: altLabel || 'None',
+                        comment: skosDef || 'No explicit description found.', 
+                        superclasses: [], 
+                        subclasses: [], 
+                        slots: [] 
+                    }
+                };
+            });
+
+            // Second Pass: Link inverse paths for sub/super text hierarchies
+            Object.keys(globalNodeRegistry).forEach(key => {
+                let node = globalNodeRegistry[key];
+                if (node.parent !== '#' && globalNodeRegistry[node.parent]) {
+                    let parentNode = globalNodeRegistry[node.parent];
+                    node.meta.superclasses.push(parentNode.text);
+                    parentNode.meta.subclasses.push(node.text);
+                } else {
+                    node.parent = '#'; // Safety floor baseline
+                }
+            });
+
+            // Third Pass: Map domains to properties
+            propertiesList.forEach(prop => {
+                const propId = prop.id;
+                const attr = propertyAttributes.find(a => a.id === propId) || {};
+                
+                let name = extractAnnotation(attr.label) || propId.split('#').pop();
+                let comment = extractAnnotation(attr.comment || attr.description) || 'No explicit description.';
+                let domainId = attr.domain;
+                let rangeId = attr.range;
+                let safeType = prop.type ? prop.type.toLowerCase() : "";
+
+                if (safeType.includes("objectproperty") || safeType.includes("datatypeproperty")) {
+                    if (domainId && globalNodeRegistry[domainId]) {
+                        let targetRangeName = globalNodeRegistry[rangeId] ? globalNodeRegistry[rangeId].text : (rangeId || 'Literal Value');
+                        let displayType = safeType.includes("objectproperty") ? 'Object Property' : 'Data Property';
+                        
+                        globalNodeRegistry[domainId].meta.slots.push({ 
+                            name: name, type: displayType, range: targetRangeName, comment: comment 
+                        });
+                    }
+                }
+            });
+
+            // Load and mount visualization layout engine
+            renderTreeInterface();
+        }
+
+        function renderTreeInterface() {
+            $('#protege-tree').jstree("destroy").jstree({
+                'core': { 
+                    'data': Object.values(globalNodeRegistry), 
+                    'themes': { 'variant': 'large', 'icons': true, 'dots': true } 
+                },
+                'plugins': ["search", "wholerow"]
+            });
+        }
+
+        // Search bar activation
+        $('#protege-search').keyup(function () {
+            $('#protege-tree').jstree(true).search($(this).val());
+        });
+
+        // 3. Populate Right-Side panels on click
+        $('#protege-tree').on("changed.jstree", function (e, data) {
+            if(!data.selected.length) return;
+            
+            const node = globalNodeRegistry[data.selected[0]];
+            if (!node) return;
+            
+            const m = node.meta;
+            let html = "";
+
+            let supers = m.superclasses.length ? m.superclasses.map(s => `<span class="value-link">○ ${s}</span>`).join('<br/> ') : 'None';
+            let subs = m.subclasses.length ? m.subclasses.map(s => `<span class="value-link">● ${s}</span>`).join('<br/> ') : 'None';
+            let rows = "";
+            
+            if (m.slots.length) {
+                m.slots.forEach(s => {
+                    let pillColor = s.type === 'Data Property' ? '#1e7e34' : '#0056b3';
+                    rows += `<tr>
+                        <td>
+                            <div class="slot-icon" style="background-color:${pillColor};"></div>
+                            <strong>${s.name}</strong> 
+                            <span class="prop-tag" style="color:${pillColor}; font-weight:bold;">[${s.type}]</span>
+                        </td>
+                        <td>${s.comment}</td>
+                        <td><code>${s.range}</code></td>
+                    </tr>`;
+                });
+            } else {
+                rows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties or Data Properties mapped to this entity domain.</td></tr>`;
+            }
+
+            html = `
+                <div class="class-title">Class: ${node.text}</div>
+                
+                <div class="yellow-card">
+                    <div class="card-label">skos:definition / Annotation:</div>
+                    <div class="card-value">${m.comment}</div>
+                </div>
+
+                <div class="yellow-card" style="background-color: #f4f6f8; border-color: #d1d5db;">
+                    <div class="card-label" style="color: #4b5563;">Lexical Tracking Labels</div>
+                    <div class="card-value" style="font-size: 0.9em; line-height: 1.6em;">
+                        <strong>rdfs:label:</strong> <code>${m.rdfsLabel}</code><br/>
+                        <strong>skos:prefLabel:</strong> <code>${m.prefLabel}</code><br/>
+                        <strong>skos:altLabel:</strong> <span style="color:#555;">${m.altLabel}</span>
+                    </div>
+                </div>
+
+                <div class="yellow-card">
+                    <div class="card-label">Superclasses Hierarchy</div>
+                    <div class="card-value">${supers}</div>
+                </div>
+
+                <div class="yellow-card">
+                    <div class="card-label">Subclasses Hierarchy</div>
+                    <div class="card-value">${subs}</div>
+                </div>
+
+                <div class="slot-section-title">Class Properties (Object & Data Properties)</div>
+                <table class="slot-table">
+                    <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>`;
+                
+            $('#protege-inspector').html(html);
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>mCODE Taxonomy Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+    <style>
+        body { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; display: flex; background: #fff; font-family: Arial, sans-serif; }
+        
+        /* Left Sidebar Layout styling */
+        #protege-sidebar { width: 380px; border-right: 2px solid #b5c7de; padding: 15px; background: #f4f7fa; display: flex; flex-direction: column; box-sizing: border-box; }
+        #protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
+        #protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
+        #protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; }
+
+        /* Upload Area styling */
+        .upload-container { background: #eef3f9; border: 2px dashed #104e8b; border-radius: 4px; padding: 10px; margin-bottom: 15px; text-align: center; }
+        #fileInput { width: 100%; font-size: 0.85em; }
+
+        /* Right Inspector Panel display styling */
+        #protege-inspector { flex: 1; padding: 20px 30px; overflow-y: auto; background-color: #fff; box-sizing: border-box; }
+        .class-title { font-size: 1.6em; font-weight: bold; margin-bottom: 15px; color: #000; font-family: 'Times New Roman', Times, serif; }
+        
+        /* Collapsible Cards Layout */
+        .yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
+        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .card-header:hover { background-color: rgba(0,0,0,0.07); }
+        .card-label { font-weight: bold; color: #000; font-size: 0.95em; }
+        .toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; }
+        .card-body { padding: 12px 15px; font-size: 0.95em; color: #222; }
+        
+        .value-link { color: #0056b3; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px 0; }
+        .value-link:hover { text-decoration: underline; color: #003366; }
+        
+        /* Slot Properties Table styling */
+        .slot-section-title { color: #104e8b; font-weight: bold; font-size: 1.05em; margin: 25px 0 5px 0; display: flex; align-items: center; cursor: pointer; user-select: none; }
+        .slot-section-title:hover { color: #003366; }
+        .slot-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fff; }
+        .slot-table th { background-color: #b9d3ee; color: #000; border: 1px solid #9fb6cd; text-align: left; padding: 5px 8px; font-size: 0.9em; font-weight: normal; }
+        .slot-table td { border: 1px solid #b5c7de; padding: 6px 10px; font-size: 0.9em; vertical-align: top; }
+        .slot-table tr:nth-child(even) { background-color: #f9fafc; }
+        .slot-icon { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: middle; }
+        .prop-tag { font-size: 0.8em; font-style: italic; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="protege-sidebar">
+        <h3>1. Browse & Load File</h3>
+        <div class="upload-container">
+            <input type="file" id="fileInput" accept=".json" />
+        </div>
+
+        <h3>2. Class Hierarchy</h3>
+        <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
+        <div id="protege-tree">Assembling ontology nodes...</div>
+    </div>
+
+    <div id="protege-inspector">
+        <p style="color:#666; font-style:italic; margin-top:40px;">Please click the "Choose File" button on the sidebar to read an ontology JSON file directly from your laptop.</p>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        let globalNodeRegistry = {};
+        let masterIdLabelMap = {}; 
+
+        // CENTRALIZED PRIMITIVE DATA TYPE FILTER
+        function isPrimitiveType(id, label, type) {
+            let idLower = String(id || '').toLowerCase();
+            let labelLower = String(label || '').toLowerCase();
+            let typeLower = String(type || '').toLowerCase();
+            
+            // Catch explicit schema designations
+            if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
+            if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
+            
+            // Regular expressions using word boundaries (\b) to protect embedded clinical terms 
+            // (e.g., prevents filtering "IntensityModulatedRadiationTherapy" or "TreatmentTime")
+            const primitivePatterns = [
+                /\bliteral\b/, /\bdatetime\b/, /\bstring\b/, /\bstrin\b/, 
+                /\btimestamp\b/, /text\/value/, /\bboolean\b/, /\binteger\b/, /\bint\b/
+            ];
+            
+            for (let regex of primitivePatterns) {
+                if (regex.test(idLower) || regex.test(labelLower)) return true;
+            }
+            
+            // Direct fallbacks for raw text forms
+            if (idLower === 'string' || idLower === 'literal' || idLower === 'datetime' || idLower === 'strin') return true;
+            if (labelLower === 'string' || labelLower === 'literal' || labelLower === 'datetime' || labelLower === 'strin') return true;
+            
+            return false;
+        }
+
+        window.selectTaxonomyNode = function(nodeId) {
+            if (!nodeId) return;
+            const tree = $('#protege-tree').jstree(true);
+            if (tree) {
+                let allNodes = tree.get_json('#', { flat: true });
+                let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
+                if (match) {
+                    tree.deselect_all();
+                    tree.select_node(match.id);
+                    tree._open_to(match.id);
+                    document.getElementById('protege-sidebar').scrollIntoView();
+                }
+            }
+        };
+
+        $(document).on('click', '.card-header', function() {
+            const body = $(this).next('.card-body');
+            const icon = $(this).find('.toggle-icon');
+            body.slideToggle(200, function() {
+                icon.text(body.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
+            });
+        });
+
+        $(document).on('click', '.slot-section-title', function() {
+            const table = $(this).next('.slot-table');
+            const icon = $(this).find('.toggle-icon');
+            table.slideToggle(200, function() {
+                icon.text(table.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
+            });
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsedData = JSON.parse(evt.target.result);
+                    processOntologyData(parsedData);
+                } catch (err) {
+                    alert("Parsing Error: The file is not valid JSON.");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function safeUnwrap(field) {
+            if (!field) return '';
+            if (Array.isArray(field)) {
+                if (field.length === 0) return '';
+                field = field[0];
+            }
+            if (typeof field === 'object') {
+                return field.value || field.en || field['en-us'] || field['undefined'] || Object.values(field)[0] || '';
+            }
+            return String(field);
+        }
+
+        function cleanUrlFallback(str) {
+            if (!str || typeof str !== 'string') return '';
+            if (str.startsWith('http')) {
+                let fragment = str.split('#').pop().split('/').pop();
+                return fragment.replace(/_/g, ' ');
+            }
+            return str;
+        }
+
+        function getAnyLabel(coreObj, attrObj, fallbackId) {
+            const targets = [coreObj, attrObj].filter(Boolean);
+            for (let obj of targets) {
+                for (let key in obj) {
+                    let k = key.toLowerCase();
+                    if (k === 'label' || k.endsWith('#label') || k.endsWith(':label') || k.endsWith('preflabel')) {
+                        let val = safeUnwrap(obj[key]);
+                        if (val) return val;
+                    }
+                }
+                for (let key in obj) {
+                    let k = key.toLowerCase();
+                    if (k.includes('label')) {
+                        let val = safeUnwrap(obj[key]);
+                        if (val) return val;
+                    }
+                }
+            }
+            return cleanUrlFallback(fallbackId);
+        }
+
+        function getAnyDescription(coreObj, attrObj) {
+            const targets = [coreObj, attrObj].filter(Boolean);
+            for (let obj of targets) {
+                for (let key in obj) {
+                    let k = key.toLowerCase();
+                    if (k.includes('definition') || k.includes('description') || k.includes('iao_0000115') || k.includes('comment')) {
+                        let val = safeUnwrap(obj[key]);
+                        if (val) return val;
+                    }
+                }
+            }
+            return 'No explicit description found.';
+        }
+
+        function getAllSubclasses(classId) {
+            let node = globalNodeRegistry[classId];
+            if (!node) return [];
+            let subs = [...(node.meta.subclasses || [])];
+            if (node.meta.equivalent) {
+                node.meta.equivalent.forEach(eqId => {
+                    let eqNode = globalNodeRegistry[eqId];
+                    if (eqNode && eqNode.meta.subclasses) {
+                        eqNode.meta.subclasses.forEach(subId => {
+                            if (!subs.includes(subId)) subs.push(subId);
+                        });
+                    }
+                });
+            }
+            return subs;
+        }
+
+        function getAllSuperclasses(classId) {
+            let node = globalNodeRegistry[classId];
+            if (!node) return [];
+            let supers = [...(node.meta.superclasses || [])];
+            if (node.meta.equivalent) {
+                node.meta.equivalent.forEach(eqId => {
+                    let eqNode = globalNodeRegistry[eqId];
+                    if (eqNode && eqNode.meta.superclasses) {
+                        eqNode.meta.superclasses.forEach(supId => {
+                            if (!supers.includes(supId)) supers.push(supId);
+                        });
+                    }
+                });
+            }
+            return supers;
+        }
+
+        function processOntologyData(vowlData) {
+            globalNodeRegistry = {}; 
+            masterIdLabelMap = {}; 
+            
+            let rawClasses = vowlData.class || [];
+            let attributesList = vowlData.classAttribute || [];
+            let propertiesList = vowlData.property || [];
+            let propertyAttributes = vowlData.propertyAttribute || [];
+
+            rawClasses.forEach(c => {
+                let attr = attributesList.find(a => a.id == c.id) || {};
+                let resolved = getAnyLabel(c, attr, null);
+                if (resolved) masterIdLabelMap[c.id] = resolved;
+            });
+
+            // PASS 1: Generate Node Registry Block map
+            rawClasses.forEach(classObj => {
+                const uniqueId = classObj.id;
+                const attr = attributesList.find(a => a.id == uniqueId) || {};
+                let displayName = masterIdLabelMap[uniqueId] || cleanUrlFallback(uniqueId);
+                
+                // CRITICAL FILTER: Drops primitive datatypes entirely from the tree structure
+                if (isPrimitiveType(uniqueId, displayName, (classObj.type || '') + " " + (attr.type || ''))) {
+                    return; 
+                }
+
+                let skosDef = getAnyDescription(classObj, attr);
+                
+                let rdfsLabel = 'None', prefLabel = 'None', altLabel = 'None', rdfsComment = 'None';
+                const allSources = [classObj, attr, classObj.annotations, attr.annotations].filter(Boolean);
+                allSources.forEach(src => {
+                    for (let key in src) {
+                        let k = key.toLowerCase();
+                        let val = safeUnwrap(src[key]);
+                        if (!val) continue;
+                        if (k === 'label' || k.endsWith('#label')) rdfsLabel = val;
+                        if (k.includes('preflabel')) prefLabel = val;
+                        if (k.includes('comment')) rdfsComment = val;
+                        if (k.includes('altlabel') || k.includes('synonym')) {
+                            if (altLabel === 'None') altLabel = val;
+                            else if (!altLabel.includes(val)) altLabel += `, ${val}`;
+                        }
+                    }
+                });
+
+                let equivalents = attr.equivalent || [];
+                if (!Array.isArray(equivalents)) equivalents = [equivalents];
+
+                globalNodeRegistry[uniqueId] = {
+                    id: uniqueId, 
+                    text: classObj.type === "owl:equivalentClass" ? "≡ " + displayName : displayName, 
+                    meta: { 
+                        type: classObj.type || 'Class', iri: classObj.iri || attr.iri || uniqueId, 
+                        rdfsLabel, prefLabel, altLabel, rdfsComment, comment: skosDef, 
+                        superclasses: [], subclasses: [], slots: [], equivalent: equivalents, equivalentNames: []
+                    }
+                };
+            });
+
+            // PASS 2: Connect Polyhierarchical Asserted Relationships
+            rawClasses.forEach(classObj => {
+                const uniqueId = classObj.id;
+                const attr = attributesList.find(a => a.id == uniqueId) || {};
+                const childNode = globalNodeRegistry[uniqueId];
+                if (!childNode) return;
+
+                let superClasses = attr.superClasses || [];
+                if (!Array.isArray(superClasses)) superClasses = [superClasses];
+
+                superClasses.forEach(supId => {
+                    if (globalNodeRegistry[supId]) {
+                        if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
+                        if (!globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
+                    }
+                });
+            });
+
+            // PASS 3: Map properties domains
+            propertiesList.forEach(prop => {
+                const propId = prop.id;
+                const attr = propertyAttributes.find(a => a.id == propId) || {};
+                let name = masterIdLabelMap[propId] || cleanUrlFallback(propId);
+                let rangeId = attr.range;
+                let safeType = prop.type ? prop.type.toLowerCase() : "";
+
+                let domains = attr.domain;
+                if (domains) {
+                    if (!Array.isArray(domains)) domains = [domains];
+                    
+                    domains.forEach(domainId => {
+                        if (domainId && globalNodeRegistry[domainId]) {
+                            let targetRangeName = masterIdLabelMap[rangeId] || (globalNodeRegistry[rangeId] ? globalNodeRegistry[rangeId].text : cleanUrlFallback(rangeId || 'Literal Value'));
+                            
+                            let rangeLower = String(targetRangeName).toLowerCase();
+                            if (rangeLower === 'literal' || rangeLower.includes('string') || rangeLower.includes('strin')) {
+                                targetRangeName = 'Literal (Text/Value)';
+                            } else if (rangeLower === 'datetime' || rangeLower.includes('date')) {
+                                targetRangeName = 'dateTime (Timestamp)';
+                            }
+
+                            globalNodeRegistry[domainId].meta.slots.push({ 
+                                name: name, 
+                                type: safeType.includes("objectproperty") ? 'Object Property' : 'Data Property', 
+                                range: targetRangeName, 
+                                comment: getAnyDescription(prop, attr)
+                            });
+                        }
+                    });
+                }
+            });
+
+            // PASS 4: Tree generation matrix via Branch Path tracking
+            let jsTreeData = [];
+            let processedTreePaths = new Set();
+
+            function addNodeToTree(classId, treeParentId, currentPathList) {
+                let node = globalNodeRegistry[classId];
+                if (!node) return;
+                
+                if (currentPathList.includes(classId)) return;
+                
+                let updatedPathList = [...currentPathList, classId];
+                let pathKeyString = updatedPathList.join('->');
+                
+                if (processedTreePaths.has(pathKeyString)) return;
+                processedTreePaths.add(pathKeyString); 
+
+                let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
+                
+                jsTreeData.push({
+                    id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId }
+                });
+                
+                let crossSubclasses = getAllSubclasses(classId);
+                crossSubclasses.forEach(subId => {
+                    addNodeToTree(subId, treeNodeId, updatedPathList);
+                });
+            }
+
+            Object.keys(globalNodeRegistry).forEach(classId => {
+                if (getAllSuperclasses(classId).length === 0) {
+                    addNodeToTree(classId, '#', []);
+                }
+            });
+
+            renderTreeInterface(jsTreeData);
+        }
+
+        function renderTreeInterface(jsTreeData) {
+            $('#protege-tree').jstree("destroy").jstree({
+                'core': { 'data': jsTreeData, 'themes': { 'variant': 'large', 'icons': true, 'dots': true } },
+                'plugins': ["search", "wholerow"]
+            });
+        }
+
+        $('#protege-search').keyup(function () {
+            $('#protege-tree').jstree(true).search($(this).val());
+        });
+
+        function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
+            if (currentBranchPath.includes(nodeId)) return '';
+            const node = globalNodeRegistry[nodeId];
+            if (!node) return '';
+
+            let nextPath = [...currentBranchPath, nodeId];
+            let finalSubclassIds = getAllSubclasses(nodeId);
+
+            // Filter primitives out of the secondary subclass rendering tree views
+            finalSubclassIds = finalSubclassIds.filter(subId => {
+                let subNode = globalNodeRegistry[subId];
+                let txt = subNode ? subNode.text : cleanUrlFallback(subId);
+                return !isPrimitiveType(subId, txt, '');
+            });
+
+            if (finalSubclassIds.length === 0) return '';
+
+            let html = `<ul style="list-style-type: none; margin: 4px 0 4px 8px; padding-left: 12px; border-left: 1px dashed #b5c7de;">`;
+            finalSubclassIds.forEach(subId => {
+                const subNode = globalNodeRegistry[subId];
+                if (subNode) {
+                    let isDirect = node.meta.subclasses.includes(subId);
+                    let visualPrefix = isDirect ? '● ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ● </span>';
+                    let linkStyle = isDirect ? '' : 'style="color: #6f42c1; font-style: italic;"';
+
+                    html += `<li style="margin: 4px 0; line-height: 1.4em;">`;
+                    html += `   <span class="value-link" ${linkStyle} style="cursor: pointer;" onclick="window.selectTaxonomyNode('${subId}')">${visualPrefix}${subNode.text}</span>`;
+                    html +=     buildSubclassTreeHtml(subId, nextPath); 
+                    html += `</li>`;
+                }
+            });
+            html += `</ul>`;
+            return html;
+        }
+
+        function buildSuperclassTreeHtml(nodeId) {
+            let allSupers = getAllSuperclasses(nodeId);
+            
+            // Filter primitives out of secondary superclass lists
+            allSupers = allSupers.filter(supId => {
+                let supNode = globalNodeRegistry[supId];
+                let txt = supNode ? supNode.text : cleanUrlFallback(supId);
+                return !isPrimitiveType(supId, txt, '');
+            });
+
+            if (allSupers.length === 0) return '<div style="color:#666; font-style:italic;">None (This is a root base level entity)</div>';
+
+            let html = `<ul style="list-style-type: none; margin: 0; padding: 0;">`;
+            allSupers.forEach(supId => {
+                let supNode = globalNodeRegistry[supId];
+                let text = supNode ? supNode.text : cleanUrlFallback(supId);
+                let isDirect = globalNodeRegistry[nodeId].meta.superclasses.includes(supId);
+                let prefix = isDirect ? '↑ ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ↑ </span>';
+                
+                html += `<li style="margin: 4px 0; line-height: 1.4em;">`;
+                html += `   <span class="value-link" style="cursor: pointer; color: #a94442; ${isDirect ? '' : 'font-style:italic;'}" onclick="window.selectTaxonomyNode('${supId}')">${prefix}${text}</span>`;
+                html += `</li>`;
+            });
+            html += `</ul>`;
+            return html;
+        }
+
+        $('#protege-tree').on("changed.jstree", function (e, data) {
+            if(!data.selected.length) return;
+            
+            let treeNode = data.instance.get_node(data.selected[0]);
+            let originalId = (treeNode.data && treeNode.data.originalId) ? treeNode.data.originalId : treeNode.id;
+            
+            const node = globalNodeRegistry[originalId];
+            if (!node) return;
+            
+            const m = node.meta;
+            let subsTree = buildSubclassTreeHtml(node.id);
+            if (!subsTree || subsTree.trim() === '') {
+                subsTree = '<div style="color:#666; font-style:italic;">None (This is a leaf level terminal entity)</div>';
+            }
+
+            let equivalentsBlockHtml = 'None';
+            if (m.equivalent && m.equivalent.length > 0) {
+                let itemsList = [];
+                m.equivalent.forEach(eqId => {
+                    let lblName = masterIdLabelMap[eqId] || cleanUrlFallback(eqId);
+                    
+                    // Filter structural primitive entries out of Equivalent blocks
+                    if (isPrimitiveType(eqId, lblName, '')) return;
+
+                    let eqNode = globalNodeRegistry[eqId];
+                    
+                    let cardElement = `<div style="margin-bottom: 10px; border-bottom: 1px dashed #d6cbe3; padding-bottom: 8px;">`;
+                    cardElement += `  <span class="value-link" style="color: #6f42c1; font-weight:bold;">≡ ${String(lblName).replace("≡ ", "")}</span> <br/><code style="font-size:0.8em; color:#555;">[IRI: ${eqNode ? eqNode.meta.iri : eqId}]</code>`;
+                    
+                    if (eqNode && eqNode.meta.subclasses && eqNode.meta.subclasses.length > 0) {
+                        cardElement += `<div style="margin-left: 15px; margin-top: 6px; padding-left: 8px; border-left: 2px solid #6f42c1;">`;
+                        cardElement += `  <div style="font-size:0.85em; color:#6f42c1; font-weight:bold; margin-bottom:2px;">Inherited Subclasses:</div>`;
+                        eqNode.meta.subclasses.forEach(subId => {
+                            let subNode = globalNodeRegistry[subId];
+                            cardElement += `  <div><span class="value-link" style="font-size:0.9em;" onclick="window.selectTaxonomyNode('${subId}')">└─ ● ${subNode ? subNode.text : cleanUrlFallback(subId)}</span></div>`;
+                        });
+                        cardElement += `</div>`;
+                    }
+                    cardElement += `</div>`;
+                    itemsList.push(cardElement);
+                });
+                if (itemsList.length > 0) equivalentsBlockHtml = itemsList.join('');
+            }
+
+            let objectPropertiesRows = "";
+            let dataPropertiesRows = "";
+
+            if (m.slots && m.slots.length) {
+                m.slots.forEach(s => {
+                    let isDataProp = s.type === 'Data Property';
+                    let pillColor = isDataProp ? '#1e7e34' : '#0056b3';
+                    
+                    let rowHtml = `<tr>
+                        <td>
+                            <div class="slot-icon" style="background-color:${pillColor};"></div>
+                            <strong>${s.name}</strong> <span class="prop-tag" style="color:${pillColor}; font-weight:bold;">[${s.type}]</span>
+                        </td>
+                        <td>${s.comment}</td>
+                        <td><code>${s.range}</code></td>
+                    </tr>`;
+                    
+                    if (isDataProp) {
+                        dataPropertiesRows += rowHtml;
+                    } else {
+                        objectPropertiesRows += rowHtml;
+                    }
+                });
+            }
+
+            if (!objectPropertiesRows) {
+                objectPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties mapped to this entity domain.</td></tr>`;
+            }
+            if (!dataPropertiesRows) {
+                dataPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Data Properties mapped to this entity domain.</td></tr>`;
+            }
+
+            $('#protege-inspector').html(`
+                <div class="class-title">Class: ${node.text}</div>
+                
+                <div class="yellow-card">
+                    <div class="card-header" style="cursor:default; background:none; border:none;"><div class="card-label">Definition / Annotation:</div></div>
+                    <div class="card-body">${m.comment}</div>
+                </div>
+
+                <div class="yellow-card" style="background-color: #f4f6f8; border-color: #d1d5db;">
+                    <div class="card-header"><div class="card-label" style="color: #4b5563;">Lexical Tracking Labels</div><div class="toggle-icon">[ Hide − ]</div></div>
+                    <div class="card-body" style="font-size: 0.9em; line-height: 1.6em;">
+                        <strong>rdfs:label:</strong> <code>${m.rdfsLabel}</code><br/>
+                        <strong>skos:prefLabel:</strong> <code>${m.prefLabel}</code><br/>
+                        <strong>Alternate / Synonyms:</strong> <span style="color:#555;">${m.altLabel}</span><br/>
+                        <strong>rdfs:comment:</strong> <span style="color:#666; font-style:italic;">${m.rdfsComment}</span>
+                    </div>
+                </div>
+
+                <div class="yellow-card" style="background-color: #f3f0fa; border-color: #d6cbe3;">
+                    <div class="card-header"><div class="card-label" style="color: #6f42c1;">Equivalent Classes (owl:equivalentClass) & Their Subclasses</div><div class="toggle-icon">[ Hide − ]</div></div>
+                    <div class="card-body">${equivalentsBlockHtml}</div>
+                </div>
+
+                <div class="yellow-card">
+                    <div class="card-header"><div class="card-label">Superclasses (Asserted Multiple Parents)</div><div class="toggle-icon">[ Hide − ]</div></div>
+                    <div class="card-body">${buildSuperclassTreeHtml(node.id)}</div>
+                </div>
+
+                <div class="yellow-card">
+                    <div class="card-header"><div class="card-label">Subclasses Hierarchy Tree (Deep & Multi-Parent)</div><div class="toggle-icon">[ Hide − ]</div></div>
+                    <div class="card-body">${subsTree}</div>
+                </div>
+
+                <div class="slot-section-title">
+                    <span>Object Properties</span>
+                    <span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span>
+                </div>
+                <table class="slot-table">
+                    <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
+                    <tbody>${objectPropertiesRows}</tbody>
+                </table>
+
+                <div class="slot-section-title">
+                    <span>Data Properties</span>
+                    <span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span>
+                </div>
+                <table class="slot-table">
+                    <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
+                    <tbody>${dataPropertiesRows}</tbody>
+                </table>
+
+                <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
+            `);
+        });
+    });
+    </script>
+</body>
+</html>
