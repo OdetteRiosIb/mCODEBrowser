@@ -30,6 +30,43 @@ body {
 .jstree-node.filtered-match-parent > .jstree-icon { display: inline-block !important; }
 #protege-tree .jstree-container-ul { display: block !important; }
 /* Global Top Header & Navigation Bar styling */
+
+.home-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    color: #333;
+    text-align: center; /* This centers all text inside the container */
+}
+
+.home-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+/* This turns the grid into a vertical stack */
+.meta-grid {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    gap: 15px;
+    margin: 30px 0;
+    align-items: center; /* Centers the cards themselves */
+}
+
+.meta-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    width: 60%; /* Or keep it smaller to look like a badge */
+    border-top: 3px solid #0056b3; /* Top accent looks better for centered text */
+}
+
+.content-section {
+    margin-top: 30px;
+    text-align: left; /* Keeps the body text left-aligned for readability */
+}
 .global-navbar {
     display: flex;
     align-items: center;
