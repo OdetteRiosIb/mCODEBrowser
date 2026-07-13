@@ -744,8 +744,7 @@ function extractAnnotation(val) {
                         <option value="Missing Child/Property">➕ Missing Child/Property</option>
                         <option value="Approved">✅ Approved Node</option>
                     </select>
-                    <button class="submit-feedback-btn" data-class-id="${node.id}" data-class-name="${node.text}">Save Note</button>
-                </div>
+                    <button class="submit-feedback-btn" onclick="saveFeedback('${node.id}')">Save Note</button>                </div>
                 <div id="saved-comments-${node.id}" style="margin-top: 10px;"></div>
             </div>
 
