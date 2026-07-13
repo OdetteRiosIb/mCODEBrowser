@@ -77,13 +77,19 @@ body {
 
 .home-centered-content {
     max-width: 800px;
-    width: 100%;
-    text-align: left; /* Keeps text paragraphs aligned left for readability */
+margin: 0 auto; /* This centers the container on the page */
+text-align: center; /* This centers the text inside */
 }
 
 /* Center the Title and Metadata */
-.home-centered-content h1, 
+.home-centered-content h3, 
 .home-centered-content p:first-of-type {
+    text-align: center;
+}
+
+/* Re-center the title and meta if they were forced left */
+.home-centered-container h1,
+.home-centered-container p:first-of-type {
     text-align: center;
 }
 
