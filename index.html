@@ -863,24 +863,26 @@ function executeFastSearch(query) {
     tree.search(queryLower);
 }
 
-		async function saveFeedback(nodeId) {
-        const commentText = document.getElementById(`feedback-text-${nodeId}`).value;
-        const tag = document.getElementById(`feedback-tag-${nodeId}`).value;
-
+async function saveFeedback(classId, className, commentText, labelType) {
+    try {
         const { data, error } = await supabase
-            .from('comments')
-            .insert([{ node_id: nodeId, comment: commentText, tag: tag }]);
+            .from('your_table_name') // Ensure this matches your DB table
+            .insert([
+                { 
+                    class_id: classId, 
+                    class_name: className, 
+                    comment: commentText, 
+                    tag: labelType 
+                }
+            ]);
 
-        if (error) {
-            console.error('Error saving:', error);
-            alert('Failed to save feedback.');
-        } else {
-            alert('Feedback saved!');
-            // Clear the textarea after saving
-            document.getElementById(`feedback-text-${nodeId}`).value = '';
-            renderActiveCommentsList(nodeId); 
-        }
+        if (error) throw error;
+        alert("Feedback saved successfully!");
+    } catch (err) {
+        console.error("Supabase Error:", err);
+        alert("Failed to save feedback: " + err.message);
     }
+}
 </script>
 
 </body>
