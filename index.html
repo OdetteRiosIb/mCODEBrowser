@@ -206,7 +206,7 @@ body {
 
     <script>
 
-$(document).ready(function() {
+$(document).ready(async function() {
 	// Initialize Supabase once
 // Do NOT use 'const' here if you want it globally accessible
 window.supabase = supabase.createClient(
@@ -218,6 +218,11 @@ window.supabase = supabase.createClient(
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
 
+	await syncFeedbackFromDatabase();
+	if (typeof currentActiveNodeId !== 'undefined') {
+        renderActiveCommentsList(currentActiveNodeId);
+    }
+	
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
         const targetPage = $(this).data('target');
@@ -589,6 +594,7 @@ window.supabase = supabase.createClient(
         return cleanUrlFallback(fallbackId);
     }
 
+	
     function getAnyDescription(coreObj, attrObj) {
         const targets = [coreObj, attrObj].filter(Boolean);
         for (let i = 0; i < targets.length; i++) {
@@ -639,7 +645,32 @@ function extractAnnotation(val) {
             }
             return String(val);
         }
+async function syncFeedbackFromDatabase() {
+    // Fetch all records from Supabase
+    const { data, error } = await window.supabase
+        .from('Feedback')
+        .select('*');
 
+    if (error) {
+        console.error("Error fetching feedback:", error);
+        return;
+    }
+
+    // Hydrate the local object with database records
+    data.forEach(row => {
+        if (!feedbackDatabase[row.node_id]) {
+            feedbackDatabase[row.node_id] = { classId: row.node_id, className: row.class_name, notes: [] };
+        }
+        
+        // Push the saved note into your local storage
+        feedbackDatabase[row.node_id].notes.push({
+            timestamp: row.created_at,
+            tag: row.tag,
+            text: row.comment
+        });
+    });
+    console.log("Database synchronized with local memory.");
+}
     // 8. JSTREE TREE EVENT LISTENER FOR CONCEPT INSPECTION
     $('#protege-tree').on("changed.jstree", function (e, data) {
         if(!data.selected.length) return;
