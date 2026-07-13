@@ -10,7 +10,6 @@
 
  <!--  Local ontology data file -->
     <script src="ontology-data.js"></script>      
-	<script const supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');</script>  
 
     <style>
 
@@ -677,6 +676,7 @@ function extractAnnotation(val) {
                 else objectPropertiesRows += rowHtml;
             });
         }
+		const supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
 
         if (!objectPropertiesRows) objectPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties mapped.</td></tr>`;
         if (!dataPropertiesRows) dataPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Data Properties mapped.</td></tr>`;
@@ -881,8 +881,6 @@ function executeFastSearch(query) {
         }
     }
 </script>
-
-<!-- This is the container for your comments -->
 
 </body>
 </html>
