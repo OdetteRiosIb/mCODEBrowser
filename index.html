@@ -207,6 +207,8 @@ body {
 
 	$(document).ready(function() {
     // 1. GLOBAL STATE REGISTRY VARIABLES
+
+	window.supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
@@ -676,7 +678,6 @@ function extractAnnotation(val) {
                 else objectPropertiesRows += rowHtml;
             });
         }
-		const supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
 
         if (!objectPropertiesRows) objectPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties mapped.</td></tr>`;
         if (!dataPropertiesRows) dataPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Data Properties mapped.</td></tr>`;
