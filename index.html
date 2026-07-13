@@ -31,6 +31,16 @@ body {
 #protege-tree .jstree-container-ul { display: block !important; }
 /* Global Top Header & Navigation Bar styling */
 
+		/* Hide all pages by default */
+.page-content {
+    display: none;
+}
+
+/* Only show the page that has the 'active' class */
+.page-content.active {
+    display: flex;
+    flex-direction: column;
+}
 
 .global-navbar {
     display: flex;
