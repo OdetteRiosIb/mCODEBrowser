@@ -31,12 +31,7 @@ body {
 #protege-tree .jstree-container-ul { display: block !important; }
 /* Global Top Header & Navigation Bar styling */
 
-		/* Hide all pages by default */
-.page-content {
-    display: none;
-}
-
-
+/* Global Top Header & Navigation Bar styling */
 .global-navbar {
     display: flex;
     align-items: center;
@@ -79,33 +74,18 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-		/* 1. Ensure the container takes full width and stacks vertically */
-#page-home {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-items: center; /* Centers items horizontally */
-    padding: 40px;
+/* Page Level Switcher Framework */
+.page-content {
+    display: none; /* Hidden by default */
+    flex: 1;
+    width: 100vw;
+    overflow: hidden;
     box-sizing: border-box;
 }
-
-/* 2. Style for the top header */
-.home-centered-header {
-    text-align: center;
-    margin-bottom: 40px;
+.page-content.active {
+    display: flex; /* Display active workspace layout */
 }
 
-/* 3. Style for the intro/authors to span full width */
-.home-body-content {
-    width: 100%;
-    max-width: 800px; /* Limits the text width so it's readable */
-    text-align: left; /* Keeps the text left-aligned for readability */
-}
-
-/* 4. Force override: make sure this specific page isn't side-by-side */
-#page-home {
-    flex-direction: column !important;
-}
 /* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
@@ -126,35 +106,8 @@ body {
     height: 100%;
 }
 
-		/* 1. Simplify page-content: just hide it */
-.page-content {
-    display: none;
-    width: 100%;
-    height: 100%;
-}
 
-/* 2. When active, make it a flex column */
-.page-content.active {
-    display: flex;
-    flex-direction: column;
-}
-
-/* 3. This forces the browser view to be side-by-side */
-.browser-layout-container {
-    display: flex;
-    flex-direction: row; /* Forces sidebar and inspector side-by-side */
-    flex: 1;             /* Takes up remaining screen space */
-    height: 100%;
-    overflow: hidden;    /* Keeps the scrollbars contained */
-}
-
-/* 4. Ensure your home page doesn't try to be a row */
-#page-home {
-    align-items: center;
-    padding: 40px;
-    overflow-y: auto;
-}
-		
+     
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
