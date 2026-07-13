@@ -754,7 +754,7 @@ function extractAnnotation(val) {
 
         async function renderActiveCommentsList(nodeId) {
     const { data, error } = await supabase
-        .from('comments')
+        .from('Feedback')
         .select('*')
         .eq('node_id', nodeId)
         .order('created_at', { ascending: false });
@@ -866,7 +866,7 @@ function executeFastSearch(query) {
 async function saveFeedback(classId, className, commentText, labelType) {
     try {
         const { data, error } = await supabase
-            .from('comments') // Ensure this matches your DB table
+            .from('Feedback') // Ensure this matches your DB table
             .insert([
                 { 
                     class_id: classId, 
@@ -882,7 +882,7 @@ async function saveFeedback(classId, className, commentText, labelType) {
         console.error("Supabase Error:", err);
         alert("Failed to save feedback: " + err.message);
     }
-}
-
+};
+		
 </body>
 </html>
