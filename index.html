@@ -747,28 +747,13 @@ function extractAnnotation(val) {
                     <button class="submit-feedback-btn" data-class-id="${node.id}" data-class-name="${node.text}">Save Note</button>
                 </div>
                 <div id="saved-comments-${node.id}" style="margin-top: 10px;"></div>
-
-				<script src="https://giscus.app/client.js"
-        data-repo="OdetteRiosIb/mCODEBrowser"
-        data-repo-id="R_kgDOTT5wJw"
-        data-category="General"
-        data-category-id="DIC_kwDOTT5wJ84DBFmr"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="1"
-        data-input-position="bottom"
-        data-theme="preferred_color_scheme"
-        data-lang="en"
-        crossorigin="anonymous"
-        async>
-</script>
             </div>
 
             <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
         `);
-
+<script>
         renderActiveCommentsList(node.id);
+	</script>
     });
 
     window.selectTaxonomyNode = function(nodeId) {
@@ -865,5 +850,21 @@ function executeFastSearch(query) {
 }
 </script>
 
+
+<script src="https://giscus.app/client.js"
+        data-repo="OdetteRiosIb/mCODEBrowser"
+        data-repo-id="R_kgDOTT5wJw"
+        data-category="General"
+        data-category-id="DIC_kwDOTT5wJ84DBFmr"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
 </body>
 </html>
