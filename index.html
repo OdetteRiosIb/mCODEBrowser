@@ -206,12 +206,64 @@ body {
 
     <script>
 
+		
 $(document).ready(function() {
     // 1. GLOBAL STATE REGISTRY VARIABLES
+
+	const supabaseUrl = 'https://ikihocvwctkfmzkofvus.supabase.co';
+    const supabaseKey = 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+	
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
 
+	$(document).on('click', '.submit-feedback-btn', async function() {
+    const classId = $(this).data('class-id');
+    const className = $(this).data('class-name');
+    const commentText = $('#feedback-text-' + classId).val().trim();
+    const labelType = $('#feedback-tag-' + classId).val();
+
+    if (!commentText) return alert("Please type out a comment before saving.");
+
+    // 1. Save locally to your object (for instant UI update)
+    if (!feedbackDatabase[classId]) {
+        feedbackDatabase[classId] = { classId: classId, className: className, notes: [] };
+    }
+
+    const newNote = {
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        tag: labelType,
+        text: commentText
+    };
+    
+    feedbackDatabase[classId].notes.push(newNote);
+
+    // 2. Save to Supabase (Database)
+    try {
+        const { error } = await supabase
+            .from('Feedback') // Ensure this table name is exact
+            .insert([
+                { 
+                    node_id: classId, 
+                    class_name: className, 
+                    comment: commentText, 
+                    tag: labelType 
+                }
+            ]);
+
+        if (error) throw error;
+        
+        // Success: Clear the text area only if DB save worked
+        $('#feedback-text-' + classId).val('');
+        renderActiveCommentsList(classId);
+        
+    } catch (err) {
+        console.error("Supabase Error:", err);
+        alert("Saved locally, but failed to sync to database: " + err.message);
+    }
+});
+	
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
         const targetPage = $(this).data('target');
@@ -734,20 +786,18 @@ function extractAnnotation(val) {
                 <tbody>${dataPropertiesRows}</tbody>
             </table>
 
-            <div class="feedback-box">
-                <h4>📝 Curator Review & Feedback Notes</h4>
-                <textarea class="feedback-input" id="feedback-text-${node.id}" placeholder="Leave alignment instructions, relationship comments, or tag structural corrections here..."></textarea>
-                <div class="feedback-controls">
-                    <select class="feedback-select" id="feedback-tag-${node.id}">
-                        <option value="General Comment">💬 General Note</option>
-                        <option value="Correction Required">❌ Correction Required</option>
-                        <option value="Missing Child/Property">➕ Missing Child/Property</option>
-                        <option value="Approved">✅ Approved Node</option>
-                    </select>
-                    <button class="submit-feedback-btn" data-class-id="${node.id}" data-class-name="${node.text}">Save Note</button>
-                </div>
-                <div id="saved-comments-${node.id}" style="margin-top: 10px;"></div>
-            </div>
+            `<div class="feedback-box">
+    <textarea id="feedback-text-${node.id}"></textarea>
+    <select id="feedback-tag-${node.id}">...</select>
+    <!-- Use data attributes to pass the IDs to the click handler -->
+    <button class="submit-feedback-btn" 
+            data-class-id="${node.id}" 
+            data-class-name="${node.text}">
+        Save Note
+    </button>
+</div>`
+
+			
 
             <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
         `);
