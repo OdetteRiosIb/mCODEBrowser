@@ -224,12 +224,7 @@ window.supabase = supabase.createClient(
         console.error("Database sync failed, but proceeding to render tree:", err);
     }
 
-    // 4. RENDER TREE (This will now run even if sync failed)
-    if (typeof window.processOntologyData === 'function' && typeof window.vowlData !== 'undefined') {
-        window.processOntologyData(window.vowlData);
-    } else {
-        console.error("Tree rendering function not found.");
-    }
+    
 	
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
