@@ -74,6 +74,31 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+		/* Center the page content and stack it vertically */
+#page-home.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This centers everything horizontally */
+    padding: 40px;
+    width: 100%;
+}
+
+.home-centered-content {
+    max-width: 800px;
+    width: 100%;
+    text-align: left; /* Keeps text paragraphs aligned left for readability */
+}
+
+/* Center the Title and Metadata */
+.home-centered-content h1, 
+.home-centered-content p:first-of-type {
+    text-align: center;
+}
+
+/* Add some space between sections */
+.home-text-section {
+    margin-top: 30px;
+}
 /* Page Level Switcher Framework */
 .page-content {
     display: none; /* Hidden by default */
@@ -106,39 +131,6 @@ body {
     height: 100%;
 }
 
-		#page-home {
-    display: flex;
-    justify-content: center; /* Centers everything horizontally */
-    padding: 40px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.home-center-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Aligns Title and Sections to the center */
-    max-width: 800px;
-    width: 100%;
-}
-
-.meta-row {
-    display: flex;
-    gap: 20px; /* Space between Version and Date */
-    margin: 15px 0 30px 0;
-    justify-content: center;
-}
-
-.home-text-section {
-    width: 100%;
-    text-align: center; /* Centers the text headings and content */
-}
-
-.home-text-section h3, .home-text-section p {
-    margin: 10px auto;
-}
-
-     
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
@@ -221,7 +213,7 @@ body {
     </div>
 
     <!-- Full-width body sections -->
-    <div class="home-body-content">
+    <div class="home-content">
         <h3>Introduction</h3>
         <p id="meta-comment"></p>
         
