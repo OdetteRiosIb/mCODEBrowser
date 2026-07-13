@@ -207,6 +207,11 @@ body {
     <script>
 
 $(document).ready(function() {
+	// Initialize Supabase once
+const supabase = supabase.createClient(
+    'https://ikihocvwctkfmzkofvus.supabase.co', 
+    'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
+);
     // 1. GLOBAL STATE REGISTRY VARIABLES
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
@@ -261,16 +266,30 @@ $(document).ready(function() {
             icon.text(table.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
         });
     });
-
+	
     // 5. FEEDBACK SUBMISSION ENGINE
-    $(document).on('click', '.submit-feedback-btn', function() {
-        const classId = $(this).data('class-id');
-        const className = $(this).data('class-name');
-        const commentText = $('#feedback-text-' + classId).val().trim();
-        const labelType = $('#feedback-tag-' + classId).val();
+    $(document).on('click', '.submit-feedback-btn', async function() {
+    const classId = $(this).data('class-id');
+    const className = $(this).data('class-name');
+    const commentText = $('#feedback-text-' + classId).val().trim();
+    const labelType = $('#feedback-tag-' + classId).val();
 
-        if (!commentText) return alert("Please type out a comment before saving.");
+    if (!commentText) return alert("Please type out a comment before saving.");
 
+    // 1. Send data to Supabase
+    try {
+        const { error } = await supabase
+            .from('Feedback') 
+            .insert([{ 
+                node_id: classId, 
+                class_name: className, 
+                comment: commentText, 
+                tag: labelType 
+            }]);
+
+        if (error) throw error; // If Supabase returns an error, jump to catch
+
+        // 2. Only update local UI if database save succeeded
         if (!feedbackDatabase[classId]) {
             feedbackDatabase[classId] = { classId: classId, className: className, notes: [] };
         }
@@ -282,8 +301,13 @@ $(document).ready(function() {
         });
 
         $('#feedback-text-' + classId).val('');
-        renderActiveCommentsList(classId);    
-    });
+        renderActiveCommentsList(classId);
+        
+    } catch (err) {
+        console.error("Supabase Error:", err);
+        alert("Failed to save to database: " + err.message);
+    }
+});
 
     function renderActiveCommentsList(classId) {
         let container = $('#saved-comments-' + classId);
