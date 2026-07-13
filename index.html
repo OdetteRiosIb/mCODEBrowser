@@ -218,10 +218,14 @@ window.supabase = supabase.createClient(
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
 
-	await syncFeedbackFromDatabase();
+	try {
+        await syncFeedbackFromDatabase();
+    } catch (err) {
+        console.error("Database sync failed, but proceeding to render tree:", err);
+    }
 
-
-	if (typeof window.processOntologyData === 'function' && typeof window.vowlData !== 'undefined') {
+    // 4. RENDER TREE (This will now run even if sync failed)
+    if (typeof window.processOntologyData === 'function' && typeof window.vowlData !== 'undefined') {
         window.processOntologyData(window.vowlData);
     } else {
         console.error("Tree rendering function not found.");
