@@ -167,19 +167,17 @@ body {
 </head>
 <body>
 
-
-    <body>
     <!-- Global Full-Width Top Navigation Bar -->
-   <nav class="navbar">
-    <div class="brand">mCODE Taxonomy Browser</div>
-    <div class="tabs">
-        <button class="global-tab-btn" data-target="home-page">Home</button>
-        <button class="global-tab-btn" data-target="page-browser">Browser View</button>
-        <button class="global-tab-btn" data-target="page-visualization">Visualization View</button>
+   <div class="global-navbar">
+        <div class="app-title">mCODE Taxonomy Browser</div>
+        <div class="global-tabs">
+			<button class="global-tab-btn active" data-target="page-home">Browser View</button>
+            <button class="global-tab-btn active" data-target="page-browser">Browser View</button>
+            <button class="global-tab-btn" data-target="page-visualization">Visualization View</button>
+        </div>
     </div>
-</nav>
 
-	<div id="home-page" class="page-content active">
+	<div id="page-home" class="page-content active">
     <h1>mCODE Ontology Browser</h1>
     <p><strong>Version:</strong> <span id="meta-version"></span></p>
     <p><strong>Year:</strong> <span id="meta-year"></span></p>
