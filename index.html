@@ -36,11 +36,6 @@ body {
     display: none;
 }
 
-/* Only show the page that has the 'active' class */
-.page-content.active {
-    display: flex;
-    flex-direction: column;
-}
 
 .global-navbar {
     display: flex;
@@ -131,6 +126,34 @@ body {
     height: 100%;
 }
 
+		/* 1. Simplify page-content: just hide it */
+.page-content {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+/* 2. When active, make it a flex column */
+.page-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3. This forces the browser view to be side-by-side */
+.browser-layout-container {
+    display: flex;
+    flex-direction: row; /* Forces sidebar and inspector side-by-side */
+    flex: 1;             /* Takes up remaining screen space */
+    height: 100%;
+    overflow: hidden;    /* Keeps the scrollbars contained */
+}
+
+/* 4. Ensure your home page doesn't try to be a row */
+#page-home {
+    align-items: center;
+    padding: 40px;
+    overflow-y: auto;
+}
 		
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
@@ -224,9 +247,7 @@ body {
 </div>
 
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
-<div id="page-browser" class="page-content">
-    <!-- Add this inner wrapper -->
-    <div class="browser-layout-container">
+<div id="page-browser" class="page-content active">
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
@@ -235,10 +256,9 @@ body {
         </div>
 
         <div id="protege-inspector">
-            <p style="color:#666; font-style:italic; margin-top:40px;">Please select an ontology node to inspect.</p>
+            <p style="color:#666; font-style:italic; margin-top:40px;">Please select an ontology node from the tree view layout to inspect its structural details.</p>
         </div>
     </div>
-</div>
 
     <!-- PAGE VIEWPORT 2: VISUALIZATION VIEW (Spans across the entire full width) -->
     <div id="page-visualization" class="page-content">
