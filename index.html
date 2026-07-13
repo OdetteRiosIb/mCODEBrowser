@@ -217,14 +217,6 @@ window.supabase = supabase.createClient(
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
-
-	try {
-        await syncFeedbackFromDatabase();
-    } catch (err) {
-        console.error("Database sync failed, but proceeding to render tree:", err);
-    }
-
-    
 	
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
