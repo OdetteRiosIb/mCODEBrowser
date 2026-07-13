@@ -208,10 +208,15 @@ body {
 
 $(document).ready(function() {
 	// Initialize Supabase once
-const supabase = supabase.createClient(
-    'https://ikihocvwctkfmzkofvus.supabase.co', 
-    'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
-);
+try {
+        window.supabase = supabase.createClient(
+            'https://ikihocvwctkfmzkofvus.supabase.co', 
+            'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
+        );
+        console.log("Supabase initialized successfully.");
+    } catch (e) {
+        console.warn("Supabase failed to initialize, but continuing to render tree.");
+    }
     // 1. GLOBAL STATE REGISTRY VARIABLES
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
