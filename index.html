@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
-   
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
  <!--  Local ontology data file -->
@@ -205,7 +205,7 @@ body {
     </div>
 
     <script>
-
+const supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
 $(document).ready(function() {
     // 1. GLOBAL STATE REGISTRY VARIABLES
     window.globalNodeRegistry = {};
@@ -752,7 +752,22 @@ function extractAnnotation(val) {
             <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
         `);
 
-        renderActiveCommentsList(node.id);
+        async function renderActiveCommentsList(nodeId) {
+    const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('node_id', nodeId)
+        .order('created_at', { ascending: false });
+
+    if (data) {
+        const container = document.getElementById(`saved-comments-${nodeId}`);
+        container.innerHTML = data.map(c => `
+            <div class="comment-item">
+                <strong>${c.tag}:</strong> ${c.comment} <small>(${new Date(c.created_at).toLocaleDateString()})</small>
+            </div>
+        `).join('');
+    }
+}
     });
 
     window.selectTaxonomyNode = function(nodeId) {
@@ -847,6 +862,25 @@ function executeFastSearch(query) {
     // Run jsTree's optimized native search filter
     tree.search(queryLower);
 }
+
+		async function saveFeedback(nodeId) {
+        const commentText = document.getElementById(`feedback-text-${nodeId}`).value;
+        const tag = document.getElementById(`feedback-tag-${nodeId}`).value;
+
+        const { data, error } = await supabase
+            .from('comments')
+            .insert([{ node_id: nodeId, comment: commentText, tag: tag }]);
+
+        if (error) {
+            console.error('Error saving:', error);
+            alert('Failed to save feedback.');
+        } else {
+            alert('Feedback saved!');
+            // Clear the textarea after saving
+            document.getElementById(`feedback-text-${nodeId}`).value = '';
+            renderActiveCommentsList(nodeId); 
+        }
+    }
 </script>
 
 <!-- This is the container for your comments -->
