@@ -208,7 +208,6 @@ body {
 	$(document).ready(function() {
     // 1. GLOBAL STATE REGISTRY VARIABLES
 
-	window.supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
@@ -617,6 +616,7 @@ function extractAnnotation(val) {
         }
 
     // 8. JSTREE TREE EVENT LISTENER FOR CONCEPT INSPECTION
+	const supabase = supabase.createClient('https://ikihocvwctkfmzkofvus.supabase.co', 'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na');
     $('#protege-tree').on("changed.jstree", function (e, data) {
         if(!data.selected.length) return;
         
