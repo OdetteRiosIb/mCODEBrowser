@@ -866,7 +866,7 @@ function executeFastSearch(query) {
 async function saveFeedback(classId, className, commentText, labelType) {
     try {
         const { data, error } = await supabase
-            .from('your_table_name') // Ensure this matches your DB table
+            .from('comments') // Ensure this matches your DB table
             .insert([
                 { 
                     class_id: classId, 
