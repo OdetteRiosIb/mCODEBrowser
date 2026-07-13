@@ -217,11 +217,6 @@ window.supabase = supabase.createClient(
     window.globalNodeRegistry = {};
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
-
-	await syncFeedbackFromDatabase();
-	if (typeof currentActiveNodeId !== 'undefined') {
-        renderActiveCommentsList(currentActiveNodeId);
-    }
 	
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
