@@ -225,6 +225,8 @@ body {
 
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
+    <!-- Add this inner wrapper -->
+    <div class="browser-layout-container">
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
@@ -233,9 +235,10 @@ body {
         </div>
 
         <div id="protege-inspector">
-            <p style="color:#666; font-style:italic; margin-top:40px;">Please select an ontology node from the tree view layout to inspect its structural details.</p>
+            <p style="color:#666; font-style:italic; margin-top:40px;">Please select an ontology node to inspect.</p>
         </div>
     </div>
+</div>
 
     <!-- PAGE VIEWPORT 2: VISUALIZATION VIEW (Spans across the entire full width) -->
     <div id="page-visualization" class="page-content">
