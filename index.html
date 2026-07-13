@@ -179,14 +179,11 @@ body {
         </div>
     </div>
 
-	<div id="home-page" class="page-content active">
-    <h1>mCODE Ontology Browser</h1>
-    <p><strong>Version:</strong> <span id="meta-version"></span></p>
-    <p><strong>Year:</strong> <span id="meta-year"></span></p>
-    <h3>Introduction</h3>
-    <p id="meta-comment"></p>
-    <h3>Authors</h3>
-    <p id="meta-authors"></p>
+	<div id="page-home" class="page-content active">
+    <div style="padding: 20px;">
+        <h1>mCODE Ontology Browser</h1>
+        <!-- ... your intro text ... -->
+    </div>
 </div>
 
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
@@ -257,12 +254,21 @@ window.supabase = supabase.createClient(
 	populateHomeMetadata();
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
-        const targetPage = $(this).data('target');
-        $('.global-tab-btn').removeClass('active');
-        $(this).addClass('active');
-        $('.page-content').removeClass('active');
-        $('#' + targetPage).addClass('active');
-    });
+    const targetPage = $(this).data('target');
+    
+    // 1. Update Buttons
+    $('.global-tab-btn').removeClass('active');
+    $(this).addClass('active');
+    
+    // 2. Update Panels (this hides all, then shows the target)
+    $('.page-content').removeClass('active');
+    $('#' + targetPage).addClass('active');
+
+    // 3. Optional: Trigger viz if needed
+    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
+        window.initializeEdamGraphicView();
+    }
+});
 
     // 3. SAFE SEARCH TRIGGER (Fires only on Enter Key)
     // 3. AUTOMATIC SEARCH & AUTO-RESET FILTER LISTENER
