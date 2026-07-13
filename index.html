@@ -31,42 +31,7 @@ body {
 #protege-tree .jstree-container-ul { display: block !important; }
 /* Global Top Header & Navigation Bar styling */
 
-.home-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    color: #333;
-    text-align: center; /* This centers all text inside the container */
-}
 
-.home-header h1 {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-/* This turns the grid into a vertical stack */
-.meta-grid {
-    display: flex;
-    flex-direction: column; /* Stacks items vertically */
-    gap: 15px;
-    margin: 30px 0;
-    align-items: center; /* Centers the cards themselves */
-}
-
-.meta-card {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 4px;
-    width: 60%; /* Or keep it smaller to look like a badge */
-    border-top: 3px solid #0056b3; /* Top accent looks better for centered text */
-}
-
-.content-section {
-    margin-top: 30px;
-    text-align: left; /* Keeps the body text left-aligned for readability */
-}
 .global-navbar {
     display: flex;
     align-items: center;
@@ -121,6 +86,34 @@ body {
     display: flex; /* Display active workspace layout */
 }
 
+
+		/* 1. Ensure the container takes full width and stacks vertically */
+#page-home {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center; /* Centers items horizontally */
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* 2. Style for the top header */
+.home-centered-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+/* 3. Style for the intro/authors to span full width */
+.home-body-content {
+    width: 100%;
+    max-width: 800px; /* Limits the text width so it's readable */
+    text-align: left; /* Keeps the text left-aligned for readability */
+}
+
+/* 4. Force override: make sure this specific page isn't side-by-side */
+#page-home {
+    flex-direction: column !important;
+}
 /* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
@@ -141,6 +134,7 @@ body {
     height: 100%;
 }
 
+		
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
@@ -215,26 +209,19 @@ body {
     </div>
 </div>
 
-<div id="page-home" class="page-content active" style="text-align: center; padding: 40px; font-family: sans-serif;">
-    
-    <!-- Title -->
-    <h1 style="color: #2c3e50;">mCODE Ontology Browser</h1>
-    
-    <!-- Version and Year stacked below the title -->
-    <div style="margin: 10px 0;">
-        <strong>Version:</strong> <span id="meta-version"></span>
-    </div>
-    
-    <div style="margin: 10px 0;">
-        <strong>Year:</strong> <span id="meta-year"></span>
+<div id="page-home" class="page-content active">
+    <!-- Centered Header -->
+    <div class="home-centered-header">
+        <h1>mCODE Ontology Browser</h1>
+        <p><strong>Version:</strong> <span id="meta-version"></span> | <strong>Date:</strong> <span id="meta-year"></span></p>
     </div>
 
-    <!-- Introduction and Authors -->
-    <div style="margin: 40px auto; max-width: 600px; text-align: left;">
-        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Introduction</h3>
+    <!-- Full-width body sections -->
+    <div class="home-body-content">
+        <h3>Introduction</h3>
         <p id="meta-comment"></p>
         
-        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px;">Authors</h3>
+        <h3>Authors</h3>
         <p id="meta-authors"></p>
     </div>
 </div>
