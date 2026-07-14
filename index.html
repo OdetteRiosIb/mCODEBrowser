@@ -128,6 +128,23 @@ body {
     color: #333;
 }
 
+		/* Larger headings */
+.section-title {
+    font-size: 1.8rem; /* Increased size */
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+/* Smaller subsection heading */
+.sub-section-title {
+    font-size: 1.1rem; /* Smaller size */
+    font-weight: 600;
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-transform: uppercase; /* Optional: makes it look distinct */
+}
 		.funding-section {
     display: flex;
     flex-direction: column; /* Stacks the rows vertically */
@@ -263,16 +280,17 @@ body {
         <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zoua & John Kildea</span></p>
 
         <div class="text-content">
-            <h3>Introduction</h3>
-            <p>Ontology created based on mCODE  (short for Minimal Common Oncology Data Elements) is an initiative intended to increase interoperability by assembling a core set of structured data elements 
+		<h2 class="section-title">Introduction</h2>
+			<p>Ontology created based on mCODE  (short for Minimal Common Oncology Data Elements) is an initiative intended to increase interoperability by assembling a core set of structured data elements 
 				for oncology electronic health records (EHRs). Additioanlly has an ontological embedded extension for Radiotherapy, Radiomics and Dosiomics</p>
-        <h3>Conceptual Maps</h3>
-	<p>Here you can find the conceptual maps representing the data models.</p>
+	<h2 class="section-title">Conceptual Maps</h2>
+			<p>Here you can find the conceptual maps representing the data models.</p>
+	<h4 class="sub-section-title">mCODE-based Data Model Diagrams</h4>
 	<img src="images/mCODE_DiseaseGroup.png" alt="Disease Characterization Ontology Conceptual Map" class="content-image">
 	<img src="images/mCODE_HealthGroup.png" alt="Health Assesment Ontology Conceptual Map" class="content-image">
 
-            <h3>Acknowledgments</h3>
-            <p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
+<h2 class="section-title">Acknowledgements</h2>
+			<p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
             
             <!-- Funding Logos Section -->
             <div class="funding-section">
