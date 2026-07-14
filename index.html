@@ -120,6 +120,27 @@ body {
     padding: 40px;
 }
 
+		.funding-section {
+    display: flex;
+    flex-direction: column; /* Stacks the rows vertically */
+    align-items: center;    /* Centers rows horizontally */
+    gap: 20px;              /* Space between the top and bottom rows */
+    margin-top: 40px;
+}
+
+.logo-row {
+    display: flex;
+    justify-content: center; /* Centers logos within the row */
+    align-items: center;
+    gap: 30px;               /* Space between logos in the same row */
+    flex-wrap: wrap;         /* Ensures responsiveness on smaller screens */
+}
+
+.logo-row img {
+    height: 60px;            /* Uniform height */
+    width: auto;
+    object-fit: contain;
+}
 /* Page Level Switcher Framework */
 .page-content {
     display: none; /* Hidden by default */
@@ -261,6 +282,7 @@ body {
     </div> <!-- This closes <div class="home-stack-container"> -->
 </div> <!-- This closes <div id="page-home" ...> -->
 
+	
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
         <div id="protege-sidebar">
