@@ -117,7 +117,20 @@ body {
 }
 
 
+.funding-logos {
+    display: flex;
+    justify-content: center; /* Centers the row of logos */
+    align-items: center;     /* Aligns them vertically if they are different heights */
+    gap: 30px;               /* Adds space between the logos */
+    margin-top: 40px;        /* Adds space above the logos */
+    padding: 20px;
+}
 
+.funding-logos img {
+    height: 60px;            /* Set a fixed height so all logos look uniform */
+    width: auto;             /* Keeps the aspect ratio correct */
+    object-fit: contain;     /* Ensures the full logo is visible */
+}
 		
 /* 2. Specific styles for Home Page only */
 #page-home.active {
