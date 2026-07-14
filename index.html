@@ -362,6 +362,7 @@ body {
         }
     }
 }
+
 		
 $(document).ready(function() {
 	// Initialize Supabase once
@@ -386,10 +387,6 @@ window.supabase = supabase.createClient(
     // 2. Update Panels (this hides all, then shows the target)
     $('.page-content').removeClass('active');
     $('#' + targetPage).addClass('active');
-
-    // 3. Optional: Trigger viz if needed
-    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
-        window.initializeEdamGraphicView();
     }
 });
 
