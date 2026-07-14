@@ -82,14 +82,7 @@ body {
     text-align: left;   /* Keeps the text readable */
 }
 
-.page-title {
-    font-size: 2.5rem;    /* Makes the title large and prominent */
-    font-weight: bold;    /* Ensures it stands out */
-    text-align: center;   /* Centers the text */
-    margin: 0 0 20px 0;   /* Adds space below the title for the metadata row */
-    color: #333;          /* Sets a clean, dark gray color */
-}
-		
+
 /* This is the container that holds your title, version, and text */
 .home-centered-container {
     max-width: 800px;   /* Limits the width so it doesn't hit the screen edges */
@@ -97,16 +90,10 @@ body {
     margin: 0 auto;     /* Ensures the container stays in the middle */
     text-align: center; /* This centers the title and version line */
 }
-		
 /* Center the Title and Metadata */
 .home-centered-content h3, 
 .home-centered-content p:first-of-type {
     text-align: center;
-}
-
-/* Ensure the new section aligns with the existing text layout */
-.home-centered-container h3 {
-    margin-top: 30px;    /* Adds space before the new section title */
 }
 
 /* Re-center the title and meta if they were forced left */
@@ -115,46 +102,12 @@ body {
     text-align: center;
 }
 
-/* Style for images placed within the main content area */
-.content-image {
-    display: block;
-    margin: 20px auto;   /* Centers the image with spacing above and below */
-    max-width: 90%;      /* Ensures it doesn't overflow the centered container */
-    border: 1px solid #ccc; /* Optional: adds a subtle border to the image */
-    border-radius: 4px;  /* Optional: rounds the corners slightly */
-}
-
-.funding-section {
-    display: flex;
-    flex-direction: column; /* Stacks the rows vertically */
-    align-items: center;    /* Centers rows horizontally */
-    gap: 20px;              /* Space between the top and bottom rows */
-    margin-top: 40px;
-}
-
-.logo-row {
-    display: flex;
-    justify-content: center; /* Centers logos within the row */
-    align-items: center;
-    gap: 30px;               /* Space between logos in the same row */
-    flex-wrap: wrap;         /* Ensures responsiveness on smaller screens */
-}
-
-.logo-row img {
-    height: 60px;            /* Uniform height */
-    width: auto;
-    object-fit: contain;
-}
-		
 /* 2. Specific styles for Home Page only */
 #page-home.active {
     display: flex;
     flex-direction: column;
     align-items: center; /* This ONLY centers the home page content */
     padding: 40px;
-	height: 100vh;      /* Takes full height of the viewport */
-    overflow-y: auto;   /* Enables the scrollbar when content exceeds height */
-    box-sizing: border-box; /* Ensures padding doesn't add extra width */
 }
 
 /* Page Level Switcher Framework */
@@ -169,10 +122,6 @@ body {
     display: flex; /* Display active workspace layout */
 }
 
-#page-browser.active {
-    flex-direction: row; /* Keeps your sidebar and content side-by-side */
-}
-		
 /* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
@@ -193,7 +142,6 @@ body {
     height: 100%;
 }
 
-
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
@@ -204,8 +152,6 @@ body {
     background: #f8fafc;
     height: 100%;
 }
-
-		
         body { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; display: flex; background: #fff; font-family: Arial, sans-serif; }
         
         /* Left Sidebar Layout styling */
@@ -259,10 +205,9 @@ body {
 </head>
 <body>
 
-
     <!-- Global Full-Width Top Navigation Bar -->
 <div class="global-navbar">
-    <div class="app-title">Ontology Taxonomy Browser</div>
+    <div class="app-title">mCODE Taxonomy Browser</div>
     <div class="global-tabs">
         <!-- Only one button should be 'active' by default -->
         <button class="global-tab-btn active" data-target="page-home">Home</button>
@@ -274,39 +219,20 @@ body {
 <div id="page-home" class="page-content active">
     <!-- Everything is wrapped in one single column container -->
     <div class="home-stack-container">
-		<h1 class="page-title">mCODE Ontology Browser</h1>        
-        <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zoua & John Kildea</span></p>
+        <h1>mCODE Ontology Browser</h1>
+        
+        <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026</p>
 
         <div class="text-content">
             <h3>Introduction</h3>
-            <p>Ontology created based on mCODE  (short for Minimal Common Oncology Data Elements) is an initiative intended to increase interoperability by assembling a core set of structured data elements 
-				for oncology electronic health records (EHRs). Additioanlly has an ontological embedded extension for Radiotherapy, Radiomics and Dosiomics</p>
-        <h3>Conceptual Maps</h3>
-	<p>Here you can find the conceptual maps representing the data models.</p>
-	<img src="images/mCODE_DiseaseGroup.png" alt="Disease Characterization Ontology Conceptual Map" class="content-image">
-	<img src="images/mCODE_HealthGroup.png" alt="Health Assesment Ontology Conceptual Map" class="content-image">
-
-            <h3>Acknowledgments</h3>
-            <p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
+            <p>Ontology created based on mCODE...</p>
             
-            <!-- Funding Logos Section -->
-            <div class="funding-section">
-                <div class="logo-row">
-                    <img src="logos/FRQS_logo.png" alt="Funder 1">
-                    <img src="logos/McGill_UniversityLogo.png" alt="Funder 2">
-                    <img src="logos/McGill_University_Health_Centre_Logo.png" alt="Funder 3">
-                </div>
-                <div class="logo-row">
-                    <img src="logos/Polytechnique_logo.png" alt="Funder 4">
-                    <img src="logos/AAPM_logo.png" alt="Funder 5">
-                </div>
-            </div>
-        </div> <!-- This closes <div class="text-content"> -->
-    </div> <!-- This closes <div class="home-stack-container"> -->
-</div> <!-- This closes <div id="page-home" ...> -->
- 
+            <h3>Authors</h3>
+            <p>Odette Rios-Ibacache, Gaetan Butault, Amal Zoua & John Kildea</p>
+        </div>
+    </div>
+</div>
 
-	
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
         <div id="protege-sidebar">
@@ -361,8 +287,6 @@ body {
         }
     }
 }
-
-		
 $(document).ready(function() {
 	// Initialize Supabase once
 // Do NOT use 'const' here if you want it globally accessible
@@ -386,6 +310,10 @@ window.supabase = supabase.createClient(
     // 2. Update Panels (this hides all, then shows the target)
     $('.page-content').removeClass('active');
     $('#' + targetPage).addClass('active');
+
+    // 3. Optional: Trigger viz if needed
+    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
+        window.initializeEdamGraphicView();
     }
 });
 
