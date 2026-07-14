@@ -96,12 +96,29 @@ body {
     text-align: center;
 }
 
+/* Ensure the new section aligns with the existing text layout */
+.home-centered-container h3 {
+    margin-top: 30px;    /* Adds space before the new section title */
+}
+
 /* Re-center the title and meta if they were forced left */
 .home-centered-container h1,
 .home-centered-container p:first-of-type {
     text-align: center;
 }
 
+/* Style for images placed within the main content area */
+.content-image {
+    display: block;
+    margin: 20px auto;   /* Centers the image with spacing above and below */
+    max-width: 90%;      /* Ensures it doesn't overflow the centered container */
+    border: 1px solid #ccc; /* Optional: adds a subtle border to the image */
+    border-radius: 4px;  /* Optional: rounds the corners slightly */
+}
+
+
+
+		
 /* 2. Specific styles for Home Page only */
 #page-home.active {
     display: flex;
