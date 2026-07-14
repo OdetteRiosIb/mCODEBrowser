@@ -82,7 +82,14 @@ body {
     text-align: left;   /* Keeps the text readable */
 }
 
-
+.page-title {
+    font-size: 2.5rem;    /* Makes the title large and prominent */
+    font-weight: bold;    /* Ensures it stands out */
+    text-align: center;   /* Centers the text */
+    margin: 0 0 20px 0;   /* Adds space below the title for the metadata row */
+    color: #333;          /* Sets a clean, dark gray color */
+}
+		
 /* This is the container that holds your title, version, and text */
 .home-centered-container {
     max-width: 800px;   /* Limits the width so it doesn't hit the screen edges */
@@ -256,7 +263,7 @@ body {
 	
     <!-- Global Full-Width Top Navigation Bar -->
 <div class="global-navbar">
-    <div class="app-title">mCODE Taxonomy Browser</div>
+    <div class="app-title">Ontology Taxonomy Browser</div>
     <div class="global-tabs">
         <!-- Only one button should be 'active' by default -->
         <button class="global-tab-btn active" data-target="page-home">Home</button>
@@ -268,8 +275,7 @@ body {
 <div id="page-home" class="page-content active">
     <!-- Everything is wrapped in one single column container -->
     <div class="home-stack-container">
-        <h1>mCODE Ontology Browser</h1>
-        
+		<h1 class="page-title">mCODE Ontology Browser</h1>        
         <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zoua & John Kildea</span></p>
 
         <div class="text-content">
