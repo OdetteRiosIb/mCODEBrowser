@@ -125,6 +125,9 @@ body {
     flex-direction: column;
     align-items: center; /* This ONLY centers the home page content */
     padding: 40px;
+	height: 100vh;      /* Takes full height of the viewport */
+    overflow-y: auto;   /* Enables the scrollbar when content exceeds height */
+    box-sizing: border-box; /* Ensures padding doesn't add extra width */
 }
 
 /* Page Level Switcher Framework */
@@ -267,7 +270,6 @@ body {
 </div>
 
 
-
 	
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
@@ -323,6 +325,7 @@ body {
         }
     }
 }
+		
 $(document).ready(function() {
 	// Initialize Supabase once
 // Do NOT use 'const' here if you want it globally accessible
