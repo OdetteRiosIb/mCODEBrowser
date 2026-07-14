@@ -117,19 +117,26 @@ body {
 }
 
 
-.funding-logos {
+.funding-section {
     display: flex;
-    justify-content: center; /* Centers the row of logos */
-    align-items: center;     /* Aligns them vertically if they are different heights */
-    gap: 30px;               /* Adds space between the logos */
-    margin-top: 40px;        /* Adds space above the logos */
-    padding: 20px;
+    flex-direction: column; /* Stacks the rows vertically */
+    align-items: center;    /* Centers rows horizontally */
+    gap: 20px;              /* Space between the top and bottom rows */
+    margin-top: 40px;
 }
 
-.funding-logos img {
-    height: 60px;            /* Set a fixed height so all logos look uniform */
-    width: auto;             /* Keeps the aspect ratio correct */
-    object-fit: contain;     /* Ensures the full logo is visible */
+.logo-row {
+    display: flex;
+    justify-content: center; /* Centers logos within the row */
+    align-items: center;
+    gap: 30px;               /* Space between logos in the same row */
+    flex-wrap: wrap;         /* Ensures responsiveness on smaller screens */
+}
+
+.logo-row img {
+    height: 60px;            /* Uniform height */
+    width: auto;
+    object-fit: contain;
 }
 		
 /* 2. Specific styles for Home Page only */
@@ -277,16 +284,18 @@ body {
             <h3>Acknowledgments</h3>
             <p>This project was funded by  Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
 <!-- Funding Logos Section -->
-<div class="funding-logos">
-    <img src="logos/FRQS_logo.jpg" alt="Funder 1">
-    <img src="logos/McGill_UniversityLogo.png" alt="Funder 2">
-	<img src="logos/McGill_University_Health_Centre_Logo.png" alt="Funder 3">
-    <img src="logos/Polytechnique_logo.png" alt="Funder 4">
-	<img src="logos/AAPM_logo.png" alt="Funder 5">
+<div class="funding-section">
+	<div class="logo-row">
+    	<img src="logos/FRQS_logo.jpg" alt="Funder 1">
+    	<img src="logos/McGill_UniversityLogo.png" alt="Funder 2">
+		<img src="logos/McGill_University_Health_Centre_Logo.png" alt="Funder 3">
+	</div>
+	<div class="logo-row">
+    	<img src="logos/Polytechnique_logo.png" alt="Funder 4">
+		<img src="logos/AAPM_logo.png" alt="Funder 5">
+	</div>
 </div>
-        </div>
-    </div>
-</div>
+ 
 
 
 	
