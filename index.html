@@ -75,20 +75,21 @@ body {
 
 /* This applies to the container holding your Introduction and Authors text */
 .home-body-content, .text-content {
-    max-width: 800px;   /* Limits the width so it doesn't stretch to the edges */
-    margin: 0 auto;     /* 'auto' automatically balances left/right margins to center it */
-    padding: 0 20px;    /* Adds a little breathing room on mobile screens */
-    text-align: left;   /* Keeps the text readable */
+    max-width: 1300px;   /* Increased from 800px to make the text range wider */
+    margin: 0 auto;       /* Keeps it centered */
+    padding: 0 20px;      /* Adds breathing room */
+    text-align: left;     /* Keeps the text readable */
 }
 
 
 /* This is the container that holds your title, version, and text */
 .home-centered-container {
-    max-width: 800px;   /* Limits the width so it doesn't hit the screen edges */
-    width: 90%;         /* Ensures it doesn't touch the edges on smaller screens */
-    margin: 0 auto;     /* Ensures the container stays in the middle */
-    text-align: center; /* This centers the title and version line */
+    max-width: 1300px;   /* Increased from 800px to match the body content */
+    width: 95%;           /* Widened from 90% to use more screen space */
+    margin: 0 auto;       /* Ensures the container stays in the middle */
+    text-align: center;   /* Centers the title and version line */
 }
+
 /* Center the Title and Metadata */
 .home-centered-content h3, 
 .home-centered-content p:first-of-type {
@@ -100,6 +101,7 @@ body {
 .home-centered-container p:first-of-type {
     text-align: center;
 }
+
 
 		/* Style for images placed within the main content area */
 .content-image {
