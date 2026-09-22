@@ -177,6 +177,148 @@ body {
     display: flex; /* Display active workspace layout */
 }
 
+		.ontology-download {
+    width: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+}
+
+/* Title */
+.ontology-title {
+    font-size: 36px;
+    font-weight: 300;
+    color: #003b7a;
+    margin-bottom: 12px;
+}
+
+/* Gray introductory box */
+.ontology-intro {
+    display: inline-block;
+    background-color: #eeeeee;
+    padding: 4px 6px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+/* Section heading */
+.ontology-section-title {
+    font-size: 34px;
+    font-weight: 300;
+    color: #003b7a;
+    margin-bottom: 20px;
+}
+
+/* Recommended download */
+.ontology-recommended {
+    font-size: 16px;
+    margin-bottom: 35px;
+}
+
+.ontology-recommended a {
+    color: #4169c9;
+    text-decoration: none;
+}
+
+.ontology-recommended a:hover {
+    text-decoration: underline;
+}
+
+.download-icon {
+    margin-right: 5px;
+}
+
+/* Horizontal line */
+.ontology-line {
+    width: 100%;
+    border-top: 1px solid #b8c9df;
+    margin-bottom: 28px;
+}
+
+
+/* =========================
+   TABLE
+   ========================= */
+
+.ontology-row {
+    display: grid;
+
+    /*
+       File | Description | OBO | JSON | OWL
+    */
+    grid-template-columns:
+        75px
+        minmax(400px, 1fr)
+        105px
+        105px
+        105px;
+
+    border-bottom: 1px solid #d5d5d5;
+}
+
+
+/* Header */
+.ontology-header {
+    font-weight: bold;
+    border-bottom: 1px solid #cccccc;
+}
+
+
+/* All cells */
+.file-column,
+.description-column,
+.download-column {
+    padding: 10px 8px;
+}
+
+
+/* File name */
+.file-column {
+    font-weight: bold;
+}
+
+
+/* Description */
+.description-column {
+    line-height: 1.55;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+
+/* Download columns */
+.download-column {
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+
+/* Links */
+.download-column a {
+    color: #4169c9;
+    text-decoration: none;
+}
+
+.download-column a:hover {
+    text-decoration: underline;
+}
+
+
+/* File name should stay left aligned */
+.file-name {
+    text-align: left;
+}
+
+
+/* External ontology links */
+.description-column a {
+    color: #4169c9;
+    text-decoration: none;
+}
+
+.description-column a:hover {
+    text-decoration: underline;
+}
 /* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
@@ -310,6 +452,97 @@ body {
     </div> <!-- This closes <div class="home-stack-container"> -->
 </div> <!-- This closes <div id="page-home" ...> -->
 
+
+	<!-- PAGE downloads: downloads -->
+
+<div id="page-downloads" class="page-content">
+        <!-- Everything is wrapped in one single column container -->
+    <div class="ontology-download">
+
+            <h1 class="page-title">Download the ontology</h1>
+            <p><span> By Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
+           <h3 style="margin-top:0; color:#104e8b;">Files are available in .OWL and .TTL formats. </h3>
+           <h3 style="margin-top:0; color:#104e8b;">Three versions of the ontology are available as described below.</h3>
+            <!-- Recommended download -->
+    <div class="ontology-recommended">
+        <span class="download-icon">⬇</span>
+
+        <a href="files/go-basic.obo" download>
+            <strong>Download mCODE-orchid.owl</strong>
+        </a>
+
+        <span>
+            - Recommended last version
+        </span>
+    </div>
+
+    <!-- Horizontal line -->
+    <div class="ontology-line"></div>
+
+
+    <!-- Table header -->
+    <div class="ontology-row ontology-header">
+
+        <div class="file-column">
+            File<br>Name
+        </div>
+
+        <div class="description-column">
+            Description
+        </div>
+
+        <div class="download-column">
+            ⬇<br>
+            Download<br>.owl file
+        </div>
+
+        <div class="download-column">
+            ⬇<br>
+            Download<br>.ttl file
+        </div>
+
+        <div class="download-column">
+            ⬇<br>
+            Download<br>.json file
+        </div>
+
+    </div>
+
+
+    <!-- GO-BASIC row -->
+    <div class="ontology-row">
+
+        <div class="file-column file-name">
+            mCODE-orchid<br> v1.0.0
+        </div>
+
+        <div class="description-column">
+            First created version, guided by the mCODE 4.0.0 (STU4) Terminology Standards Value Sets. Our model reuses established ontologies (SNOMED CT, LOINC, NCIt, RxNorm, UCUM, GO, O3) and maps image features to specific RadLex and O3 identifiers. 
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.owl" download>
+                mCODE-orchid.owl
+            </a>
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.ttl" download>
+                mCODE-orchid.ttl
+            </a>
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.json" download>
+                mCODE-orchid.json
+            </a>
+        </div>
+
+    </div>
+
+
+</div>
+           </div> <!-- This closes <div class="text-content"> -->
 	
     <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
@@ -325,6 +558,9 @@ body {
         </div>
     </div>
 
+
+
+	
     <!-- PAGE VIEWPORT 2: VISUALIZATION VIEW (Spans across the entire full width) -->
     <div id="page-visualization" class="page-content">
         <div class="full-viz-container">
