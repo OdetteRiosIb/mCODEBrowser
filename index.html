@@ -215,7 +215,7 @@ body {
 /* Section heading */
 .ontology-section-title {
     font-size: 34px;
-    font-weight: 300;
+    font-weight: 700;
     color: #003b7a;
     margin-bottom: 20px;
 }
@@ -331,6 +331,33 @@ body {
 .description-column a:hover {
     text-decoration: underline;
 }
+
+
+.additional-downloads-container {
+    margin-top: 50px;
+    border-top: 1px solid #e5e7eb; /* Adds a clean dividing line above the section */
+    padding-top: 30px;
+}
+
+.additional-file-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file-desc {
+    color: #4b5563; /* Soft gray for the description text */
+    font-size: 15px;
+}
+		
 /* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
@@ -569,7 +596,42 @@ body {
         </div>
 
     </div>
+<div class="additional-downloads-container">
+    <h2 class="ontology-section-title" style="margin-top: 40px;">Description files</h2>
+<p style="color: #555; font-size: 16px; margin-bottom: 20px;">
+    Explore alternative descriptive file formats below.
+</p>
+    <!-- File Item 1 -->
+    <div class="additional-file-row">
+        <div class="file-info">
+            <a href="files/mcode-orchid-v1.0.owl" download class="download-link">
+                <!-- Download Icon -->
+                <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <strong>mCODE-orchid-v1.0.owl</strong>
+            </a>
+            <span class="file-desc"> - Previous stable release (v1.0)</span>
+        </div>
+    </div>
 
+    <!-- File Item 2 (Duplicate this block to add more files) -->
+    <div class="additional-file-row">
+        <div class="file-info">
+            <a href="files/documentation-archive.zip" download class="download-link">
+                <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <strong>documentation-archive.zip</strong>
+            </a>
+            <span class="file-desc"> - Full PDF and mapping documentation bundle</span>
+        </div>
+    </div>
+</div>
 
 </div>
            </div> <!-- This closes <div class="text-content"> -->
