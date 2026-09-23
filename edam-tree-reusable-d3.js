@@ -83,16 +83,16 @@ var interactive_tree = function() {
                                .y(function(d) { return d.x; });
 
             var zoom = d3.zoom()
-                .on("zoom", function () {
+                .on("zoom", function (event) {
                     var currentTransform=vis.attr("transform")||'';
                     currentTransform=currentTransform.replace("(1)","(1.0000000)");
                     if (currentTransform.includes((d3.zoomTransform(svg.node()).k.toString()+".0000000").substring(0,6)))
                         if (!svg.node().classList.contains("auto-drag"))
                             svg.node().classList.add("dragged-or-moved");
-                    vis.attr("transform", d3.event.transform);
+                    vis.attr("transform", event.transform);
                 })
-                .on("end", function () {
-                    vis.attr("transform", d3.event.transform);
+                .on("end", function (event) {
+                    vis.attr("transform", event.transform);
                     svg.node().classList.remove("dragged-or-moved");
                 });
 
@@ -201,11 +201,11 @@ var interactive_tree = function() {
                     .attr("transform", function(d) {
                         return "translate(" + (source.y0 || source.y) + "," + (source.x0 || source.x) + ")";
                     })
-                    .on("dblclick", () => {
+                    .on("dblclick", (event) => {
                         //stop doubleclick zoom effect
-                        d3.event.stopPropagation();
+                        event.stopPropagation();
                     })
-                    .on("click", function(d,i) { handleClick(d);});
+                    .on("click", function(event, d) { handleClick(d, event);});
 
                 nodeEnter.append("svg:text")
                     .text(textAccessor)
@@ -219,12 +219,12 @@ var interactive_tree = function() {
                     .attr("class", function(d) {
                         return (d._children || d.children ? "has-children " : " ") + additionalCSSClassForNode(d);
                     })
-                    .on("mouseover", function(d) {
+                    .on("mouseover", function(event, d) {
                         if (!tooltipEnabled) return;
                         tooltipBuilder(d, tooltip);
                         let parentWidth = body._groups[0][0].clientWidth;
                         let tooltipWidth = tooltip._groups[0][0].clientWidth;
-                        let tooltipX = d3.event.layerX+20;
+                        let tooltipX = event.layerX+20;
                         tooltip
                             .interrupt()
                             .transition()
@@ -232,13 +232,13 @@ var interactive_tree = function() {
                             .style("opacity", 1);
                         //checking if the tooltip is cropped and moving it to the left
                         if (parentWidth<tooltipWidth+tooltipX){
-                            tooltipX = d3.event.layerX-10-tooltip._groups[0][0].clientWidth;
+                            tooltipX = event.layerX-10-tooltip._groups[0][0].clientWidth;
                         }
                         tooltip
                             .style("left", tooltipX + "px")
-                            .style("top", (d3.event.layerY-5) + "px");
+                            .style("top", (event.layerY-5) + "px");
                     })
-                    .on("mouseout", function(d) {
+                    .on("mouseout", function(event, d) {
                             tooltip
                                 .transition()
                                 .duration(200)
@@ -374,14 +374,14 @@ var interactive_tree = function() {
     }//end of toggleForceCollapse
 
     //Handle selection of a node
-    function handleClick(d){
-        if (d3.event.shiftKey && use_shift_to_open ||
-            d3.event.ctrlKey  && use_control_to_open ||
-            d3.event.altKey   && use_alt_to_open){
+    function handleClick(d, event){
+        if (event.shiftKey && use_shift_to_open ||
+            event.ctrlKey  && use_control_to_open ||
+            event.altKey   && use_alt_to_open){
             openElementHandler(d);
-        }else if (d3.event.shiftKey && use_shift_to_add ||
-                  d3.event.ctrlKey  && use_control_to_add ||
-                  d3.event.altKey   && use_alt_to_add){
+        }else if (event.shiftKey && use_shift_to_add ||
+                  event.ctrlKey  && use_control_to_add ||
+                  event.altKey   && use_alt_to_add){
             var pos = treeSelectedElement.indexOf(d);
             if(pos>-1){
                 //removing ?
@@ -390,7 +390,7 @@ var interactive_tree = function() {
                 //adding ?
                 attemptToSelectElement(d);
             }
-        }else if (!d3.event.shiftKey && !d3.event.ctrlKey && !d3.event.altKey && d3.event.detail == 1){
+        }else if (!event.shiftKey && !event.ctrlKey && !event.altKey && event.detail == 1){
             chart.cmd.clearSelectedElements(false);
             toggle(d);
             clickedElementHandler(d);
