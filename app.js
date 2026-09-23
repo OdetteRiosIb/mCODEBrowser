@@ -1,4 +1,4 @@
-import { interactive_tree } from './tree-reusable-d3.js';
+import { interactive_tree } from './edam-tree-reusable-d3.js';
 import { ontologyData } from './ontology-data.js';
 
 /**
