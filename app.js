@@ -1,3 +1,4 @@
+import * as d3 from 'd3'; // <--- Make sure this is present!
 import { interactive_tree } from './edam-tree-reusable-d3.js';
 import { ontologyData } from './ontology-data.js';
 
