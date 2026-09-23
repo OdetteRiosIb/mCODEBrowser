@@ -146,7 +146,8 @@ html {
     margin-top: 20px;
     margin-bottom: 10px;
 }
-		.funding-section {
+
+.funding-section {
     display: flex;
     flex-direction: column; /* Stacks the rows vertically */
     align-items: center;    /* Centers rows horizontally */
@@ -167,6 +168,7 @@ html {
     width: auto;
     object-fit: contain;
 }
+		
 /* Page Level Switcher Framework */
 .page-content {
     display: none; /* Hidden by default */
@@ -200,9 +202,7 @@ html {
     padding: 0 20px;      /* Aligns the side padding with your other content */
     padding-top: 2rem;
     box-sizing: border-box;
-}
-
-		
+}	
 
 /* Gray introductory box */
 .ontology-intro {
@@ -246,7 +246,6 @@ html {
     border-top: 1px solid #b8c9df;
     margin-bottom: 28px;
 }
-
 		
 .site-footer {
     background-color: #1B2775; /* Deep dark navy blue */
@@ -342,7 +341,6 @@ html {
     border-bottom: 1px solid #cccccc;
 }
 
-
 /* All cells */
 .file-column,
 .description-column,
@@ -350,12 +348,10 @@ html {
     padding: 10px 8px;
 }
 
-
 /* File name */
 .file-column {
     font-weight: bold;
 }
-
 
 /* Description */
 .description-column {
@@ -364,14 +360,12 @@ html {
     font-weight: normal;
 }
 
-
 /* Download columns */
 .download-column {
     text-align: center;
     font-size: 16px;
     line-height: 1.4;
 }
-
 
 /* Links */
 .download-column a {
@@ -399,8 +393,7 @@ html {
 .description-column a:hover {
     text-decoration: underline;
 }
-
-
+		
 .additional-downloads-container {
     margin-top: 50px;
     border-top: 1px solid #e5e7eb; /* Adds a clean dividing line above the section */
@@ -445,7 +438,7 @@ html {
 
 .tree-pane, #ontology-tree-container {
     width: 100%;
-    height: 80vh; /* Full viewport height */
+    height: 70vh; /* Full viewport height */
     min-height: 500px; /* Fallback minimum height */
     position: relative;
     overflow: hidden;
@@ -504,6 +497,7 @@ html {
     font-weight: bold;
     fill: #1a202c;
 }
+		
 body > div.tooltip {
     position: absolute;
     z-index: 1000;
@@ -573,6 +567,7 @@ body > div.tooltip {
     box-sizing: border-box; 
     height: 100%;
 }
+	
 #protege-inspector { 
     flex: 1; 
     padding: 20px 30px; 
@@ -580,6 +575,24 @@ body > div.tooltip {
     background-color: #fff; 
     box-sizing: border-box; 
     height: 100%;
+}
+
+.visualization-layout-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.external-footer-text {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #334155;
+    box-sizing: border-box;
+	background: #f4f7fa;
 }
 
 /* Fullscreen Visualization View Padding */
@@ -848,15 +861,15 @@ body > div.tooltip {
         </div>
 
         <div id="protege-inspector">
-            <p style="color:#666; font-style:italic; margin-top:40px;">Please select an ontology node from the tree view layout to inspect its structural details.</p>
+            <p style="color:#666; font-style:italic; margin-top:40px;"> Select an ontology node from the tree view to inspect its structural details.</p>
         </div>
     </div>
 
 
 <div id="page-visualization" class="page-content">
 	<div class="visualization-layout-container">
+		
     	<div class="edam-browser-wrapper">
-        
         <!-- Left Column: The Interactive Tree View -->
         <div class="tree-pane">
             <div id="ontology-tree-container" style="width: 100%; height: 100%;"></div>
@@ -912,14 +925,12 @@ body > div.tooltip {
         </div> 
         <!-- End of metadata-pane -->
 
-    </div> 
-    <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
-
-    <!-- Text placed outside and below the white square -->
-    <div class="external-footer-text">
-        Your text goes here below the box.
-    </div>
-    </div>
+    	</div> 
+    	<!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
+    	<!-- Text placed outside and below the white square -->
+    	<div class="external-footer-text">
+This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="url">https://doi.org/10.21105/joss.00698</a>)    	</div>
+	</div>
 </div>
 
 <script>
