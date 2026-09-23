@@ -721,17 +721,72 @@ html {
 
 
 	
-    <!-- PAGE VIEWPORT 2: VISUALIZATION VIEW (Spans across the entire full width) -->
     <div id="page-visualization" class="page-content">
-        <div class="full-viz-container">
-            <h3 style="margin-top:0; color:#104e8b;">Interactive WebVOWL / Network Visualization Canvas</h3>
-            <p style="color:#555;">Viewport width dedicated to the graph layout engine with WebVOWL.</p>
-            <!-- Canvas target or iframe element can be placed directly right here -->
-            <div style="flex:1; border: 2px dashed #b5c7de; background: #fafafa; border-radius: 4px; display:flex; align-items:center; justify-content:center; color:#888;">
-                [Graph Graphic Engine Canvas Area]
-            </div>
+    <div class="edam-browser-wrapper">
+        
+        <!-- Left Column: The Interactive Tree View -->
+        <div class="tree-pane">
+            <div id="ontology-tree-container" style="width: 100%; height: 100%;"></div>
+        </div>
+
+        <!-- Right Column: Metadata Sidebar (Matches EDAM Panel) -->
+        <div class="metadata-pane">
+            <div class="metadata-header-bar">
+        <h3 id="panel-title">Details of term</h3>
+        <div class="metadata-actions">
+            <button title="Add term">+</button>
+            <button title="Edit term">✏️</button>
         </div>
     </div>
+    
+    <div class="metadata-card">
+        <table class="metadata-table">
+            <tr>
+                <td class="meta-label">rdfs:label</td>
+                <td id="val-rdfs-label">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">skos:prefLabel</td>
+                <td id="val-pref-label">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Definition</td>
+                <td id="val-definition">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Comment</td>
+                <td id="val-comment">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Exact synonyms</td>
+                <td id="val-exact-synonyms">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Narrow synonyms</td>
+                <td id="val-narrow-synonyms">-</td>
+            </tr>
+            <tr>
+                <td class="meta-label">URI / IRI</td>
+                <td><span id="val-uri">-</span> <button class="copy-btn">📋</button></td>
+            </tr>
+            <tr>
+                <td class="meta-label">Parents</td>
+                <td id="val-parents">
+                    <!-- Dynamic tag pills will populate here -->
+                </td>
+            </tr>
+            <tr>
+                <td class="meta-label">Equivalent Classes</td>
+                <td id="val-equivalent">
+                    <!-- Dynamic equivalent classes populate here -->
+                </td>
+            </tr>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
 
     <script>
 
