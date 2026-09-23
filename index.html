@@ -445,7 +445,7 @@ html {
 
 .tree-pane, #ontology-tree-container {
     width: 100%;
-    height: 60vh; /* Full viewport height */
+    height: 80vh; /* Full viewport height */
     min-height: 500px; /* Fallback minimum height */
     position: relative;
     overflow: hidden;
@@ -854,7 +854,8 @@ body > div.tooltip {
 
 
 <div id="page-visualization" class="page-content">
-    <div class="edam-browser-wrapper">
+	<div class="visualization-layout-container">
+    	<div class="edam-browser-wrapper">
         
         <!-- Left Column: The Interactive Tree View -->
         <div class="tree-pane">
@@ -866,54 +867,58 @@ body > div.tooltip {
             </div>
         </div>
 
-        <!-- Right Column: Metadata Sidebar (Matches EDAM Panel) -->
+        <!-- Right Column: Metadata Sidebar -->
         <div class="metadata-pane">
             <div class="metadata-header-bar">
-        <h3 id="panel-title">Details of term</h3>
-        <div class="metadata-actions">
-            <button title="Add term">+</button>
-            <button title="Edit term">✏️</button>
-        </div>
-    </div>
-    
-    <div class="metadata-card">
-        <table class="metadata-table">
-            <tr>
-                <td class="meta-label">rdfs:label</td>
-                <td id="val-rdfs-label">-</td>
-            </tr>
-            <tr>
-                <td class="meta-label">skos:prefLabel</td>
-                <td id="val-pref-label">-</td>
-            </tr>
-            <tr>
-                <td class="meta-label">Definition</td>
-                <td id="val-definition">-</td>
-            </tr>
-            <tr>
-                <td class="meta-label">Comment</td>
-                <td id="val-comment">-</td>
-            </tr>
-            <tr>
-                <td class="meta-label">URI / IRI</td>
-                <td><span id="val-uri">-</span> <button class="copy-btn">📋</button></td>
-            </tr>
-            <tr>
-                <td class="meta-label">Classes Parents</td>
-                <td id="val-parents">
-                    <!-- Dynamic tag pills will populate here -->
-                </td>
-            </tr>
-            <tr>
-                <td class="meta-label">Equivalent Classes</td>
-                <td id="val-equivalent">
-                    <!-- Dynamic equivalent classes populate here -->
-                </td>
-            </tr>
+                <h3 id="panel-title">Details of term</h3>
+                <div class="metadata-actions">
+                    <button title="Add term">+</button>
+                    <button title="Edit term">✏️</button>
+                </div>
+            </div>
+     
+            <div class="metadata-card">
+                <table class="metadata-table">
+                    <tr>
+                        <td class="meta-label">rdfs:label</td>
+                        <td id="val-rdfs-label">-</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">skos:prefLabel</td>
+                        <td id="val-pref-label">-</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Definition</td>
+                        <td id="val-definition">-</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Comment</td>
+                        <td id="val-comment">-</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">URI / IRI</td>
+                        <td><span id="val-uri">-</span> <button class="copy-btn">📋</button></td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Classes Parents</td>
+                        <td id="val-parents"></td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Equivalent Classes</td>
+                        <td id="val-equivalent"></td>
+                    </tr>
                 </table>
             </div>
-        </div>
+        </div> 
+        <!-- End of metadata-pane -->
 
+    </div> 
+    <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
+
+    <!-- Text placed outside and below the white square -->
+    <div class="external-footer-text">
+        Your text goes here below the box.
+    </div>
     </div>
 </div>
 
