@@ -1,4 +1,3 @@
-import 'jquery-ui-bundle'; 
 if (!Array.prototype.remove) {
     Array.prototype.remove = function(val) {
         var i = this.indexOf(val);
@@ -52,10 +51,18 @@ function getHeight(){
     return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)*0.75;
 }
 
-jQuery.ui.autocomplete.prototype._resizeMenu = function () {
-  var ul = this.menu.element;
-  ul.outerWidth(this.element.outerWidth());
-};
+// NOTE: the original repo's jQuery UI autocomplete search box (and its
+// jquery-ui-bundle dependency + the jQuery.ui.autocomplete._resizeMenu
+// patch below) has been removed here since this project doesn't have
+// that search feature built yet. If you add a jQuery UI autocomplete
+// search box later, re-add jQuery UI (e.g. via a CDN <script> tag in
+// index.html, since it needs jQuery already loaded as a global) and
+// this override:
+//
+// jQuery.ui.autocomplete.prototype._resizeMenu = function () {
+//   var ul = this.menu.element;
+//   ul.outerWidth(this.element.outerWidth());
+// };
 
 function setUrlParameters(serializedParameters){
     if(typeof serializedParameters=="undefined")
