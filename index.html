@@ -528,7 +528,6 @@ html {
     background: #f8fafc;
     height: 100%;
 }
-        body { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; display: flex; background: #fff; font-family: Arial, sans-serif; }
         
         /* Left Sidebar Layout styling */
         #protege-sidebar { width: 380px; border-right: 2px solid #b5c7de; padding: 15px; background: #f4f7fa; display: flex; flex-direction: column; box-sizing: border-box; }
@@ -877,9 +876,8 @@ html {
     }
 }
 $(document).ready(function() {
-	// Initialize Supabase once
-// Do NOT use 'const' here if you want it globally accessible
-window.supabase = supabase.createClient(
+	// Initialize Supabase once using the proper global reference
+window.supabase = window.supabase.createClient(
     'https://ikihocvwctkfmzkofvus.supabase.co', 
     'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
 );
@@ -906,7 +904,6 @@ window.supabase = supabase.createClient(
     }
 });
 
-    // 3. SAFE SEARCH TRIGGER (Fires only on Enter Key)
     // 3. AUTOMATIC SEARCH & AUTO-RESET FILTER LISTENER
     let searchDebounceTimeout = null;
     $('#protege-search').off('keyup input keydown').on('input', function () {
@@ -1559,9 +1556,6 @@ async function syncFeedbackFromDatabase() {
 });
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
-// ULTRA-FAST CSS-BASED TREE FILTER ENGINE
-// RE-ENGINEERED INSTANT AUTOMATIC FILTER ENGINE
-// RE-ENGINEERED NATIVE TREE FILTER ENGINE
 function executeFastSearch(query) {
     const tree = $('#protege-tree').jstree(true);
     if (!tree) return;
@@ -1608,9 +1602,6 @@ function executeFastSearch(query) {
     }
   }
 </script>
-
-<!-- Load jQuery (required by some parts of the tree script like $.inArray and $.each) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Run your application script -->
 <script type="module" src="app.js"></script>
