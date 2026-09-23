@@ -10,7 +10,7 @@
 
 
  <!--  Local ontology data file -->
-<script src="ontology-data.js"></script>      
+<script src="ontology-data.js"></script>
     <style>
 
 	/* Core Page Layout Overhaul */
@@ -449,6 +449,71 @@ html {
     min-height: 500px; /* Fallback minimum height */
     position: relative;
     overflow: hidden;
+}
+
+.tree-zoom-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 10;
+}
+
+.tree-zoom-controls button {
+    width: 28px;
+    height: 28px;
+    background: #1f1f1f;
+    color: #fff;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.tree-zoom-controls button:hover {
+    background: #3a3a3a;
+}
+
+/* Styling for the interactive_tree() SVG (edam-tree-reusable-d3.js) */
+#ontology-tree-container .link {
+    fill: none;
+    stroke: #a9c4de;
+    stroke-width: 1.4px;
+}
+#ontology-tree-container .node circle {
+    fill: #ffffff;
+    stroke: #4a86c8;
+    stroke-width: 1.6px;
+    cursor: pointer;
+}
+#ontology-tree-container .node circle.has-children {
+    fill: #4a86c8;
+}
+#ontology-tree-container .node circle.selected {
+    fill: #2f855a !important;
+    stroke: #2f855a !important;
+}
+#ontology-tree-container .node text {
+    font: 13px Arial, sans-serif;
+    fill: #222;
+}
+#ontology-tree-container .node text.selected {
+    font-weight: bold;
+    fill: #1a202c;
+}
+body > div.tooltip {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    background: #ffffff;
+    border: 1px solid #b5c7de;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 12px;
+    max-width: 260px;
 }
 .metadata-pane {
     width: 450px;
@@ -1583,7 +1648,7 @@ function executeFastSearch(query) {
             <a href="terms.html">Citation</a>
         </div>
         
-        <!-- Center/Right Resource Logo --> 
+        <!-- Center/Right Resource Logo -->
         <div class="footer-logo-section">
             <div class="footer-logo-text">
                 mCODE-ORCHID: <br>Ontology for Radiomics, Clinical Health, and Imaging Data<br>
