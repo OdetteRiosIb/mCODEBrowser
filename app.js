@@ -1,4 +1,8 @@
-import * as d3 from 'd3';
+// Change this:
+// import * as d3 from "d3";
+
+// To this:
+import * as d3 from "https://cdn.skypack.dev/d3@7";
 import { interactive_tree } from './edam-tree-reusable-d3.js';
 
 let myTree = null;
