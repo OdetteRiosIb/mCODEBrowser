@@ -531,12 +531,19 @@ body > div.tooltip {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+	table-layout: fixed;
 }
 
 .metadata-table td {
     padding: 8px 10px;
     border-bottom: 1px solid #edf2f7;
     vertical-align: top;
+	word-wrap: break-word;     
+    overflow-wrap: anywhere;  
+}
+
+#val-uri {                     
+    word-break: break-all;
 }
 
 .meta-label {
