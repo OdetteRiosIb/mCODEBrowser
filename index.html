@@ -452,11 +452,16 @@ html {
     flex-direction: column;
     gap: 2px;
     z-index: 10;
+	display: flex;
+    background: #333d45;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .tree-zoom-controls button {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     background: #1f1f1f;
     color: #fff;
     border: none;
@@ -464,12 +469,18 @@ html {
     font-weight: bold;
     cursor: pointer;
     line-height: 1;
+	justify-content: center;
+	transition: background 0.2s ease;
 }
 
 .tree-zoom-controls button:hover {
     background: #3a3a3a;
 }
 
+		.tree-zoom-controls button:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+		
 /* Styling for the interactive_tree() SVG (edam-tree-reusable-d3.js) */
 #ontology-tree-container .link {
     fill: none;
@@ -886,6 +897,12 @@ body > div.tooltip {
                 <button id="tree-zoom-in" title="Zoom in">+</button>
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
+				<button id="tree-expand-all" title="Expand all tree">
+        				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+   				 </button>
+    			<button id="tree-collapse-other" title="Collapse not selected elements">
+        				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
+    			</button>
             </div>
         </div>
 
