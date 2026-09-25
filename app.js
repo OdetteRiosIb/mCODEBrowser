@@ -1,7 +1,3 @@
-// Change this:
-// import * as d3 from "d3";
-
-// To this:
 import * as d3 from "https://cdn.skypack.dev/d3@7";
 import { interactive_tree } from './edam-tree-reusable-d3.js';
 
@@ -15,7 +11,7 @@ let treeInitialized = false;
  * (its default identifierAccessor reads d.data.id, textAccessor reads
  * d.data.text, and initTreeAndTriggerUpdate() reads root.data.meta).
  * Nodes with no superclasses become top-level branches under one
- * synthetic "Ontology" root node, the same idea as EDAM's own root.
+ * synthetic "mCODE-ORCHID" root node, the same idea as EDAM's own root.
  */
 function buildHierarchyFromRegistry(registry) {
     function buildNode(id, path) {
@@ -57,8 +53,6 @@ function showNodeDetails(d) {
     setText('val-pref-label', meta.prefLabel);
     setText('val-definition', meta.comment);
     setText('val-comment', meta.rdfsComment);
-    setText('val-uri-cell', meta.iri);
-    
 
     const copyToClipboard = (text, iconEl) => {
         if (!text) return;
@@ -70,6 +64,7 @@ function showNodeDetails(d) {
         });
     };
 
+    // URI / IRI rendered as a pill (like Class Parents), click to copy
     const uriCell = document.getElementById('val-uri-cell');
     if (uriCell) {
         uriCell.innerHTML = '';
@@ -93,7 +88,7 @@ function showNodeDetails(d) {
             uriCell.textContent = '-';
         }
     }
-    
+
     const fillPills = (cellId, ids) => {
         const cell = document.getElementById(cellId);
         if (!cell) return;
@@ -101,50 +96,54 @@ function showNodeDetails(d) {
         (ids || []).forEach(refId => {
             const refNode = window.globalNodeRegistry ? window.globalNodeRegistry[refId] : null;
             if (!refNode) return;
+
+            const pill = document.createElement('span');
+            pill.className = 'ontology-pill';
+            pill.title = 'Click to copy IRI';
+
             const label = document.createElement('span');
-label.textContent = refNode.text;
-pill.appendChild(label);
+            label.textContent = refNode.text;
+            pill.appendChild(label);
 
-const icon = document.createElement('span');
-icon.className = 'ontology-pill-copy-icon';
-icon.textContent = '🗐';
-pill.appendChild(icon);
+            const icon = document.createElement('span');
+            icon.className = 'ontology-pill-copy-icon';
+            icon.textContent = '🗐';
+            pill.appendChild(icon);
 
-pill.addEventListener('click', () => {
-    copyToClipboard(refNode.meta ? refNode.meta.iri : null, icon);
-});
+            pill.addEventListener('click', () => {
+                copyToClipboard(refNode.meta ? refNode.meta.iri : null, icon);
+            });
+
             cell.appendChild(pill);
         });
     };
 
-const fillSlotPills = (cellId, slots, slotType, colorClass) => {
-    const cell = document.getElementById(cellId);
-    if (!cell) return;
-    cell.innerHTML = '';
-    (slots || []).filter(s => s.type === slotType).forEach(s => {
-        const pill = document.createElement('span');
-        pill.className = 'ontology-pill property-pill ' + colorClass;
-        if (s.range) pill.title = `Range: ${s.range}`;
-        pill.textContent = s.name;
-        cell.appendChild(pill);
-    });
-};
+    /** Renders meta.slots (populated by processOntologyData's propertiesList pass)
+     *  filtered to one property type, as plain (non-clickable) pills. */
+    const fillSlotPills = (cellId, slots, slotType, colorClass) => {
+        const cell = document.getElementById(cellId);
+        if (!cell) return;
+        cell.innerHTML = '';
+        (slots || []).filter(s => s.type === slotType).forEach(s => {
+            const pill = document.createElement('span');
+            pill.className = 'ontology-pill property-pill ' + colorClass;
+            if (s.range) pill.title = `Range: ${s.range}`;
+            pill.textContent = s.name;
+            cell.appendChild(pill);
+        });
+    };
 
-    
-fillPills('val-parents', meta.superclasses);
-fillPills('val-equivalent', meta.equivalent);
+    fillPills('val-parents', meta.superclasses);
+    fillPills('val-equivalent', meta.equivalent);
+    fillSlotPills('val-object-properties', meta.slots, 'Object Property', 'property-pill-object');
+    fillSlotPills('val-datatype-properties', meta.slots, 'Data Property', 'property-pill-data');
 
-fillSlotPills('val-object-properties', meta.slots, 'Object Property', 'property-pill-object');
-fillSlotPills('val-datatype-properties', meta.slots, 'Data Property', 'property-pill-data');
-
-// Mark this node as the visually "selected" (green) node, EDAM-style.
+    // Mark this node as the visually "selected" (green) node, EDAM-style.
     if (myTree && myTree.cmd && d.data.id !== '__root__') {
         myTree.cmd.selectElement(d.data.id, true, false);
     }
 }
 
-
-                            
 /**
  * Called by the tab-switch handler already in index.html the first
  * time the "Visualization View" tab is opened. Waiting until then
