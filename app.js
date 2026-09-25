@@ -57,7 +57,8 @@ function showNodeDetails(d) {
     setText('val-pref-label', meta.prefLabel);
     setText('val-definition', meta.comment);
     setText('val-comment', meta.rdfsComment);
-    setText('val-uri', meta.iri);
+    setText('val-uri-cell', meta.iri);
+    
 
     const copyToClipboard = (text, iconEl) => {
         if (!text) return;
@@ -69,6 +70,30 @@ function showNodeDetails(d) {
         });
     };
 
+    const uriCell = document.getElementById('val-uri-cell');
+    if (uriCell) {
+        uriCell.innerHTML = '';
+        if (meta.iri && meta.iri !== 'None') {
+            const pill = document.createElement('span');
+            pill.className = 'ontology-pill iri-pill';
+            pill.title = 'Click to copy IRI';
+
+            const label = document.createElement('span');
+            label.textContent = meta.iri;
+            pill.appendChild(label);
+
+            const icon = document.createElement('span');
+            icon.className = 'ontology-pill-copy-icon';
+            icon.textContent = '🗐';
+            pill.appendChild(icon);
+
+            pill.addEventListener('click', () => copyToClipboard(meta.iri, icon));
+            uriCell.appendChild(pill);
+        } else {
+            uriCell.textContent = '-';
+        }
+    }
+    
     const fillPills = (cellId, ids) => {
         const cell = document.getElementById(cellId);
         if (!cell) return;
@@ -76,22 +101,50 @@ function showNodeDetails(d) {
         (ids || []).forEach(refId => {
             const refNode = window.globalNodeRegistry ? window.globalNodeRegistry[refId] : null;
             if (!refNode) return;
-            const pill = document.createElement('span');
-            pill.className = 'ontology-pill';
-            pill.textContent = refNode.text;
+            const label = document.createElement('span');
+label.textContent = refNode.text;
+pill.appendChild(label);
+
+const icon = document.createElement('span');
+icon.className = 'ontology-pill-copy-icon';
+icon.textContent = '🗐';
+pill.appendChild(icon);
+
+pill.addEventListener('click', () => {
+    copyToClipboard(refNode.meta ? refNode.meta.iri : null, icon);
+});
             cell.appendChild(pill);
         });
     };
 
-    fillPills('val-parents', meta.superclasses);
-    fillPills('val-equivalent', meta.equivalent);
+const fillSlotPills = (cellId, slots, slotType, colorClass) => {
+    const cell = document.getElementById(cellId);
+    if (!cell) return;
+    cell.innerHTML = '';
+    (slots || []).filter(s => s.type === slotType).forEach(s => {
+        const pill = document.createElement('span');
+        pill.className = 'ontology-pill property-pill ' + colorClass;
+        if (s.range) pill.title = `Range: ${s.range}`;
+        pill.textContent = s.name;
+        cell.appendChild(pill);
+    });
+};
 
-    // Mark this node as the visually "selected" (green) node, EDAM-style.
+    
+fillPills('val-parents', meta.superclasses);
+fillPills('val-equivalent', meta.equivalent);
+
+fillSlotPills('val-object-properties', meta.slots, 'Object Property', 'property-pill-object');
+fillSlotPills('val-datatype-properties', meta.slots, 'Data Property', 'property-pill-data');
+
+// Mark this node as the visually "selected" (green) node, EDAM-style.
     if (myTree && myTree.cmd && d.data.id !== '__root__') {
         myTree.cmd.selectElement(d.data.id, true, false);
     }
 }
 
+
+                            
 /**
  * Called by the tab-switch handler already in index.html the first
  * time the "Visualization View" tab is opened. Waiting until then
