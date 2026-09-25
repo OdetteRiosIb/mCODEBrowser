@@ -37,7 +37,7 @@ function buildHierarchyFromRegistry(registry) {
     const rootIds = Object.keys(registry).filter(id => registry[id].meta.superclasses.length === 0);
     const rootChildren = rootIds.map(id => buildNode(id, [])).filter(Boolean);
 
-    return { id: '__root__', text: 'Ontology', meta: {}, children: rootChildren };
+    return { id: '__root__', text: 'mCODE-ORCHID', meta: {}, children: rootChildren };
 }
 
 /** Populates the right-hand "Details of term" panel for the clicked node. */
