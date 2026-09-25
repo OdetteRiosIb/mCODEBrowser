@@ -8,305 +8,755 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Local ontology data file -->
-    <script src="ontology-data.js"></script>
-    
+
+ <!--  Local ontology data file -->
+<script src="ontology-data.js"></script>
     <style>
-        /* Core Page Layout Overhaul */
-        body { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            background: #fff; 
-            font-family: Arial, sans-serif; 
-            overflow: hidden;
-        }
-        
-        html {
-            scroll-behavior: smooth;
-        }
 
-        .jstree-node.filtered-match-parent > .jstree-icon { display: inline-block !important; }
-        #protege-tree .jstree-container-ul { display: block !important; }
+	/* Core Page Layout Overhaul */
+body { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; /* Stack navbar on top, views below */
+    background: #fff; 
+    font-family: Arial, sans-serif; 
+}
+.jstree-node.filtered-match-parent > .jstree-icon { display: inline-block !important; }
+#protege-tree .jstree-container-ul { display: block !important; }
 
-        /* Global Top Header & Navigation Bar styling */
-        .global-navbar {
-            display: flex;
-            align-items: center;
-            background-color: #1B2775;
-            padding: 0 20px;
-            height: 50px;
-            min-height: 50px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            z-index: 100;
-        }
-        .app-title {
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-right: 40px;
-        }
-        .global-tabs {
-            display: flex;
-            height: 100%;
-            align-items: flex-end;
-        }
-        .global-tab-btn {
-            background: transparent;
-            border: none;
-            color: #b5c7de;
-            padding: 10px 20px;
-            font-size: 0.95em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-bottom: 3px solid transparent;
-            height: calc(100% - 10px);
-        }
-        .global-tab-btn:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .global-tab-btn.active {
-            color: white;
-            border-bottom: 3px solid #ffffff;
-            background: rgba(255, 255, 255, 0.1);
-        }
+/* Global Top Header & Navigation Bar styling */
+.global-navbar {
+    display: flex;
+    align-items: center;
+    background-color: #1B2775;
+    padding: 0 20px;
+    height: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+.app-title {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-right: 40px;
+}
+.global-tabs {
+    display: flex;
+    height: 100%;
+    align-items: flex-end;
+}
+.global-tab-btn {
+    background: transparent;
+    border: none;
+    color: #b5c7de;
+    padding: 10px 20px;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    height: calc(100% - 10px);
+}
+.global-tab-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+.global-tab-btn.active {
+    color: white;
+    border-bottom: 3px solid #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
 
-        /* Page Content Switcher Framework */
-        .page-content {
-            display: none !important; 
-            flex: 1;
-            width: 100vw;
-            height: calc(100vh - 50px);
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        .page-content.active {
-            display: flex !important; 
-            flex-direction: column;
-            width: 100%;
-            height: calc(100vh - 50px);
-            overflow: hidden;
-        }
+/* This applies to the container holding your Introduction and Authors text */
+.home-body-content, .text-content {
+    max-width: 1300px;   /* Increased from 800px to make the text range wider */
+    margin: 0 auto;       /* Keeps it centered */
+    padding: 0 20px;      /* Adds breathing room */
+    text-align: left;     /* Keeps the text readable */
+}
 
-        /* Specific styles for Home Page only */
-        #page-home.active {
-            display: flex !important;
-            overflow-y: auto;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px;
-            height: calc(100vh - 50px);
-            box-sizing: border-box;
-        }
 
-        .home-stack-container {
-            width: 100%;
-            max-width: 1300px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+/* This is the container that holds your title, version, and text */
+.home-centered-container {
+    max-width: 1300px;   /* Increased from 800px to match the body content */
+    width: 95%;           /* Widened from 90% to use more screen space */
+    margin: 0 auto;       /* Ensures the container stays in the middle */
+    text-align: center;   /* Centers the title and version line */
+}
 
-        .text-content {
-            max-width: 1300px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 0 20px;
-            text-align: left;
-            box-sizing: border-box;
-        }
+/* Center the Title and Metadata */
+.home-centered-content h3, 
+.home-centered-content p:first-of-type {
+    text-align: center;
+}
 
-        .page-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin: 0 0 20px 0;
-            color: #333;
-        }
-        
-        .section-title {
-            font-size: 1.8rem;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
+/* Re-center the title and meta if they were forced left */
+.home-centered-container h1,
+.home-centered-container p:first-of-type {
+    text-align: center;
+}
+html {
+    scroll-behavior: smooth;
+}
+
+		/* Style for images placed within the main content area */
+.content-image {
+    display: block;
+    margin: 20px auto;   /* Centers the image with spacing above and below */
+    max-width: 90%;      /* Ensures it doesn't overflow the centered container */
+    border: 1px solid #ccc; /* Optional: adds a subtle border to the image */
+    border-radius: 4px;  /* Optional: rounds the corners slightly */
+}
+
+/* 2. Specific styles for Home Page only */
+#page-home.active {
+    display: flex;
+	overflow-y: auto;
+    flex-direction: column;
+    align-items: center; /* This ONLY centers the home page content */
+    padding: 40px;
+}
+
+.page-title {
+    font-size: 3.5rem;    /* Increased from 2.5rem to make it significantly larger */
+    font-weight: 700;     /* Bold weight ensures it remains readable at this size */
+    text-align: center;
+    margin: 0 0 20px 0;
+    color: #333;
+}
+		
+		/* Larger headings */
+.section-title {
+    font-size: 1.8rem; /* Increased size */
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
  
-        .sub-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #555;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
+/* Smaller subsection heading */
+.sub-section-title {
+    font-size: 1.1rem; /* Smaller size */
+    font-weight: 600;
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
 
-        .funding-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-top: 40px;
-            margin-bottom: 40px;
-        }
+.funding-section {
+    display: flex;
+    flex-direction: column; /* Stacks the rows vertically */
+    align-items: center;    /* Centers rows horizontally */
+    gap: 20px;              /* Space between the top and bottom rows */
+    margin-top: 40px;
+}
 
-        .logo-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
+.logo-row {
+    display: flex;
+    justify-content: center; /* Centers logos within the row */
+    align-items: center;
+    gap: 30px;               /* Space between logos in the same row */
+    flex-wrap: wrap;         /* Ensures responsiveness on smaller screens */
+}
 
-        .logo-row img {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-        }
+.logo-row img {
+    height: 60px;            /* Uniform height */
+    width: auto;
+    object-fit: contain;
+}
+		
+/* Page Level Switcher Framework */
+.page-content {
+    display: none; /* Hidden by default */
+    flex: 1;
+    width: 100vw;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.page-content.active {
+    display: flex; /* Display active workspace layout */
+	flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
-        .content-image {
-            display: block;
-            margin: 20px auto;
-            max-width: 90%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+.ontology-download {
+    width: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+}
 
-        /* Downloads Page Styles */
-        .ontology-download {
-            width: 100%;
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 2rem 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            height: 100%;
-        }
-        #page-downloads.active {
-            overflow-y: auto;
-        }
+/* Title */
+.ontology-title {
+    font-size: 36px;
+    font-weight: 300;
+    color: #003b7a;
+    margin-bottom: 12px;
+}
 
-        .ontology-section-title {
-            font-size: 34px;
-            font-weight: 700;
-            color: #003b7a;
-            margin-bottom: 20px;
-        }
+.ontology-download {
+    width: 100%;
+    max-width: 1300px;   /* Matches the 1300px width of your other sections */
+    margin: 0 auto;       /* Centers the block on the page */
+    padding: 0 20px;      /* Aligns the side padding with your other content */
+    padding-top: 2rem;
+    box-sizing: border-box;
+}	
 
-        .ontology-recommended {
-            font-size: 16px;
-            margin-bottom: 35px;
-        }
+/* Gray introductory box */
+.ontology-intro {
+    display: inline-block;
+    background-color: #eeeeee;
+    padding: 4px 6px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
 
-        .ontology-recommended a {
-            color: #4169c9;
-            text-decoration: none;
-        }
+/* Section heading */
+.ontology-section-title {
+    font-size: 34px;
+    font-weight: 700;
+    color: #003b7a;
+    margin-bottom: 20px;
+}
 
-        .ontology-recommended a:hover {
-            text-decoration: underline;
-        }
+/* Recommended download */
+.ontology-recommended {
+    font-size: 16px;
+    margin-bottom: 35px;
+}
 
-        .download-icon {
-            margin-right: 5px;
-        }
+.ontology-recommended a {
+    color: #4169c9;
+    text-decoration: none;
+}
 
-        .ontology-line {
-            width: 100%;
-            border-top: 1px solid #b8c9df;
-            margin-bottom: 28px;
-        }
+.ontology-recommended a:hover {
+    text-decoration: underline;
+}
 
-        .ontology-row {
-            display: grid;
-            grid-template-columns: 75px minmax(400px, 1fr) 105px 105px 105px;
-            border-bottom: 1px solid #d5d5d5;
-        }
+.download-icon {
+    margin-right: 5px;
+}
 
-        .ontology-header {
-            font-weight: bold;
-            border-bottom: 1px solid #cccccc;
-        }
+/* Horizontal line */
+.ontology-line {
+    width: 100%;
+    border-top: 1px solid #b8c9df;
+    margin-bottom: 28px;
+}
+		
+.site-footer {
+    background-color: #1B2775; /* Deep dark navy blue */
+    color: #ffffff;
+    padding: 10px 0;
+    margin-top: 1px;
+    border-top: 0px solid #002B49;
+    font-size: 13.5px;
+}
 
-        .file-column, .description-column, .download-column {
-            padding: 10px 8px;
-        }
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 0 20px;
+}
 
-        .file-column { font-weight: bold; text-align: left; }
-        .description-column { line-height: 1.55; font-size: 16px; }
-        .download-column { text-align: center; font-size: 16px; line-height: 1.4; }
-        .download-column a, .description-column a { color: #4169c9; text-decoration: none; }
-        .download-column a:hover, .description-column a:hover { text-decoration: underline; }
+.footer-links {
+    display: flex;
+    gap: 25px;
+}
 
-        .additional-downloads-container {
-            margin-top: 50px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 30px;
-            padding-bottom: 40px;
-        }
+.footer-links a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+}
 
-        .additional-file-row {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
+.footer-links a:hover {
+    text-decoration: underline;
+}
 
-        .file-info {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
+.footer-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        .file-desc {
-            color: #4b5563;
-            font-size: 15px;
-        }
+.footer-logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
 
-        /* Browser View Layout */
-        #page-browser.active {
-            display: flex !important;
-            flex-direction: row;
-            height: calc(100vh - 50px);
-        }
+.footer-logo-text {
+    font-size: 15px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
 
-        #protege-sidebar { 
-            width: 380px; 
-            border-right: 2px solid #b5c7de; 
-            padding: 15px; 
-            background: #f4f7fa; 
-            display: flex; 
-            flex-direction: column; 
-            box-sizing: border-box; 
-            height: 100%;
-        }
+.footer-info {
+    text-align: right;
+    color: #94a3b8; /* Soft muted gray for readability */
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 480px;
+}
+
+.footer-info p {
+    margin: 0 0 4px 0;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.ontology-row {
+    display: grid;
+
+    /*
+       File | Description | OBO | JSON | OWL
+    */
+    grid-template-columns:
+        75px
+        minmax(400px, 1fr)
+        105px
+        105px
+        105px;
+
+    border-bottom: 1px solid #d5d5d5;
+}
+
+
+/* Header */
+.ontology-header {
+    font-weight: bold;
+    border-bottom: 1px solid #cccccc;
+}
+
+/* All cells */
+.file-column,
+.description-column,
+.download-column {
+    padding: 10px 8px;
+}
+
+/* File name */
+.file-column {
+    font-weight: bold;
+}
+
+/* Description */
+.description-column {
+    line-height: 1.55;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+/* Download columns */
+.download-column {
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* Links */
+.download-column a {
+    color: #4169c9;
+    text-decoration: none;
+}
+
+.download-column a:hover {
+    text-decoration: underline;
+}
+
+
+/* File name should stay left aligned */
+.file-name {
+    text-align: left;
+}
+
+
+/* External ontology links */
+.description-column a {
+    color: #4169c9;
+    text-decoration: none;
+}
+
+.description-column a:hover {
+    text-decoration: underline;
+}
+		
+.additional-downloads-container {
+    margin-top: 50px;
+    border-top: 1px solid #e5e7eb; /* Adds a clean dividing line above the section */
+    padding-top: 30px;
+}
+
+.additional-file-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file-desc {
+    color: #4b5563; /* Soft gray for the description text */
+    font-size: 15px;
+}
+		
+.edam-browser-wrapper {
+	padding: 25px;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    background: #f8fafc;
+    overflow: hidden;
+    height: 100%;
+}
+
+.tree-pane {
+    flex: 1;
+    position: relative;
+    background: #ffffff;
+    border-right: 1px solid #dcdcdc;
+}
+
+.tree-pane, #ontology-tree-container {
+    width: 100%;
+    height: 70vh; /* Full viewport height */
+    min-height: 500px; /* Fallback minimum height */
+    position: relative;
+    overflow: hidden;
+}
+
+.tree-zoom-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 10;
+	display: flex;
+    background: #333d45;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tree-zoom-controls button {
+    width: 36px;
+    height: 36px;
+    background: #1f1f1f;
+    color: #fff;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+	justify-content: center;
+	transition: background 0.2s ease;
+	position: relative;
+}
+
+.tree-zoom-controls button:hover {
+    background: #3a3a3a;
+}
+
+		.tree-zoom-controls button:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+		
+/* Styling for the interactive_tree() SVG (edam-tree-reusable-d3.js) */
+#ontology-tree-container .link {
+    fill: none;
+    stroke: #a9c4de;
+    stroke-width: 1.4px;
+	word-break: break-all;
+    overflow-wrap: anywhere;
+}
+#ontology-tree-container .node circle {
+    fill: #ffffff;
+    stroke: #4a86c8;
+    stroke-width: 1.6px;
+    cursor: pointer;
+}
+#ontology-tree-container .node circle.has-children {
+    fill: #4a86c8;
+}
+#ontology-tree-container .node circle.selected {
+    fill: #2f855a !important;
+    stroke: #2f855a !important;
+}
+#ontology-tree-container .node text {
+    font: 13px Arial, sans-serif;
+    fill: #222;
+}
+#ontology-tree-container .node text.selected {
+    font-weight: bold;
+    fill: #1a202c;
+}
+		
+body > div.tooltip {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    background: #ffffff;
+    border: 1px solid #b5c7de;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 12px;
+    max-width: 260px;
+}
+.metadata-pane {
+    width: 500px;
+    background: #f8f9fa;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.03);
+}
+
+.pane-title {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 12px 16px;
+    margin: 0;
+	color: #1f2937;
+    border-bottom: 1px solid #eaeaea; /* Creates a clean separator line inside the box */
+    background-color: transparent;       /* Light header background */
+}		
+
+		
+.metadata-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0;
+    margin-top: 10px;
+	overflow: hidden;
+}
+
+.metadata-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+	table-layout: fixed;
+}
+
+.metadata-table td {
+    padding: 8px 10px;
+    border-bottom: 2px solid #edf2f7;
+    vertical-align: top;
+	word-wrap: break-word;     
+    overflow-wrap: anywhere;  
+}
+
+.metadata-card .card-header {
+    background-color: #ffffe6; /* Soft warm yellow */
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+	user-select: none; /* Prevents text highlighting when clicking to collapse */
+	margin:0;
+
+}
+
+		.metadata-card .card-body {
+    background-color: #ffffff;
+    padding: 10px;
+}
+.meta-label {
+    font-weight: bold;
+    color: #334155;
+    width: 100px;
+}
+/* Green pill tags matching EDAM parent/URI display */
+.ontology-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: #2f855a;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 4px;
+    margin-bottom: 2px;
+	cursor: pointer;          
+    gap: 5px;         
+}
+
+		.ontology-pill:hover {
+    background-color: #276749;
+}
+
+.ontology-pill-copy-icon {
+    font-size: 11px;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+		.iri-pill {
+    background-color: #2563eb;
+    white-space: normal;
+    word-break: break-all;
+}
+
+.iri-pill:hover {
+    background-color: #1d4ed8;
+}
+
+		.property-pill-object {
+    background-color: #0056b3;
+}
+
+.property-pill-data {
+    background-color: #1e7e34;
+}
+		
+/* Maintain inner components relative to the remaining space */
+#protege-sidebar { 
+    width: 380px; 
+    border-right: 2px solid #b5c7de; 
+    padding: 15px; 
+    background: #f4f7fa; 
+    display: flex; 
+    flex-direction: column; 
+    box-sizing: border-box; 
+    height: 100%;
+}
+	
+#protege-inspector { 
+    flex: 1; 
+    padding: 20px 30px; 
+    overflow-y: auto; 
+    background-color: #fff; 
+    box-sizing: border-box; 
+    height: 100%;
+}
+
+.visualization-layout-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.external-footer-text {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #334155;
+    box-sizing: border-box;
+	background: #f4f7fa;
+}
+
+
+.tree-zoom-controls .on-controls-hover {
+    display: none;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 8px;
+    background: #1f1f1f;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+		.tree-zoom-controls button:hover .on-controls-hover {
+    display: block;
+}
+		.details-card.collapsed .card-body {
+    display: none;
+}
+
+
+
+#page-visualization.page-content.active,
+#page-visualization.page-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - [header_height]px); /* Adjust or use height: 100% depending on your parent container */
+    overflow: hidden;
+}
+
+#page-visualization .visualization-layout-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+#page-visualization .edam-browser-wrapper {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+}
+
+#page-visualization .tree-pane {
+    flex: 1;
+    position: relative;
+    height: 100%;
+}
+
+		
+/* Fullscreen Visualization View Padding */
+.full-viz-container {
+    flex: 1;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    background: #f8fafc;
+    height: 100%;
+}
+		
+        
+        /* Left Sidebar Layout styling */
+        #protege-sidebar { width: 380px; border-right: 2px solid #b5c7de; padding: 15px; background: #f4f7fa; display: flex; flex-direction: column; box-sizing: border-box; }
         #protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
         #protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
         #protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; margin-bottom: 15px; }
 
+        /* Export Feedback Button */
         .export-btn { background-color: #104e8b; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
         .export-btn:hover { background-color: #003366; }
 
-        #protege-inspector { 
-            flex: 1; 
-            padding: 20px 30px; 
-            overflow-y: auto; 
-            background-color: #fff; 
-            box-sizing: border-box; 
-            height: 100%;
-        }
-
-        .class-title { font-size: 2em; font-weight: bold; margin-bottom: 15px; color: #000; font-family: 'Arial', sans-serif; }
+        /* Right Inspector Panel display styling */
+        #protege-inspector { flex: 1; padding: 20px 30px; overflow-y: auto; background-color: #fff; box-sizing: border-box; }
+        .class-title { font-size: 2em; font-weight: bold; margin-bottom: 15px; color: #000; font-family: 'Arial', Arial, serif; }
         
+        /* Collapsible Cards Layout */
         .yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
-        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; cursor: pointer; user-select: none; }
+        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: justify; align-items: center; cursor: pointer; user-select: none; }
         .card-header:hover { background-color: rgba(0,0,0,0.07); }
         .card-label { font-weight: bold; color: #000; font-size: 0.95em; }
         .toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; margin-left: auto; }
@@ -315,7 +765,9 @@
         .value-link { color: #0056b3; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px 0; }
         .value-link:hover { text-decoration: underline; color: #003366; }
         
+        /* Slot Properties Table styling */
         .slot-section-title { color: #104e8b; font-weight: bold; font-size: 1.05em; margin: 25px 0 5px 0; display: flex; align-items: center; cursor: pointer; user-select: none; }
+        .slot-section-title:hover { color: #003366; }
         .slot-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fff; }
         .slot-table th { background-color: #b9d3ee; color: #000; border: 1px solid #9fb6cd; text-align: left; padding: 5px 8px; font-size: 0.9em; font-weight: normal; }
         .slot-table td { border: 1px solid #b5c7de; padding: 6px 10px; font-size: 0.9em; vertical-align: top; }
@@ -323,6 +775,7 @@
         .slot-icon { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: middle; }
         .prop-tag { font-size: 0.8em; font-style: italic; margin-left: 5px; }
 
+        /* Interactive Feedback Widget Styles */
         .feedback-box { background: #f0f4f8; border: 1px solid #b5c7de; padding: 15px; border-radius: 4px; margin-top: 25px; }
         .feedback-box h4 { margin-top: 0; color: #104e8b; font-size: 1.1em; margin-bottom: 10px; }
         .feedback-input { width: 100%; min-height: 70px; box-sizing: border-box; padding: 8px; border: 1px solid #999; border-radius: 3px; font-family: sans-serif; font-size: 0.95em; resize: vertical; margin-bottom: 8px; }
@@ -334,237 +787,206 @@
         .tag-correction { border-left-color: #dc3545; }
         .tag-missing { border-left-color: #ffc107; }
         .tag-approved { border-left-color: #28a745; }
-
-        /* Tree Visualization View Layout (Restored Original EDAM Styles) */
-        #page-visualization.page-content.active {
-            display: flex !important;
-            flex-direction: column;
-            width: 100%;
-            height: calc(100vh - 50px);
-            overflow: hidden;
-            background: #ffffff;
-        }
-
-        .page-citation-banner {
-            padding: 10px 20px;
-            font-size: 0.85rem;
-            background-color: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-            flex-shrink: 0;
-        }
-
-        .visualization-layout-container {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .edam-browser-wrapper {
-            padding: 0;
-            display: flex;
-            flex: 1;
-            width: 100%;
-            box-sizing: border-box;
-            background: #ffffff;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .tree-pane {
-            flex: 1;
-            position: relative;
-            background: #ffffff;
-            border-right: 1px solid #dcdcdc;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        #ontology-tree-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tree-zoom-controls {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            z-index: 10;
-            background: #333d45;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .tree-zoom-controls button {
-            width: 36px;
-            height: 36px;
-            background: #1f1f1f;
-            color: #fff;
-            border: none;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease;
-            position: relative;
-        }
-
-        .tree-zoom-controls button:hover {
-            background: #3a3a3a;
-        }
-
-        .tree-zoom-controls button:not(:last-child) {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .tree-zoom-controls .on-controls-hover {
-            display: none;
-            position: absolute;
-            right: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-right: 8px;
-            background: #1f1f1f;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: normal;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-
-        .tree-zoom-controls button:hover .on-controls-hover {
-            display: block;
-        }
-
-        /* Footer inside flex */
-        .site-footer {
-            background-color: #1B2775;
-            color: #ffffff;
-            padding: 8px 0;
-            font-size: 13.5px;
-            flex-shrink: 0;
-            z-index: 101;
-        }
-
-        .footer-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 0 20px;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 25px;
-        }
-
-        .footer-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .footer-logo-text {
-            font-size: 14px;
-            line-height: 1.1;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: #ffffff;
-        }
-
-        .footer-info {
-            text-align: right;
-            color: #94a3b8;
-            font-size: 12px;
-            line-height: 1.5;
-            max-width: 480px;
-        }
-
-        .footer-info p {
-            margin: 0 0 2px 0;
-        }
     </style>
 </head>
 <body>
 
     <!-- Global Full-Width Top Navigation Bar -->
-    <div class="global-navbar">
-        <div class="app-title">mCODE-ORCHID Taxonomy Browser</div>
-        <div class="global-tabs">
-            <button class="global-tab-btn active" data-target="page-home">Home</button>
-            <button class="global-tab-btn" data-target="page-browser">Browser View</button>
-            <button class="global-tab-btn" data-target="page-visualization">Tree Visualization View</button>
-            <button class="global-tab-btn" data-target="page-downloads">Downloads</button>
-        </div>
+<div class="global-navbar">
+    <div class="app-title">mCODE-ORCHID Taxonomy Browser</div>
+    <div class="global-tabs">
+        <!-- Only one button should be 'active' by default -->
+        <button class="global-tab-btn active" data-target="page-home">Home</button>
+        <button class="global-tab-btn" data-target="page-browser">Browser View</button>
+        <button class="global-tab-btn" data-target="page-visualization">Tree Visualization View</button>
+		<button class="global-tab-btn" data-target="page-downloads">Downloads</button>
+
     </div>
+</div>
 
-    <!-- PAGE 1: HOME -->
-    <div id="page-home" class="page-content active">
-        <div class="home-stack-container">
-            <h1 class="page-title">mCODE-ORCHID Ontology Browser</h1>        
-            <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
 
-            <div class="text-content">
-                <h2 class="section-title">Introduction</h2>
-                <p style="text-align: justify;">
-                The Minimal Common Oncology Data Elements (mCODE) is an initiative designed to increase data interoperability by assembling a core set of structured data elements for oncology electronic health records (EHRs). While mCODE provides a solid foundation for standardizing clinical cancer data, it has notable limitations: it does not establish relationships between elements, and it lacks medical image or radiomics elements. To address these gaps, a specialized ontology was developed based on mCODE to introduce semantic relationships. Additionally, this ontology features an embedded ontological extension for Radiotherapy, Radiomics, and Dosiomics.</p>
-                
-                <h2 class="section-title">Conceptual Maps</h2>
-                <p>Here you can find the conceptual maps representing the data models.</p>
-                
-                <h4 class="sub-section-title">mCODE-based Data Model Diagrams</h4>
-                <img src="images/mCODE_DiseaseGroup.png" alt="Disease Characterization Ontology Conceptual Map" class="content-image">
-                <img src="images/mCODE_HealthGroup.png" alt="Health Assesment Ontology Conceptual Map" class="content-image">
-                
-                <h4 class="sub-section-title">Medical Images, Radiomics, and Dosiomics Model Diagram</h4>
-                <img src="images/Extension_Group.png" alt="Entension Ontology Conceptual Map" class="content-image">
+<div id="page-home" class="page-content active">
+    <!-- Everything is wrapped in one single column container -->
+    <div class="home-stack-container">
+		<h1 class="page-title">mCODE-ORCHID Ontology Browser</h1>        
+        <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
 
-                <h2 class="section-title">Acknowledgements</h2>
-                <p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM)</p>
-                    
-                <div class="funding-section">
-                    <div class="logo-row">
-                        <img src="logos/FRQS_logo.png" alt="Funder 1">
-                        <img src="logos/McGill_UniversityLogo.png" alt="Funder 2">
-                        <img src="logos/McGill_University_Health_Centre_Logo.png" alt="Funder 3">
-                    </div>
-                    <div class="logo-row">
-                        <img src="logos/Polytechnique_logo.png" alt="Funder 4">
-                        <img src="logos/AAPM_logo.png" alt="Funder 5">
-                    </div>
+    <div class="text-content">
+		<h2 class="section-title">Introduction</h2>
+		<p style="text-align: justify;">
+		The Minimal Common Oncology Data Elements (mCODE) is an initiative designed to increase data interoperability by assembling a core set of structured data elements for oncology electronic health records (EHRs). While mCODE provides a solid foundation for standardizing clinical cancer data, it has notable limitations: it does not establish relationships between elements, and it lacks medical image or radiomics elements. To address these gaps, a specialized ontology was developed based on mCODE to introduce semantic relationships. Additionally, this ontology features an embedded ontological extension for Radiotherapy, Radiomics, and Dosiomics.</p>
+	<h2 class="section-title">Conceptual Maps</h2>
+			<p>Here you can find the conceptual maps representing the data models.</p>
+		
+	<h4 class="sub-section-title">mCODE-based Data Model Diagrams</h4>
+	<img src="images/mCODE_DiseaseGroup.png" alt="Disease Characterization Ontology Conceptual Map" class="content-image">
+	<img src="images/mCODE_HealthGroup.png" alt="Health Assesment Ontology Conceptual Map" class="content-image">
+	<h4 class="sub-section-title">Medical Images, Radiomics, and Dosiomics Model Diagram</h4>
+	<img src="images/Extension_Group.png" alt="Entension Ontology Conceptual Map" class="content-image">
+
+<h2 class="section-title">Acknowledgements</h2>
+<p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
+            
+            <!-- Funding Logos Section -->
+            <div class="funding-section">
+                <div class="logo-row">
+                    <img src="logos/FRQS_logo.png" alt="Funder 1">
+                    <img src="logos/McGill_UniversityLogo.png" alt="Funder 2">
+                    <img src="logos/McGill_University_Health_Centre_Logo.png" alt="Funder 3">
+                </div>
+                <div class="logo-row">
+                    <img src="logos/Polytechnique_logo.png" alt="Funder 4">
+                    <img src="logos/AAPM_logo.png" alt="Funder 5">
                 </div>
             </div>
+        </div> <!-- This closes <div class="text-content"> -->
+    </div> <!-- This closes <div class="home-stack-container"> -->
+</div> <!-- This closes <div id="page-home" ...> -->
+
+
+	<!-- PAGE downloads: downloads -->
+
+<div id="page-downloads" class="page-content">
+        <!-- Everything is wrapped in one single column container -->
+    <div class="ontology-download">
+
+            <h1 class="page-title">Download the ontology</h1>
+            <p><span> By Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
+           <h3 style="margin-top:0; color:#104e8b;">Files are available in .OWL and .TTL formats. </h3>
+            <!-- Recommended download -->
+    <div class="ontology-recommended">
+        <span class="download-icon"></span>
+
+        <a href="files/mCODE-orchid.owl" download>
+			<svg class="download-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+            <strong>Download mCODE-orchid.owl</strong>
+        </a>
+
+        <span>
+            - Recommended last version
+        </span>
+    </div>
+
+    <!-- Horizontal line -->
+    <div class="ontology-line"></div>
+
+
+    <!-- Table header -->
+    <div class="ontology-row ontology-header">
+
+        <div class="file-column">
+            File<br>Name
+        </div>
+
+        <div class="description-column">
+            Description
+        </div>
+
+        <div class="download-column">
+            <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg><br>
+            Download<br>.owl file
+        </div>
+
+        <div class="download-column">
+            <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg><br>
+            Download<br>.ttl file
+        </div>
+
+        <div class="download-column">
+            <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg><br>
+            Download<br>.json file
+        </div>
+
+    </div>
+
+
+    <!-- GO-BASIC row -->
+    <div class="ontology-row">
+
+        <div class="file-column file-name">
+            mCODE-orchid<br> v1.0.0
+        </div>
+
+        <div class="description-column">
+            First created version, guided by the mCODE 4.0.0 (STU4) Terminology Standards Value Sets. Our model reuses established ontologies (SNOMED CT, LOINC, NCIt, RxNorm, UCUM, GO, O3) and maps image features to specific RadLex and O3 identifiers. 
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.owl" download>
+                mCODE-orchid.owl
+            </a>
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.ttl" download>
+                mCODE-orchid.ttl
+            </a>
+        </div>
+
+        <div class="download-column">
+            <a href="files/mCODE-orchid.json" download>
+                mCODE-orchid.json
+            </a>
+        </div>
+
+    </div>
+   <div class="additional-downloads-container">
+    <h2 class="ontology-section-title" style="margin-top: 40px;">Description files</h2>
+    <p style="color: #555; font-size: 16px; margin-bottom: 20px;">
+    Explore alternative descriptive file formats below.
+</p>
+
+    <!-- File Item 1 -->
+    <div class="additional-file-row">
+        <div class="file-info">
+            <a href="files/ontology-description.docx" download class="download-link">
+                <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <strong>mCODE-orchid-details-compile.pdf</strong>
+            </a>
+            <span class="file-desc"> - Detailed documentation and usage examples</span>
         </div>
     </div>
 
-    <!-- PAGE 2: BROWSER VIEW -->
-    <div id="page-browser" class="page-content">
+    <!-- File Item 2 (Duplicate this block to add more files) -->
+    <div class="additional-file-row">
+        <div class="file-info">
+            <a href="files/protege-export.csv" download class="download-link">
+                <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <strong>mCODE-orchid-spreadsheet.csv</strong>
+            </a>
+            <span class="file-desc"> - CSV file with ontology entities description</span>
+        </div>
+    </div>
+</div>
+</div>
+           </div> <!-- This closes <div class="text-content"> -->
+	
+    <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
+<div id="page-browser" class="page-content">
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
@@ -577,145 +999,53 @@
         </div>
     </div>
 
-    <!-- PAGE 3: TREE VISUALIZATION VIEW (Restored Original EDAM Layout & Metadata Table) -->
-    <div id="page-visualization" class="page-content">
-        <div class="page-citation-banner">
-            This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="https://doi.org/10.21105/joss.00698" target="_blank">https://doi.org/10.21105/joss.00698</a>)
-        </div>
 
-        <div class="visualization-layout-container">
-            <div class="edam-browser-wrapper">
-                <div class="tree-pane">
-                    <div id="ontology-tree-container"></div>
-                    <div class="tree-zoom-controls">
-                        <button id="tree-zoom-in" title="Zoom in">+</button>
-                        <button id="tree-zoom-out" title="Zoom out">&minus;</button>
-                        <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
-                        <button id="tree-expand-all" title="Expand all">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 8V3h5"/>
-                                <path d="M16 3h5v5"/>
-                                <path d="M3 16h5v5"/>
-                                <path d="M21 16v5h-5"/>
-                                <path d="m3 3 6 6"/>
-                                <path d="M21 3l-6 6"/>
-                                <path d="M3 21l6-6"/>
-                                <path d="M21 21l-6-6"/>
-                            </svg>
-                            <span class="on-controls-hover">Expand all tree</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Metadata / Concept Inspection Table Panel (Required by app.js) -->
-                <div id="ontology-metadata-pane" style="width: 450px; background: #fff; border-left: 1px solid #dcdcdc; display: flex; flex-direction: column; height: 100%; overflow-y: auto; padding: 20px; box-sizing: border-box;">
-                    <h3 style="margin-top: 0; color: #1B2775; font-size: 1.2em; border-bottom: 2px solid #1B2775; padding-bottom: 8px;">Concept Details</h3>
-                    <div id="ontology-metadata-content" style="font-size: 0.95em; color: #333; line-height: 1.5;">
-                        <p style="color: #666; font-style: italic;">Select a node in the tree visualization view to inspect its concept properties, definitions, and relationships.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div id="page-visualization" class="page-content">
+    
+    <!-- Citation Banner placed at the top -->
+    <div class="page-citation-banner" style="padding: 10px 20px; font-size: 0.85rem; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+        This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="https://doi.org/10.21105/joss.00698" target="_blank">https://doi.org/10.21105/joss.00698</a>)
     </div>
 
-    <!-- PAGE 4: DOWNLOADS -->
-    <div id="page-downloads" class="page-content">
-        <div class="ontology-download">
-            <h1 class="page-title">Download the ontology</h1>
-            <p><span> By Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
-            <h3 style="margin-top:0; color:#104e8b;">Files are available in .OWL and .TTL formats.</h3>
+    <div class="visualization-layout-container">
+        <div class="edam-browser-wrapper">
             
-            <div class="ontology-recommended">
-                <span class="download-icon"></span>
-                <a href="files/mCODE-orchid.owl" download>
-                    <svg class="download-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <strong>Download mCODE-orchid.owl</strong>
-                </a>
-                <span>- Recommended last version</span>
-            </div>
-
-            <div class="ontology-line"></div>
-
-            <div class="ontology-row ontology-header">
-                <div class="file-column">File<br>Name</div>
-                <div class="description-column">Description</div>
-                <div class="download-column">Download<br>.owl file</div>
-                <div class="download-column">Download<br>.ttl file</div>
-                <div class="download-column">Download<br>.json file</div>
-            </div>
-
-            <div class="ontology-row">
-                <div class="file-column file-name">mCODE-orchid<br> v1.0.0</div>
-                <div class="description-column">
-                    First created version, guided by the mCODE 4.0.0 (STU4) Terminology Standards Value Sets. Our model reuses established ontologies (SNOMED CT, LOINC, NCIt, RxNorm, UCUM, GO, O3) and maps image features to specific RadLex and O3 identifiers. 
-                </div>
-                <div class="download-column"><a href="files/mCODE-orchid.owl" download>mCODE-orchid.owl</a></div>
-                <div class="download-column"><a href="files/mCODE-orchid.ttl" download>mCODE-orchid.ttl</a></div>
-                <div class="download-column"><a href="files/mCODE-orchid.json" download>mCODE-orchid.json</a></div>
-            </div>
-
-            <div class="additional-downloads-container">
-                <h2 class="ontology-section-title" style="margin-top: 40px;">Description files</h2>
-                <p style="color: #555; font-size: 16px; margin-bottom: 20px;">Explore alternative descriptive file formats below.</p>
-
-                <div class="additional-file-row">
-                    <div class="file-info">
-                        <a href="files/ontology-description.docx" download class="download-link">
-                            <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            <strong>mCODE-orchid-details-compile.pdf</strong>
-                        </a>
-                        <span class="file-desc">- Detailed documentation and usage examples</span>
-                    </div>
-                </div>
-
-                <div class="additional-file-row">
-                    <div class="file-info">
-                        <a href="files/protege-export.csv" download class="download-link">
-                            <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            <strong>mCODE-orchid-spreadsheet.csv</strong>
-                        </a>
-                        <span class="file-desc">- CSV file with ontology entities description</span>
-                    </div>
+            <!-- Left Column: The Interactive Tree View -->
+            <div class="tree-pane">
+                <div id="ontology-tree-container" style="width: 100%; height: 100%;"></div>
+                <div class="tree-zoom-controls">
+                    <button id="tree-zoom-in" title="Zoom in">+</button>
+                    <button id="tree-zoom-out" title="Zoom out">&minus;</button>
+                    <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
+                    
+                    <button id="tree-expand-all" title="Expand all">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 8V3h5"/>
+                            <path d="M16 3h5v5"/>
+                            <path d="M3 16h5v5"/>
+                            <path d="M21 16v5h-5"/>
+                            <path d="m3 3 6 6"/>
+                            <path d="M21 3l-6 6"/>
+                            <path d="M3 21l6-6"/>
+                            <path d="M21 21l-6-6"/>
+                        </svg>
+                        <span class="on-controls-hover">Expand all tree</span>
+                    </button>
+                    
+                    <button id="tree-collapse-all" title="Collapse all">
+                        <!-- Rest of your collapse icon/button code -->
+                    </button>
                 </div>
             </div>
+            
+            <!-- Right Column / Metadata pane would follow here -->
+            
         </div>
     </div>
+</div>
 
-    <!-- Global Footer -->
-    <footer class="site-footer">
-        <div class="footer-container">
-            <div class="footer-links">
-                <a href="#" onclick="document.querySelector('[data-target=page-home]').click(); return false;">Home</a>
-                <a href="mailto:odette.riosibacache@mail.mcgill.ca">Contact us</a>
-                <a href="#">Citation</a>
-            </div>
-            <div class="footer-logo-section">
-                <div class="footer-logo-text">
-                    mCODE-ORCHID: Ontology for Radiomics, Clinical Health, and Imaging Data
-                </div>
-            </div>
-            <div class="footer-info">
-                <p>Copyright © 2026</p>
-                <p>Funded by FRQS and AAPM</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Scripts Section -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
             const tabButtons = document.querySelectorAll('.global-tab-btn');
             const pages = document.querySelectorAll('.page-content');
 
@@ -723,649 +1053,791 @@
                 button.addEventListener('click', () => {
                     const targetId = button.getAttribute('data-target');
 
+                    // 1. Remove 'active' class from all buttons and pages
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     pages.forEach(page => page.classList.remove('active'));
 
+                    // 2. Add 'active' class to the clicked button and target page
                     button.classList.add('active');
                     const targetPage = document.getElementById(targetId);
                     if (targetPage) {
                         targetPage.classList.add('active');
                     }
-
-                    if (targetId === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
-                        window.initializeEdamGraphicView();
-                    }
                 });
             });
         });
+	
+	function populateHomeMetadata() {
+    // Check if vowlData exists
+    if (typeof vowlData !== 'undefined' && vowlData.header) {
+        const header = vowlData.header;
+        const other = header.other;
 
-        function populateHomeMetadata() {
-            if (typeof vowlData !== 'undefined' && vowlData.header) {
-                const header = vowlData.header;
-                const other = header.other;
-                if (other) {
-                    const dateEntry = other.creation_date ? other.creation_date[0].value : "N/A";
-                    const authorEntry = other.created_by ? other.created_by[0].value : "N/A";
-                }
-            }
+        // Populate Version
+        $('#meta-version').text(header.version);
+
+        // Populate Comment
+        if (header.comments && header.comments.en) {
+            $('#meta-comment').text(header.comments.en);
         }
 
-        $(document).ready(function() {
-            window.supabase = window.supabase.createClient(
-                'https://ikihocvwctkfmzkofvus.supabase.co', 
-                'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
-            );
-
-            window.globalNodeRegistry = {};
-            window.masterIdLabelMap = {}; 
-            let feedbackDatabase = {}; 
-            populateHomeMetadata();
-
-            let searchDebounceTimeout = null;
-            $('#protege-search').off('keyup input keydown').on('input', function () {
-                let inputVal = $(this).val(); 
-                clearTimeout(searchDebounceTimeout);
-                if (!inputVal.trim()) {
-                    const tree = $('#protege-tree').jstree(true);
-                    if (tree) {
-                        tree.clear_search();
-                        tree.close_all();
-                    }
-                    return;
-                }
-                searchDebounceTimeout = setTimeout(() => {
-                    executeFastSearch(inputVal);
-                }, 250); 
-            });
-
-            $(document).on('click', '.card-header', function() {
-                const body = $(this).next('.card-body');
-                const icon = $(this).find('.toggle-icon');
-                body.slideToggle(100, function() {
-                    icon.text(body.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
-                });
-            });
-
-            $(document).on('click', '.slot-section-title', function() {
-                const table = $(this).next('.slot-table');
-                const icon = $(this).find('.toggle-icon');
-                table.slideToggle(100, function() {
-                    icon.text(table.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
-                });
-            });
-            
-            $(document).on('click', '.submit-feedback-btn', async function() {
-                const classId = $(this).data('class-id');
-                const className = $(this).data('class-name');
-                const commentText = $('#feedback-text-' + classId).val().trim();
-                const labelType = $('#feedback-tag-' + classId).val();
-
-                if (!commentText) return alert("Please type out a comment before saving.");
-
-                try {
-                    const { error } = await window.supabase
-                        .from('Feedback') 
-                        .insert([{ 
-                            node_id: classId, 
-                            class_name: className, 
-                            comment: commentText, 
-                            tag: labelType 
-                        }]);
-
-                    if (error) throw error;
-
-                    if (!feedbackDatabase[classId]) {
-                        feedbackDatabase[classId] = { classId: classId, className: className, notes: [] };
-                    }
-
-                    feedbackDatabase[classId].notes.push({
-                        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-                        tag: labelType,
-                        text: commentText
-                    });
-
-                    $('#feedback-text-' + classId).val('');
-                    renderActiveCommentsList(classId);
-                    
-                } catch (err) {
-                    console.error("Supabase Error:", err);
-                    alert("Failed to save to database: " + err.message);
-                }
-            });
-
-            function renderActiveCommentsList(classId) {
-                let container = $('#saved-comments-' + classId);
-                container.empty();
-                
-                if (feedbackDatabase[classId] && feedbackDatabase[classId].notes.length > 0) {
-                    let fragment = document.createDocumentFragment();
-                    feedbackDatabase[classId].notes.forEach(note => {
-                        let tagClass = "tag-general";
-                        if (note.tag === "Correction Required") tagClass = "tag-correction";
-                        if (note.tag === "Missing Child/Property") tagClass = "tag-missing";
-                        if (note.tag === "Approved") tagClass = "tag-approved";
-
-                        let item = document.createElement('div');
-                        item.className = `comment-item ${tagClass}`;
-                        item.innerHTML = `
-                            <div style="font-size:0.8em; color:#666; margin-bottom:3px;">
-                                <strong>[${note.tag}]</strong> — <span>${note.timestamp}</span>
-                            </div>
-                            <div style="color:#111; line-height:1.35em;">${note.text}</div>
-                        `;
-                        fragment.appendChild(item);
-                    });
-                    container.append(fragment);
-                }
-            }
-
-            $('#exportFeedbackBtn').on('click', function() {
-                if (Object.keys(feedbackDatabase).length === 0) {
-                    return alert("No comments or reviews have been compiled yet.");
-                }
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(feedbackDatabase, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", "ontology_review_feedback.json");
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-            });
-
-            window.processOntologyData = function(vowlData) {
-                let rawClasses = vowlData.class || [];
-                let attributesList = vowlData.classAttribute || [];
-                let propertiesList = vowlData.property || [];
-                let propertyAttributes = vowlData.propertyAttribute || [];
-
-                let attrMap = {};
-                attributesList.forEach(a => { attrMap[a.id] = a; });
-                
-                let propAttrMap = {};
-                propertyAttributes.forEach(pa => { propAttrMap[pa.id] = pa; });
-
-                function extractCleanString(val) {
-                    if (!val || val === 'None') return '';
-                    if (typeof val === 'string') return val.trim();
-                    if (Array.isArray(val) && val.length > 0) return extractCleanString(val[0]);
-                    if (typeof val === 'object') {
-                        return val.value || val.en || val['en-us'] || val.undefined || Object.values(val).find(v => typeof v === 'string') || '';
-                    }
-                    return '';
-                }
-
-                rawClasses.forEach(classObj => {
-                    const uniqueId = classObj.id;
-                    const attr = attributesList.find(a => a.id === uniqueId) || {};
-                    
-                    if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
-
-                    let rdfsLabel = extractAnnotation(attr.label) || 'None';
-                    let prefLabel = '';
-                    let altLabel = '';
-                    let skosDef = '';
-
-                    if (attr.description) skosDef = extractAnnotation(attr.description);
-
-                    if (attr.annotations) {
-                        for (let key in attr.annotations) {
-                            let cleanKey = key.toLowerCase();
-                            let extractedVal = extractAnnotation(attr.annotations[key]);
-
-                            if (!extractedVal || extractedVal === 'None') continue;
-
-                            if (cleanKey.includes('preflabel')) {
-                                prefLabel = extractedVal;
-                            }
-                            if (cleanKey.includes('altlabel') || cleanKey.includes('synonym')) {
-                                altLabel = extractedVal;
-                            }
-                            if (cleanKey.includes('definition') || cleanKey.includes('iao_0000115')) {
-                                skosDef = extractedVal; 
-                            }
-                        }
-                    }
-
-                    let displayName = prefLabel || (rdfsLabel !== 'None' ? rdfsLabel : null) || window.masterIdLabelMap[uniqueId] || cleanUrlFallback(uniqueId);
-                    
-                    if (typeof isPrimitiveType === "function" && isPrimitiveType(uniqueId, displayName, (classObj.type || '') + " " + (attr.type || ''))) {
-                        return; 
-                    }
-
-                    let equivalents = attr.equivalent || [];
-                    if (!Array.isArray(equivalents)) equivalents = [equivalents];
-
-                    window.globalNodeRegistry[uniqueId] = {
-                        id: uniqueId, 
-                        text: classObj.type === "owl:equivalentClass" ? "≡ " + displayName : displayName, 
-                        meta: { 
-                            type: classObj.type || 'Class', 
-                            iri: classObj.iri || attr.iri || uniqueId, 
-                            rdfsLabel: rdfsLabel, 
-                            prefLabel: prefLabel || 'None', 
-                            altLabel: altLabel || 'None', 
-                            rdfsComment: extractAnnotation(attr.comment) || 'None', 
-                            comment: skosDef || 'No explicit description found.', 
-                            superclasses: [], 
-                            subclasses: [], 
-                            slots: [], 
-                            equivalent: equivalents
-                        }
-                    };
-                });
-
-                Object.keys(window.globalNodeRegistry).forEach(classId => {
-                    let node = window.globalNodeRegistry[classId];
-                    if (node.meta && node.meta.equivalent) {
-                        node.meta.equivalent.forEach(eqId => {
-                            if (window.globalNodeRegistry[eqId]) {
-                                if (!window.globalNodeRegistry[eqId].meta.equivalent.includes(classId)) {
-                                    window.globalNodeRegistry[eqId].meta.equivalent.push(classId);
-                                }
-                            }
-                        });
-                    }
-                });
-
-                rawClasses.forEach(classObj => {
-                    const uniqueId = classObj.id;
-                    const attr = attrMap[uniqueId] || {};
-                    const childNode = window.globalNodeRegistry[uniqueId];
-                    if (!childNode) return;
-
-                    let superClasses = attr.superClasses || [];
-                    if (!Array.isArray(superClasses)) superClasses = [superClasses];
-
-                    superClasses.forEach(supId => {
-                        if (window.globalNodeRegistry[supId]) {
-                            if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
-                            if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
-                        }
-                    });
-                });
-
-                propertiesList.forEach(prop => {
-                    const propId = prop.id;
-                    const attr = propAttrMap[propId] || {};
-                    let name = window.masterIdLabelMap[propId] || cleanUrlFallback(propId);
-                    let rangeId = attr.range;
-                    let safeType = prop.type ? prop.type.toLowerCase() : "";
-                    let domains = attr.domain;
-
-                    if (domains) {
-                        if (!Array.isArray(domains)) domains = [domains];
-                        domains.forEach(domainId => {
-                            if (domainId && window.globalNodeRegistry[domainId]) {
-                                let targetRangeName = window.masterIdLabelMap[rangeId] || (window.globalNodeRegistry[rangeId] ? window.globalNodeRegistry[rangeId].text : cleanUrlFallback(rangeId || 'Literal Value'));
-                                let rangeLower = String(targetRangeName).toLowerCase();
-                                
-                                if (rangeLower === 'literal' || rangeLower.includes('string')) {
-                                    targetRangeName = 'Literal (Text/Value)';
-                                } else if (rangeLower === 'datetime' || rangeLower.includes('date')) {
-                                    targetRangeName = 'dateTime (Timestamp)';
-                                }
-
-                                window.globalNodeRegistry[domainId].meta.slots.push({ 
-                                    name: name, 
-                                    type: safeType.includes("objectproperty") ? 'Object Property' : 'Data Property', 
-                                    range: targetRangeName, 
-                                    comment: extractCleanString(getAnyDescription(prop, attr))
-                                });
-                            }
-                        });
-                    }
-                });
-
-                let jsTreeData = [];
-                let processedTreePaths = new Set();
-
-                function addNodeToTree(classId, treeParentId, currentPathList) {
-                    let node = window.globalNodeRegistry[classId];
-                    if (!node || currentPathList.includes(classId)) return;
-                    
-                    let updatedPathList = [...currentPathList, classId];
-                    let pathKeyString = updatedPathList.join('->');
-                    if (processedTreePaths.has(pathKeyString)) return;
-                    processedTreePaths.add(pathKeyString); 
-
-                    let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
-                    jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
-                    
-                    let crossSubclasses = node.meta.subclasses || []; 
-                    crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
-                }
-
-                Object.keys(window.globalNodeRegistry).forEach(classId => {
-                    const node = window.globalNodeRegistry[classId];
-                    if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
-                        addNodeToTree(classId, '#', []);
-                    }
-                });
-
-                renderTreeInterface(jsTreeData);
-            };
-
-            function renderTreeInterface(jsTreeData) {
-                $('#protege-tree').jstree("destroy").jstree({
-                    'core': { 
-                        'data': jsTreeData, 
-                        'themes': { 'variant': 'small', 'icons': true, 'dots': true }
-                    },
-                    'search': {
-                        'show_only_matches': true,
-                        'show_only_matches_children': false
-                    },
-                    'plugins': ["wholerow", "search"]
-                });
-            }
-
-            function isPrimitiveType(id, label, type) {
-                let idLower = String(id || '').toLowerCase();
-                let labelLower = String(label || '').toLowerCase();
-                let typeLower = String(type || '').toLowerCase();
-                if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
-                if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
-                return /\bliteral\b|\bdatetime\b|\bstring\b|\bstrin\b|\btimestamp\b|text\/value|\bboolean\b|\binteger\b|\bint\b/.test(idLower + " " + labelLower);
-            }
-
-            function safeUnwrap(field) {
-                if (!field) return '';
-                if (Array.isArray(field)) { if (field.length === 0) return ''; field = field[0]; }
-                if (typeof field === 'object') { return field.value || field.en || field['en-us'] || field['undefined'] || Object.values(field)[0] || ''; }
-                return String(field);
-            }
-
-            function cleanUrlFallback(str) {
-                if (!str || typeof str !== 'string') return '';
-                if (str.includes('http')) { return str.split('#').pop().split('/').pop().replace(/_/g, ' '); }
-                return str;
-            }
-
-            function getAnyDescription(coreObj, attrObj) {
-                const targets = [coreObj, attrObj].filter(Boolean);
-                for (let i = 0; i < targets.length; i++) {
-                    let obj = targets[i];
-                    for (let key in obj) {
-                        let k = key.toLowerCase();
-                        if (k.includes('definition') || k.includes('description') || k.includes('iao_0000115') || k.includes('comment')) {
-                            let val = safeUnwrap(obj[key]);
-                            if (val) return val;
-                        }
-                    }
-                }
-                return 'No explicit description found.';
-            }
-
-            function getAllSubclasses(classId) {
-                let node = window.globalNodeRegistry[classId];
-                if (!node) return [];
-                let subs = new Set(node.meta.subclasses || []);
-                if (node.meta.equivalent) {
-                    node.meta.equivalent.forEach(eqId => {
-                        let eqNode = window.globalNodeRegistry[eqId];
-                        if (eqNode && eqNode.meta.subclasses) { eqNode.meta.subclasses.forEach(subId => subs.add(subId)); }
-                    });
-                }
-                return Array.from(subs);
-            }
-
-            function getAllSuperclasses(classId) {
-                let node = window.globalNodeRegistry[classId];
-                if (!node) return [];
-                let supers = new Set(node.meta.superclasses || []);
-                if (node.meta.equivalent) {
-                    node.meta.equivalent.forEach(eqId => {
-                        let eqNode = window.globalNodeRegistry[eqId];
-                        if (eqNode && eqNode.meta.superclasses) { eqNode.meta.superclasses.forEach(supId => supers.add(supId)); }
-                    });
-                }
-                return Array.from(supers);
-            }
-
-            function extractAnnotation(val) {
-                if (!val || val === 'None') return '';
-                if (typeof val === 'string') return val.trim();
-                if (Array.isArray(val) && val.length > 0) return extractAnnotation(val[0]);
-                if (typeof val === 'object') {
-                    return val.value || val.en || val['en-us'] || val.undefined || Object.values(val)[0] || '';
-                }
-                return String(val);
-            }
-
-            $('#protege-tree').on("changed.jstree", function (e, data) {
-                if(!data.selected.length) return;
-                
-                let treeNode = data.instance.get_node(data.selected[0]);
-                let originalId = (treeNode.data && treeNode.data.originalId) ? treeNode.data.originalId : treeNode.id;
-                const node = window.globalNodeRegistry[originalId];
-                if (!node) return;
-                
-                const m = node.meta;
-                let subsTree = buildSubclassTreeHtml(node.id);
-                if (!subsTree || subsTree.trim() === '') {
-                    subsTree = '<div style="color:#666; font-style:italic;">None (This is a leaf level terminal entity)</div>';
-                }
-
-                let equivalentsBlockHtml = 'None';
-                if (m.equivalent && m.equivalent.length > 0) {
-                    let itemsList = [];
-                    m.equivalent.forEach(eqId => {
-                        let lblName = window.masterIdLabelMap[eqId] || cleanUrlFallback(eqId);
-                        if (isPrimitiveType(eqId, lblName, '')) return;
-
-                        let eqNode = window.globalNodeRegistry[eqId];
-                        let cardElement = `<div style="margin-bottom: 10px; border-bottom: 1px dashed #d6cbe3; padding-bottom: 8px;">
-                            <span class="value-link" style="color: #6f42c1; font-weight:bold;">≡ ${String(lblName).replace("≡ ", "")}</span> <br/><code style="font-size:0.8em; color:#555;">[IRI: ${eqNode ? eqNode.meta.iri : eqId}]</code>`;
-                        
-                        if (eqNode && eqNode.meta.subclasses && eqNode.meta.subclasses.length > 0) {
-                            cardElement += `<div style="margin-left: 15px; margin-top: 6px; padding-left: 8px; border-left: 2px solid #6f42c1;">
-                                <div style="font-size:0.85em; color:#6f42c1; font-weight:bold; margin-bottom:2px;">Inherited Subclasses:</div>`;
-                            eqNode.meta.subclasses.forEach(subId => {
-                                let subNode = window.globalNodeRegistry[subId];
-                                cardElement += `<div><span class="value-link" style="font-size:0.9em;" onclick="window.selectTaxonomyNode('${subId}')">└─ ● ${subNode ? subNode.text : cleanUrlFallback(subId)}</span></div>`;
-                            });
-                            cardElement += `</div>`;
-                        }
-                        cardElement += `</div>`;
-                        itemsList.push(cardElement);
-                    });
-                    if (itemsList.length > 0) equivalentsBlockHtml = itemsList.join('');
-                }
-
-                let objectPropertiesRows = "";
-                let dataPropertiesRows = "";
-
-                if (m.slots && m.slots.length) {
-                    m.slots.forEach(s => {
-                        let isDataProp = s.type === 'Data Property';
-                        let pillColor = isDataProp ? '#1e7e34' : '#0056b3';
-                        
-                        let rowHtml = `<tr>
-                            <td>
-                                <div class="slot-icon" style="background-color:${pillColor};"></div>
-                                <strong>${s.name}</strong> <span class="prop-tag" style="color:${pillColor}; font-weight:bold;">[${s.type}]</span>
-                            </td>
-                            <td>${s.comment}</td>
-                            <td><code>${s.range}</code></td>
-                        </tr>`;
-                        
-                        if (isDataProp) dataPropertiesRows += rowHtml;
-                        else objectPropertiesRows += rowHtml;
-                    });
-                }
-
-                if (!objectPropertiesRows) objectPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties mapped.</td></tr>`;
-                if (!dataPropertiesRows) dataPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Data Properties mapped.</td></tr>`;
-                
-                let activeDefinition = 'No explicit description found.';
-                if (m) {
-                    if (m.comment && m.comment !== 'None' && m.comment !== 'No explicit description found.') {
-                        activeDefinition = m.comment;
-                    } else if (m.rdfsComment && m.rdfsComment !== 'None') {
-                        activeDefinition = m.rdfsComment;
-                    }
-                }
-
-                $('#protege-inspector').html(`
-                    <div class="class-title">Class: ${node.text}</div>
-                    
-                    <div class="yellow-card">
-                        <div class="card-header" style="cursor:default; background:none; border:none;"><div class="card-label">Definition / Annotation:</div></div>
-                        <div class="card-body">${activeDefinition}</div>
-                    </div>
-
-                    <div class="yellow-card" style="background-color: #f4f6f8; border-color: #d1d5db;">
-                        <div class="card-header"><div class="card-label" style="color: #4b5563;">Lexical Tracking Labels</div><div class="toggle-icon">[ Hide − ]</div></div>
-                        <div class="card-body" style="font-size: 0.9em; line-height: 1.6em;">
-                            <strong>rdfs:label:</strong> <code>${m.rdfsLabel}</code><br/>
-                            <strong>skos:prefLabel:</strong> <code>${m.prefLabel}</code><br/>
-                            <strong>Alternate / Synonyms:</strong> <span style="color:#555;">${m.altLabel}</span><br/>
-                            <strong>rdfs:comment:</strong> <span style="color:#666; font-style:italic;">${m.rdfsComment}</span>
-                        </div>
-                    </div>
-
-                    <div class="yellow-card" style="background-color: #c5fae0; border-color: #d6cbe3;">
-                        <div class="card-header"><div class="card-label" style="color: #2f855a;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
-                        <div class="card-body">${equivalentsBlockHtml}</div>
-                    </div>
-
-                    <div class="yellow-card">
-                        <div class="card-header"><div class="card-label">Superclasses (Asserted Multiple Parents)</div><div class="toggle-icon">[ Hide − ]</div></div>
-                        <div class="card-body">${buildSuperclassTreeHtml(node.id)}</div>
-                    </div>
-
-                    <div class="yellow-card">
-                        <div class="card-header"><div class="card-label">Subclasses Hierarchy Tree (Deep & Multi-Parent)</div><div class="toggle-icon">[ Hide − ]</div></div>
-                        <div class="card-body">${subsTree}</div>
-                    </div>
-
-                    <div class="slot-section-title"><span>Object Properties</span><span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span></div>
-                    <table class="slot-table">
-                        <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
-                        <tbody>${objectPropertiesRows}</tbody>
-                    </table>
-
-                    <div class="slot-section-title"><span>Data Properties</span><span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span></div>
-                    <table class="slot-table">
-                        <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
-                        <tbody>${dataPropertiesRows}</tbody>
-                    </table>
-
-                    <div class="feedback-box">
-                        <h4>📝 Curator Review & Feedback Notes</h4>
-                        <textarea class="feedback-input" id="feedback-text-${node.id}" placeholder="Leave alignment instructions, relationship comments, or tag structural corrections here..."></textarea>
-                        <div class="feedback-controls">
-                            <select class="feedback-select" id="feedback-tag-${node.id}">
-                                <option value="General Comment">💬 General Note</option>
-                                <option value="Correction Required">❌ Correction Required</option>
-                                <option value="Missing Child/Property">➕ Missing Child/Property</option>
-                                <option value="Approved">✅ Approved Node</option>
-                            </select>
-                            <button class="submit-feedback-btn" data-class-id="${node.id}" data-class-name="${node.text}">Save Note</button>
-                        </div>
-                        <div id="saved-comments-${node.id}" style="margin-top: 10px;"></div>
-                    </div>
-
-                    <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
-                `);
-
-                renderActiveCommentsList(node.id);
-            });
-
-            window.selectTaxonomyNode = function(nodeId) {
-                if (!nodeId) return;
-                const tree = $('#protege-tree').jstree(true);
-                if (tree) {
-                    let allNodes = tree.get_json('#', { flat: true });
-                    let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
-                    if (match) {
-                        tree.deselect_all();
-                        tree.select_node(match.id);
-                        tree._open_to(match.id);
-                        document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
-                }
-            };
-
-            function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
-                if (currentBranchPath.includes(nodeId)) return '';
-                const node = window.globalNodeRegistry[nodeId];
-                if (!node) return '';
-
-                let nextPath = [...currentBranchPath, nodeId];
-                let finalSubclassIds = getAllSubclasses(nodeId).filter(subId => {
-                    let subNode = window.globalNodeRegistry[subId];
-                    return subNode && !isPrimitiveType(subId, subNode.text, '');
-                });
-
-                if (finalSubclassIds.length === 0) return '';
-
-                let html = `<ul style="list-style-type: none; margin: 4px 0 4px 8px; padding-left: 12px; border-left: 1px dashed #b5c7de;">`;
-                finalSubclassIds.forEach(subId => {
-                    const subNode = window.globalNodeRegistry[subId];
-                    let isDirect = node.meta.subclasses.includes(subId);
-                    let visualPrefix = isDirect ? '● ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ● </span>';
-                    
-                    html += `<li style="margin: 4px 0; line-height: 1.4em;">
-                        <span class="value-link" style="cursor: pointer; ${isDirect ? '' : 'color: #6f42c1; font-style: italic;'}" onclick="window.selectTaxonomyNode('${subId}')">${visualPrefix}${subNode.text}</span>
-                        ${buildSubclassTreeHtml(subId, nextPath)}
-                    </li>`;
-                });
-                html += `</ul>`;
-                return html;
-            }
-
-            function buildSuperclassTreeHtml(nodeId) {
-                let allSupers = getAllSuperclasses(nodeId).filter(supId => {
-                    let supNode = window.globalNodeRegistry[supId];
-                    return supNode && !isPrimitiveType(supId, supNode.text, '');
-                });
-
-                if (allSupers.length === 0) return '<div style="color:#666; font-style:italic;">None (This is a root base level entity)</div>';
-
-                let html = `<ul style="list-style-type: none; margin: 0; padding: 0;">`;
-                allSupers.forEach(supId => {
-                    let supNode = window.globalNodeRegistry[supId];
-                    let isDirect = window.globalNodeRegistry[nodeId].meta.superclasses.includes(supId);
-                    let prefix = isDirect ? '↑ ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ↑ </span>';
-                    
-                    html += `<li style="margin: 4px 0; line-height: 1.4em;">
-                        <span class="value-link" style="cursor: pointer; color: #a94442; ${isDirect ? '' : 'font-style:italic;'}" onclick="window.selectTaxonomyNode('${supId}')">${prefix}${supNode.text}</span>
-                    </li>`;
-                });
-                html += `</ul>`;
-                return html;
-            }
-
-            if (typeof window.vowlData !== 'undefined') {
-                setTimeout(function() {
-                    window.processOntologyData(window.vowlData);
-                }, 150);
-            } else {
-                $('#protege-tree').html('<span style="color:red; font-size:0.9em; padding:10px; display:block;">Error: "ontology-data.js" not detected or missing window.vowlData object.</span>');
-            }
-        });
-
-        function executeFastSearch(query) {
-            const tree = $('#protege-tree').jstree(true);
-            if (!tree) return;
-            let queryLower = query.toLowerCase().trim();
-            if (!queryLower) {
-                tree.clear_search();
-                return;
-            }
-            tree.search(queryLower);
+        // Extract metadata from the 'other' object
+        if (other) {
+            // Populate Year/Date
+            const dateEntry = other.creation_date ? other.creation_date[0].value : "N/A";
+            $('#meta-year').text(dateEntry);
+
+            // Populate Authors
+            const authorEntry = other.created_by ? other.created_by[0].value : "N/A";
+            $('#meta-authors').text(authorEntry);
         }
-    </script>
-
-    <script type="importmap">
-    {
-      "imports": {
-        "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm",
-        "edam2json-js": "https://cdn.jsdelivr.net/npm/edam2json-js/+esm"
-      }
     }
-    </script>
-    <script type="module" src="app.js"></script>
+}
+$(document).ready(function() {
+	// Initialize Supabase once using the proper global reference
+window.supabase = window.supabase.createClient(
+    'https://ikihocvwctkfmzkofvus.supabase.co', 
+    'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
+);
+    // 1. GLOBAL STATE REGISTRY VARIABLES
+    window.globalNodeRegistry = {};
+    window.masterIdLabelMap = {}; 
+    let feedbackDatabase = {}; 
+	populateHomeMetadata();
+    // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
+    $('.global-tab-btn').on('click', function() {
+    const targetPage = $(this).data('target');
+    
+    // 1. Update Buttons
+    $('.global-tab-btn').removeClass('active');
+    $(this).addClass('active');
+    
+    // 2. Update Panels (this hides all, then shows the target)
+    $('.page-content').removeClass('active');
+    $('#' + targetPage).addClass('active');
+
+    // 3. Optional: Trigger viz if needed
+    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
+        window.initializeEdamGraphicView();
+    }
+});
+
+    // 3. AUTOMATIC SEARCH & AUTO-RESET FILTER LISTENER
+    let searchDebounceTimeout = null;
+    $('#protege-search').off('keyup input keydown').on('input', function () {
+        let inputVal = $(this).val(); 
+        
+        clearTimeout(searchDebounceTimeout);
+        
+        // INSTANT RESET: If the user erases everything, reset the tree immediately
+        if (!inputVal.trim()) {
+            const tree = $('#protege-tree').jstree(true);
+            if (tree) {
+                tree.clear_search();
+                tree.close_all();
+            }
+            return;
+        }
+
+        // DEBOUNCE TIMER: Waits 250ms after you stop typing to filter smoothly
+        searchDebounceTimeout = setTimeout(() => {
+            executeFastSearch(inputVal);
+        }, 250); 
+    });
+
+    // 4. ACCORDION / TABLE SLIDERS
+    $(document).on('click', '.card-header', function() {
+        const body = $(this).next('.card-body');
+        const icon = $(this).find('.toggle-icon');
+        body.slideToggle(100, function() {
+            icon.text(body.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
+        });
+    });
+
+    $(document).on('click', '.slot-section-title', function() {
+        const table = $(this).next('.slot-table');
+        const icon = $(this).find('.toggle-icon');
+        table.slideToggle(100, function() {
+            icon.text(table.is(':visible') ? '[ Hide − ]' : '[ Show + ]');
+        });
+    });
+	
+    // 5. FEEDBACK SUBMISSION ENGINE
+    $(document).on('click', '.submit-feedback-btn', async function() {
+    const classId = $(this).data('class-id');
+    const className = $(this).data('class-name');
+    const commentText = $('#feedback-text-' + classId).val().trim();
+    const labelType = $('#feedback-tag-' + classId).val();
+
+    if (!commentText) return alert("Please type out a comment before saving.");
+
+    // 1. Send data to Supabase
+    try {
+        const { error } = await window.supabase
+            .from('Feedback') 
+            .insert([{ 
+                node_id: classId, 
+                class_name: className, 
+                comment: commentText, 
+                tag: labelType 
+            }]);
+
+        if (error) throw error; // If Supabase returns an error, jump to catch
+
+        // 2. Only update local UI if database save succeeded
+        if (!feedbackDatabase[classId]) {
+            feedbackDatabase[classId] = { classId: classId, className: className, notes: [] };
+        }
+
+        feedbackDatabase[classId].notes.push({
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            tag: labelType,
+            text: commentText
+        });
+
+        $('#feedback-text-' + classId).val('');
+        renderActiveCommentsList(classId);
+        
+    } catch (err) {
+        console.error("Supabase Error:", err);
+        alert("Failed to save to database: " + err.message);
+    }
+});
+
+    function renderActiveCommentsList(classId) {
+        let container = $('#saved-comments-' + classId);
+        container.empty();
+        
+        if (feedbackDatabase[classId] && feedbackDatabase[classId].notes.length > 0) {
+            let fragment = document.createDocumentFragment();
+            feedbackDatabase[classId].notes.forEach(note => {
+                let tagClass = "tag-general";
+                if (note.tag === "Correction Required") tagClass = "tag-correction";
+                if (note.tag === "Missing Child/Property") tagClass = "tag-missing";
+                if (note.tag === "Approved") tagClass = "tag-approved";
+
+                let item = document.createElement('div');
+                item.className = `comment-item ${tagClass}`;
+                item.innerHTML = `
+                    <div style="font-size:0.8em; color:#666; margin-bottom:3px;">
+                        <strong>[${note.tag}]</strong> — <span>${note.timestamp}</span>
+                    </div>
+                    <div style="color:#111; line-height:1.35em;">${note.text}</div>
+                `;
+                fragment.appendChild(item);
+            });
+            container.append(fragment);
+        }
+    }
+
+    $('#exportFeedbackBtn').on('click', function() {
+        if (Object.keys(feedbackDatabase).length === 0) {
+            return alert("No comments or reviews have been compiled yet.");
+        }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(feedbackDatabase, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "ontology_review_feedback.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    });
+
+    // 6. DATA PROCESSOR PIPELINE
+    window.processOntologyData = function(vowlData) {
+        let rawClasses = vowlData.class || [];
+        let attributesList = vowlData.classAttribute || [];
+        let propertiesList = vowlData.property || [];
+        let propertyAttributes = vowlData.propertyAttribute || [];
+
+        let attrMap = {};
+        attributesList.forEach(a => { attrMap[a.id] = a; });
+        
+        let propAttrMap = {};
+        propertyAttributes.forEach(pa => { propAttrMap[pa.id] = pa; });
+
+        // Helper to extract a clean string out of WebVOWL structures
+        function extractCleanString(val) {
+            if (!val || val === 'None') return '';
+            if (typeof val === 'string') return val.trim();
+            if (Array.isArray(val) && val.length > 0) return extractCleanString(val[0]);
+            if (typeof val === 'object') {
+                return val.value || val.en || val['en-us'] || val.undefined || Object.values(val).find(v => typeof v === 'string') || '';
+            }
+            return '';
+        }
+
+        rawClasses.forEach(classObj => {
+            const uniqueId = classObj.id;
+            const attr = attributesList.find(a => a.id === uniqueId) || {};
+            
+            if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+
+            let rdfsLabel = extractAnnotation(attr.label) || 'None';
+            let prefLabel = '';
+            let altLabel = '';
+            
+            // 1. Initialize definition strictly empty so fallbacks can execute cleanly
+            let skosDef = '';
+
+            // 2. CHECK TOP-LEVEL FIELDS (Where rdfs:comment / rdfs:description live)
+            if (attr.description) skosDef = extractAnnotation(attr.description);
+
+            // 3. CHECK NESTED ANNOTATIONS OBJECTS (Where your custom SKOS definition lives)
+            if (attr.annotations) {
+                for (let key in attr.annotations) {
+                    let cleanKey = key.toLowerCase();
+                    let extractedVal = extractAnnotation(attr.annotations[key]);
+
+		    console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
+
+                    if (!extractedVal || extractedVal === 'None') continue;
+
+                    // Capture custom SKOS / IAO labels and synonyms
+                    if (cleanKey.includes('preflabel')) {
+                        prefLabel = extractedVal;
+                    }
+                    if (cleanKey.includes('altlabel') || cleanKey.includes('synonym')) {
+                        altLabel = extractedVal;
+                    }
+                    
+                    // Capture definitions by looking for both the label and the absolute URI fragment
+                    if (cleanKey.includes('definition') || cleanKey.includes('iao_0000115')) {
+                        
+                        skosDef = extractedVal; 
+                    }
+                }
+            }
+
+            // Final text fallback for UI display hierarchy
+            let displayName = prefLabel || (rdfsLabel !== 'None' ? rdfsLabel : null) || window.masterIdLabelMap[uniqueId] || cleanUrlFallback(uniqueId);
+            
+            if (typeof isPrimitiveType === "function" && isPrimitiveType(uniqueId, displayName, (classObj.type || '') + " " + (attr.type || ''))) {
+                return; 
+            }
+
+            let equivalents = attr.equivalent || [];
+            if (!Array.isArray(equivalents)) equivalents = [equivalents];
+
+            window.globalNodeRegistry[uniqueId] = {
+                id: uniqueId, 
+                text: classObj.type === "owl:equivalentClass" ? "≡ " + displayName : displayName, 
+                meta: { 
+                    type: classObj.type || 'Class', 
+                    iri: classObj.iri || attr.iri || uniqueId, 
+                    rdfsLabel: rdfsLabel, 
+                    prefLabel: prefLabel || 'None', 
+                    altLabel: altLabel || 'None', 
+                    rdfsComment: extractAnnotation(attr.comment) || 'None', 
+                    comment: skosDef || 'No explicit description found.', // Passes the parsed SKOS definition directly down to the panel
+                    superclasses: [], 
+                    subclasses: [], 
+                    slots: [], 
+                    equivalent: equivalents
+                }
+            };
+        });
+
+        // Two-Way (Bidirectional) Equivalence Bridge Injection
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
+            let node = window.globalNodeRegistry[classId];
+            if (node.meta && node.meta.equivalent) {
+                node.meta.equivalent.forEach(eqId => {
+                    if (window.globalNodeRegistry[eqId]) {
+                        if (!window.globalNodeRegistry[eqId].meta.equivalent.includes(classId)) {
+                            window.globalNodeRegistry[eqId].meta.equivalent.push(classId);
+                        }
+                    }
+                });
+            }
+        });
+
+        rawClasses.forEach(classObj => {
+            const uniqueId = classObj.id;
+            const attr = attrMap[uniqueId] || {};
+            const childNode = window.globalNodeRegistry[uniqueId];
+            if (!childNode) return;
+
+            let superClasses = attr.superClasses || [];
+            if (!Array.isArray(superClasses)) superClasses = [superClasses];
+
+            superClasses.forEach(supId => {
+                if (window.globalNodeRegistry[supId]) {
+                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
+                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
+                }
+            });
+        });
+
+        propertiesList.forEach(prop => {
+            const propId = prop.id;
+            const attr = propAttrMap[propId] || {};
+            let name = window.masterIdLabelMap[propId] || cleanUrlFallback(propId);
+            let rangeId = attr.range;
+            let safeType = prop.type ? prop.type.toLowerCase() : "";
+            let domains = attr.domain;
+
+            if (domains) {
+                if (!Array.isArray(domains)) domains = [domains];
+                domains.forEach(domainId => {
+                    if (domainId && window.globalNodeRegistry[domainId]) {
+                        let targetRangeName = window.masterIdLabelMap[rangeId] || (window.globalNodeRegistry[rangeId] ? window.globalNodeRegistry[rangeId].text : cleanUrlFallback(rangeId || 'Literal Value'));
+                        let rangeLower = String(targetRangeName).toLowerCase();
+                        
+                        if (rangeLower === 'literal' || rangeLower.includes('string')) {
+                            targetRangeName = 'Literal (Text/Value)';
+                        } else if (rangeLower === 'datetime' || rangeLower.includes('date')) {
+                            targetRangeName = 'dateTime (Timestamp)';
+                        }
+
+                        window.globalNodeRegistry[domainId].meta.slots.push({ 
+                            name: name, 
+                            type: safeType.includes("objectproperty") ? 'Object Property' : 'Data Property', 
+                            range: targetRangeName, 
+                            comment: extractCleanString(getAnyDescription(prop, attr))
+                        });
+                    }
+                });
+            }
+        });
+
+        let jsTreeData = [];
+        let processedTreePaths = new Set();
+
+        function addNodeToTree(classId, treeParentId, currentPathList) {
+            let node = window.globalNodeRegistry[classId];
+            if (!node || currentPathList.includes(classId)) return;
+            
+            let updatedPathList = [...currentPathList, classId];
+            let pathKeyString = updatedPathList.join('->');
+            if (processedTreePaths.has(pathKeyString)) return;
+            processedTreePaths.add(pathKeyString); 
+
+            let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
+            jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
+            
+            let crossSubclasses = node.meta.subclasses || []; 
+            crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
+        }
+
+        // Target window scope registry precisely to catch missing isolated components
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
+            const node = window.globalNodeRegistry[classId];
+            if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
+                addNodeToTree(classId, '#', []);
+            }
+        });
+
+        renderTreeInterface(jsTreeData);
+    };
+
+    function renderTreeInterface(jsTreeData) {
+        $('#protege-tree').jstree("destroy").jstree({
+            'core': { 
+                'data': jsTreeData, 
+                'themes': { 'variant': 'small', 'icons': true, 'dots': true }
+            },
+            'search': {
+                'show_only_matches': true,
+                'show_only_matches_children': false
+            },
+            'plugins': ["wholerow", "search"]
+        });
+    }
+
+    // 7. DATA WRAPPER HELPER UTILITIES
+    function isPrimitiveType(id, label, type) {
+        let idLower = String(id || '').toLowerCase();
+        let labelLower = String(label || '').toLowerCase();
+        let typeLower = String(type || '').toLowerCase();
+        if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
+        if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
+        return /\bliteral\b|\bdatetime\b|\bstring\b|\bstrin\b|\btimestamp\b|text\/value|\bboolean\b|\binteger\b|\bint\b/.test(idLower + " " + labelLower);
+    }
+
+    function safeUnwrap(field) {
+        if (!field) return '';
+        if (Array.isArray(field)) { if (field.length === 0) return ''; field = field[0]; }
+        if (typeof field === 'object') { return field.value || field.en || field['en-us'] || field['undefined'] || Object.values(field)[0] || ''; }
+        return String(field);
+    }
+
+    function cleanUrlFallback(str) {
+        if (!str || typeof str !== 'string') return '';
+        if (str.includes('http')) { return str.split('#').pop().split('/').pop().replace(/_/g, ' '); }
+        return str;
+    }
+
+    function getAnyLabel(coreObj, attrObj, fallbackId) {
+        const targets = [coreObj, attrObj].filter(Boolean);
+        for (let i = 0; i < targets.length; i++) {
+            let obj = targets[i];
+            for (let key in obj) {
+                let k = key.toLowerCase();
+                if (k === 'label' || k.endsWith('#label') || k.endsWith(':label') || k.endsWith('preflabel')) {
+                    let val = safeUnwrap(obj[key]);
+                    if (val) return val;
+                }
+            }
+        }
+        return cleanUrlFallback(fallbackId);
+    }
+
+	
+    function getAnyDescription(coreObj, attrObj) {
+        const targets = [coreObj, attrObj].filter(Boolean);
+        for (let i = 0; i < targets.length; i++) {
+            let obj = targets[i];
+            for (let key in obj) {
+                let k = key.toLowerCase();
+                if (k.includes('definition') || k.includes('description') || k.includes('iao_0000115') || k.includes('comment')) {
+                    let val = safeUnwrap(obj[key]);
+                    if (val) return val;
+                }
+            }
+        }
+        return 'No explicit description found.';
+    }
+
+    function getAllSubclasses(classId) {
+        let node = window.globalNodeRegistry[classId];
+        if (!node) return [];
+        let subs = new Set(node.meta.subclasses || []);
+        if (node.meta.equivalent) {
+            node.meta.equivalent.forEach(eqId => {
+                let eqNode = window.globalNodeRegistry[eqId];
+                if (eqNode && eqNode.meta.subclasses) { eqNode.meta.subclasses.forEach(subId => subs.add(subId)); }
+            });
+        }
+        return Array.from(subs);
+    }
+
+    function getAllSuperclasses(classId) {
+        let node = window.globalNodeRegistry[classId];
+        if (!node) return [];
+        let supers = new Set(node.meta.superclasses || []);
+        if (node.meta.equivalent) {
+            node.meta.equivalent.forEach(eqId => {
+                let eqNode = window.globalNodeRegistry[eqId];
+                if (eqNode && eqNode.meta.superclasses) { eqNode.meta.superclasses.forEach(supId => supers.add(supId)); }
+            });
+        }
+        return Array.from(supers);
+    }
+
+function extractAnnotation(val) {
+            if (!val || val === 'None') return '';
+            if (typeof val === 'string') return val.trim();
+            if (Array.isArray(val) && val.length > 0) return extractAnnotation(val[0]);
+            if (typeof val === 'object') {
+                return val.value || val.en || val['en-us'] || val.undefined || Object.values(val)[0] || '';
+            }
+            return String(val);
+        }
+async function syncFeedbackFromDatabase() {
+    try {
+        const { data, error } = await window.supabase
+            .from('Feedback')
+            .select('*');
+
+        if (error) throw error; // Jump to catch if there's a database error
+
+        data.forEach(row => {
+            if (!feedbackDatabase[row.node_id]) {
+                feedbackDatabase[row.node_id] = { classId: row.node_id, className: row.class_name, notes: [] };
+            }
+            feedbackDatabase[row.node_id].notes.push({
+                timestamp: row.created_at,
+                tag: row.tag,
+                text: row.comment
+            });
+        });
+        console.log("Database synchronized.");
+    } catch (err) {
+        console.error("Database sync skipped or failed:", err);
+        // We DO NOT return here; we let the code finish so the tree still renders
+    }
+}
+    // 8. JSTREE TREE EVENT LISTENER FOR CONCEPT INSPECTION
+    $('#protege-tree').on("changed.jstree", function (e, data) {
+        if(!data.selected.length) return;
+        
+        let treeNode = data.instance.get_node(data.selected[0]);
+        let originalId = (treeNode.data && treeNode.data.originalId) ? treeNode.data.originalId : treeNode.id;
+        const node = window.globalNodeRegistry[originalId];
+        if (!node) return;
+        
+        const m = node.meta;
+        let subsTree = buildSubclassTreeHtml(node.id);
+        if (!subsTree || subsTree.trim() === '') {
+            subsTree = '<div style="color:#666; font-style:italic;">None (This is a leaf level terminal entity)</div>';
+        }
+
+        let equivalentsBlockHtml = 'None';
+        if (m.equivalent && m.equivalent.length > 0) {
+            let itemsList = [];
+            m.equivalent.forEach(eqId => {
+                let lblName = window.masterIdLabelMap[eqId] || cleanUrlFallback(eqId);
+                if (isPrimitiveType(eqId, lblName, '')) return;
+
+                let eqNode = window.globalNodeRegistry[eqId];
+                let cardElement = `<div style="margin-bottom: 10px; border-bottom: 1px dashed #d6cbe3; padding-bottom: 8px;">
+                    <span class="value-link" style="color: #6f42c1; font-weight:bold;">≡ ${String(lblName).replace("≡ ", "")}</span> <br/><code style="font-size:0.8em; color:#555;">[IRI: ${eqNode ? eqNode.meta.iri : eqId}]</code>`;
+                
+                if (eqNode && eqNode.meta.subclasses && eqNode.meta.subclasses.length > 0) {
+                    cardElement += `<div style="margin-left: 15px; margin-top: 6px; padding-left: 8px; border-left: 2px solid #6f42c1;">
+                        <div style="font-size:0.85em; color:#6f42c1; font-weight:bold; margin-bottom:2px;">Inherited Subclasses:</div>`;
+                    eqNode.meta.subclasses.forEach(subId => {
+                        let subNode = window.globalNodeRegistry[subId];
+                        cardElement += `<div><span class="value-link" style="font-size:0.9em;" onclick="window.selectTaxonomyNode('${subId}')">└─ ● ${subNode ? subNode.text : cleanUrlFallback(subId)}</span></div>`;
+                    });
+                    cardElement += `</div>`;
+                }
+                cardElement += `</div>`;
+                itemsList.push(cardElement);
+            });
+            if (itemsList.length > 0) equivalentsBlockHtml = itemsList.join('');
+        }
+
+        let objectPropertiesRows = "";
+        let dataPropertiesRows = "";
+
+        if (m.slots && m.slots.length) {
+            m.slots.forEach(s => {
+                let isDataProp = s.type === 'Data Property';
+                let pillColor = isDataProp ? '#1e7e34' : '#0056b3';
+                
+                let rowHtml = `<tr>
+                    <td>
+                        <div class="slot-icon" style="background-color:${pillColor};"></div>
+                        <strong>${s.name}</strong> <span class="prop-tag" style="color:${pillColor}; font-weight:bold;">[${s.type}]</span>
+                    </td>
+                    <td>${s.comment}</td>
+                    <td><code>${s.range}</code></td>
+                </tr>`;
+                
+                if (isDataProp) dataPropertiesRows += rowHtml;
+                else objectPropertiesRows += rowHtml;
+            });
+        }
+
+        if (!objectPropertiesRows) objectPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Object Properties mapped.</td></tr>`;
+        if (!dataPropertiesRows) dataPropertiesRows = `<tr><td colspan="3" style="color:#888; font-style:italic; text-align:center;">No Data Properties mapped.</td></tr>`;
+	let activeDefinition = 'No explicit description found.';
+        if (m) {
+            if (m.comment && m.comment !== 'None' && m.comment !== 'No explicit description found.') {
+                activeDefinition = m.comment;
+            } else if (m.rdfsComment && m.rdfsComment !== 'None') {
+                activeDefinition = m.rdfsComment;
+            }
+        }
+
+        $('#protege-inspector').html(`
+            <div class="class-title">Class: ${node.text}</div>
+            
+            <div class="yellow-card">
+                <div class="card-header" style="cursor:default; background:none; border:none;"><div class="card-label">Definition / Annotation:</div></div>
+                <div class="card-body">${activeDefinition}</div>
+            </div>
+
+            <div class="yellow-card" style="background-color: #f4f6f8; border-color: #d1d5db;">
+                <div class="card-header"><div class="card-label" style="color: #4b5563;">Lexical Tracking Labels</div><div class="toggle-icon">[ Hide − ]</div></div>
+                <div class="card-body" style="font-size: 0.9em; line-height: 1.6em;">
+                    <strong>rdfs:label:</strong> <code>${m.rdfsLabel}</code><br/>
+                    <strong>skos:prefLabel:</strong> <code>${m.prefLabel}</code><br/>
+                    <strong>Alternate / Synonyms:</strong> <span style="color:#555;">${m.altLabel}</span><br/>
+                    <strong>rdfs:comment:</strong> <span style="color:#666; font-style:italic;">${m.rdfsComment}</span>
+                </div>
+            </div>
+
+            <div class="yellow-card" style="background-color: #c5fae0; border-color: #d6cbe3;">
+                <div class="card-header"><div class="card-label" style="color: #2f855a;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
+                <div class="card-body">${equivalentsBlockHtml}</div>
+            </div>
+
+            <div class="yellow-card">
+                <div class="card-header"><div class="card-label">Superclasses (Asserted Multiple Parents)</div><div class="toggle-icon">[ Hide − ]</div></div>
+                <div class="card-body">${buildSuperclassTreeHtml(node.id)}</div>
+            </div>
+
+            <div class="yellow-card">
+                <div class="card-header"><div class="card-label">Subclasses Hierarchy Tree (Deep & Multi-Parent)</div><div class="toggle-icon">[ Hide − ]</div></div>
+                <div class="card-body">${subsTree}</div>
+            </div>
+
+            <div class="slot-section-title"><span>Object Properties</span><span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span></div>
+            <table class="slot-table">
+                <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
+                <tbody>${objectPropertiesRows}</tbody>
+            </table>
+
+            <div class="slot-section-title"><span>Data Properties</span><span class="toggle-icon" style="font-size:0.75em; margin-left:auto; color:#104e8b;">[ Hide − ]</span></div>
+            <table class="slot-table">
+                <thead><tr><th>Property Name</th><th>Documentation</th><th>Range Target Value</th></tr></thead>
+                <tbody>${dataPropertiesRows}</tbody>
+            </table>
+
+            <div class="feedback-box">
+                <h4>📝 Curator Review & Feedback Notes</h4>
+                <textarea class="feedback-input" id="feedback-text-${node.id}" placeholder="Leave alignment instructions, relationship comments, or tag structural corrections here..."></textarea>
+                <div class="feedback-controls">
+                    <select class="feedback-select" id="feedback-tag-${node.id}">
+                        <option value="General Comment">💬 General Note</option>
+                        <option value="Correction Required">❌ Correction Required</option>
+                        <option value="Missing Child/Property">➕ Missing Child/Property</option>
+                        <option value="Approved">✅ Approved Node</option>
+                    </select>
+                    <button class="submit-feedback-btn" data-class-id="${node.id}" data-class-name="${node.text}">Save Note</button>
+                </div>
+                <div id="saved-comments-${node.id}" style="margin-top: 10px;"></div>
+            </div>
+
+            <div style="margin-top:25px; font-size:0.8em; color:#666;">System IRI Location: <code>${m.iri}</code></div>
+        `);
+
+        renderActiveCommentsList(node.id);
+    });
+
+    window.selectTaxonomyNode = function(nodeId) {
+        if (!nodeId) return;
+        const tree = $('#protege-tree').jstree(true);
+        if (tree) {
+            let allNodes = tree.get_json('#', { flat: true });
+            let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
+            if (match) {
+                tree.deselect_all();
+                tree.select_node(match.id);
+                tree._open_to(match.id);
+                document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    };
+
+    function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
+        if (currentBranchPath.includes(nodeId)) return '';
+        const node = window.globalNodeRegistry[nodeId];
+        if (!node) return '';
+
+        let nextPath = [...currentBranchPath, nodeId];
+        let finalSubclassIds = getAllSubclasses(nodeId).filter(subId => {
+            let subNode = window.globalNodeRegistry[subId];
+            return subNode && !isPrimitiveType(subId, subNode.text, '');
+        });
+
+        if (finalSubclassIds.length === 0) return '';
+
+        let html = `<ul style="list-style-type: none; margin: 4px 0 4px 8px; padding-left: 12px; border-left: 1px dashed #b5c7de;">`;
+        finalSubclassIds.forEach(subId => {
+            const subNode = window.globalNodeRegistry[subId];
+            let isDirect = node.meta.subclasses.includes(subId);
+            let visualPrefix = isDirect ? '● ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ● </span>';
+            
+            html += `<li style="margin: 4px 0; line-height: 1.4em;">
+                <span class="value-link" style="cursor: pointer; ${isDirect ? '' : 'color: #6f42c1; font-style: italic;'}" onclick="window.selectTaxonomyNode('${subId}')">${visualPrefix}${subNode.text}</span>
+                ${buildSubclassTreeHtml(subId, nextPath)}
+            </li>`;
+        });
+        html += `</ul>`;
+        return html;
+    }
+
+    function buildSuperclassTreeHtml(nodeId) {
+        let allSupers = getAllSuperclasses(nodeId).filter(supId => {
+            let supNode = window.globalNodeRegistry[supId];
+            return supNode && !isPrimitiveType(supId, supNode.text, '');
+        });
+
+        if (allSupers.length === 0) return '<div style="color:#666; font-style:italic;">None (This is a root base level entity)</div>';
+
+        let html = `<ul style="list-style-type: none; margin: 0; padding: 0;">`;
+        allSupers.forEach(supId => {
+            let supNode = window.globalNodeRegistry[supId];
+            let isDirect = window.globalNodeRegistry[nodeId].meta.superclasses.includes(supId);
+            let prefix = isDirect ? '↑ ' : '<span style="color:#6f42c1; font-weight:bold;">≡ ↑ </span>';
+            
+            html += `<li style="margin: 4px 0; line-height: 1.4em;">
+                <span class="value-link" style="cursor: pointer; color: #a94442; ${isDirect ? '' : 'font-style:italic;'}" onclick="window.selectTaxonomyNode('${supId}')">${prefix}${supNode.text}</span>
+            </li>`;
+        });
+        html += `</ul>`;
+        return html;
+    }
+
+    // 9. FINAL STEP: SAFE RUN POPULATOR
+    if (typeof window.vowlData !== 'undefined') {
+        setTimeout(function() {
+            window.processOntologyData(window.vowlData);
+        }, 150);
+    } else {
+        $('#protege-tree').html('<span style="color:red; font-size:0.9em; padding:10px; display:block;">Error: "ontology-data.js" not detected or missing window.vowlData object.</span>');
+    }
+});
+
+// 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
+function executeFastSearch(query) {
+    const tree = $('#protege-tree').jstree(true);
+    if (!tree) return;
+
+    let queryLower = query.toLowerCase().trim();
+    if (!queryLower) {
+        tree.clear_search();
+        return;
+    }
+
+    // Run jsTree's optimized native search filter
+    tree.search(queryLower);
+}
+
+function toggleDetailsBox() {
+    const card = document.getElementById('details-card-container');
+    const btn = document.getElementById('card-toggle-btn');
+    
+    if (card.classList.contains('collapsed')) {
+        card.classList.remove('collapsed');
+        btn.textContent = '[ Hide - ]';
+    } else {
+        card.classList.add('collapsed');
+        btn.textContent = '[ Show + ]';
+    }
+}
+</script>
+	<footer class="site-footer">
+    <div class="footer-container">
+        <!-- Left Side Links -->
+        <div class="footer-links">
+			<a href="https://odetteriosib.github.io/mCODEBrowser/">Home</a>
+			<a href="mailto:odette.riosibacache@mail.mcgill.ca">Contact us</a>
+            <a href="terms.html">Citation</a>
+        </div>
+        
+        <!-- Center/Right Resource Logo -->
+        <div class="footer-logo-section">
+            <div class="footer-logo-text">
+                mCODE-ORCHID: <br>Ontology for Radiomics, Clinical Health, and Imaging Data<br>
+            </div>
+        </div>
+        
+        <!-- Right Side Copyright & Funding Info -->
+        <div class="footer-info">
+            <p>Copyright © 2026 </p>
+            <p>Funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM)</p>
+        </div>
+    </div>
+</footer>
+
+<script type="importmap">
+{
+  "imports": {
+    "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm",
+    "edam2json-js": "https://cdn.jsdelivr.net/npm/edam2json-js/+esm"
+  }
+}
+</script>
+
+
+<!-- Run your application script -->
+<script type="module" src="app.js"></script>
 </body>
+
+
 </html>
