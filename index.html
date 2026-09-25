@@ -698,12 +698,11 @@ body > div.tooltip {
 
 
 
-#page-visualization.page-content.active,
-#page-visualization.page-content {
+#page-visualization.page-content.active {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: calc(100vh - [header_height]px); /* Adjust or use height: 100% depending on your parent container */
+    height: 100%; /* or replace with a real calc() value if you need to subtract a fixed header height */
     overflow: hidden;
 }
 
