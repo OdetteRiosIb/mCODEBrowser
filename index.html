@@ -615,6 +615,27 @@ body > div.tooltip {
 	background: #f4f7fa;
 }
 
+
+		.tree-zoom-controls .on-controls-hover {
+    display: none;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 8px;
+    background: #1f1f1f;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+		.tree-zoom-controls button:hover .on-controls-hover {
+    display: block;
+}
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
