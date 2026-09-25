@@ -554,8 +554,10 @@ body > div.tooltip {
     overflow-wrap: anywhere;  
 }
 
-#val-uri {                     
+#val-uri {
     word-break: break-all;
+    color: #2563eb;           /* ← add: link-blue color */
+    cursor: default;
 }
 
 .meta-label {
@@ -569,12 +571,19 @@ body > div.tooltip {
     align-items: center;
     background-color: #2f855a;
     color: #ffffff;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 2px 10px;
+    border-radius: 5px;
     font-size: 12px;
     font-weight: 500;
     margin-right: 4px;
     margin-bottom: 2px;
+	cursor: pointer;          
+    gap: 5px;         
+}
+
+		.ontology-pill-copy-icon {
+    font-size: 11px;
+    opacity: 0.9;
 }
 		
 /* Maintain inner components relative to the remaining space */
