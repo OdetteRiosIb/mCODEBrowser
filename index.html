@@ -547,6 +547,7 @@ body > div.tooltip {
     border-radius: 6px;
     padding: 15px;
     margin-top: 10px;
+	overflow: hidden;
 }
 
 .metadata-table {
@@ -564,7 +565,16 @@ body > div.tooltip {
     overflow-wrap: anywhere;  
 }
 
+.metadata-card .card-header {
+    background-color: #fef08a; /* Soft warm yellow */
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
 
+		.metadata-card .card-body {
+    background-color: #ffffff;
+    padding: 10px;
+}
 .meta-label {
     font-weight: bold;
     color: #334155;
@@ -990,59 +1000,62 @@ body > div.tooltip {
         </div>
 
         <!-- Right Column: Metadata Sidebar -->
-        <div class="metadata-pane">
-         <!--   <div class="metadata-header-bar">  -->
-       <!--     </div>  -->
-     
-            <div class="metadata-card" id="details-card-container">
-				<div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-				 <h3 id="panel-title" class="pane-title" style="margin 0;"> Details of Class</h3>
-					<button id="card-toggle-btn" class="toggle-btn" onclick="toggleDetailsBox()">[ Hide - ]</button>
-				</div>
-                <div class="metadata-actions">
-                          <!--  <button title="Add term">+</button> -->
-                          <!--  <button title="Edit term">✏️</button> -->
-                </div>
-                <table class="metadata-table">
-                    <tr>
-                        <td class="meta-label">rdfs:label</td>
-                        <td id="val-rdfs-label">-</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">skos:prefLabel</td>
-                        <td id="val-pref-label">-</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Definition</td>
-                        <td id="val-definition">-</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Comment</td>
-                        <td id="val-comment">-</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">URI / IRI</td>
-                        <td><span id="val-uri-cell">-</span> </td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Superclasses (Parent Classes)</td>
-                        <td id="val-parents"></td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Equivalent Classes</td>
-                        <td id="val-equivalent"></td>
-                    </tr>
-					<tr>
-                        <td class="meta-label">Object Properties</td>
-    						<td id="val-object-properties"></td>
-                    </tr>
-					<tr>
-                        <td class="meta-label">Datatype Properties</td>
-  						  <td id="val-datatype-properties"></td>
-                    </tr>
-                </table>
+   <div class="metadata-pane">
+    <div class="metadata-card" id="details-card-container">
+        
+        <!-- Yellow Title Header Section -->
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="panel-title" class="pane-title" style="margin: 0;">Details of Class</h3>
+            <button id="card-toggle-btn" class="toggle-btn" onclick="toggleDetailsBox()">[ Hide - ]</button>
+        </div>
+        
+        <!-- Collapsible Body Section (White Background) -->
+        <div class="card-body" id="card-body-content">
+            <div class="metadata-actions">
+                 <!-- Actions if needed -->
             </div>
-        </div> 
+            <table class="metadata-table">
+                <tr>
+                    <td class="meta-label">rdfs:label</td>
+                    <td id="val-rdfs-label">-</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">skos:prefLabel</td>
+                    <td id="val-pref-label">-</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Definition</td>
+                    <td id="val-definition">-</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Comment</td>
+                    <td id="val-comment">-</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">URI / IRI</td>
+                    <td><span id="val-uri-cell">-</span> </td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Superclasses (Parent Classes)</td>
+                    <td id="val-parents"></td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Equivalent Classes</td>
+                    <td id="val-equivalent"></td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Object Properties</td>
+                    <td id="val-object-properties"></td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Datatype Properties</td>
+                    <td id="val-datatype-properties"></td>
+                </tr>
+            </table>
+        </div><!-- End of card-body -->
+        
+    </div>
+</div>
         <!-- End of metadata-pane -->
 
     </div> <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
