@@ -990,8 +990,11 @@ body > div.tooltip {
          <!--   <div class="metadata-header-bar">  -->
        <!--     </div>  -->
      
-            <div class="metadata-card">
-				 <h3 id="panel-title" class="pane-title"> Details of Class</h3>
+            <div class="metadata-card" id="details-card-container">
+				<div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+				 <h3 id="panel-title" class="pane-title" style="margin 0;"> Details of Class</h3>
+					<button id="card-toggle-btn" class="toggle-btn" onclick="toggleDetailsBox()">[ Hide - ]</button>
+				</div>
                 <div class="metadata-actions">
                           <!--  <button title="Add term">+</button> -->
                           <!--  <button title="Edit term">✏️</button> -->
