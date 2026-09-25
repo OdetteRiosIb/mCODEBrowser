@@ -533,7 +533,7 @@ body > div.tooltip {
 
 .metadata-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
     border-radius: 6px;
     padding: 15px;
     margin-top: 10px;
@@ -548,7 +548,7 @@ body > div.tooltip {
 
 .metadata-table td {
     padding: 8px 10px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 2px solid #edf2f7;
     vertical-align: top;
 	word-wrap: break-word;     
     overflow-wrap: anywhere;  
@@ -644,7 +644,7 @@ body > div.tooltip {
 }
 
 
-		.tree-zoom-controls .on-controls-hover {
+.tree-zoom-controls .on-controls-hover {
     display: none;
     position: absolute;
     right: 100%;
@@ -978,7 +978,7 @@ body > div.tooltip {
         <!-- Right Column: Metadata Sidebar -->
         <div class="metadata-pane">
             <div class="metadata-header-bar">
-                <h3 id="panel-title">Details of term</h3>
+                <h3 id="panel-title">Details of Class</h3>
                 <div class="metadata-actions">
                           <!--  <button title="Add term">+</button> -->
                           <!--  <button title="Edit term">✏️</button> -->
@@ -1008,7 +1008,7 @@ body > div.tooltip {
                         <td><span id="val-uri-cell">-</span> </td>
                     </tr>
                     <tr>
-                        <td class="meta-label">Parent Classes</td>
+                        <td class="meta-label">Superclasses (Parent Classes)</td>
                         <td id="val-parents"></td>
                     </tr>
                     <tr>
@@ -1619,8 +1619,8 @@ async function syncFeedbackFromDatabase() {
                 </div>
             </div>
 
-            <div class="yellow-card" style="background-color: #f3f0fa; border-color: #d6cbe3;">
-                <div class="card-header"><div class="card-label" style="color: #6f42c1;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
+            <div class="yellow-card" style="background-color: #c5fae0; border-color: #d6cbe3;">
+                <div class="card-header"><div class="card-label" style="color: #2f855a;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
                 <div class="card-body">${equivalentsBlockHtml}</div>
             </div>
 
