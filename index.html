@@ -554,11 +554,6 @@ body > div.tooltip {
     overflow-wrap: anywhere;  
 }
 
-#val-uri {
-    word-break: break-all;
-    color: #2563eb;           /* ← add: link-blue color */
-    cursor: default;
-}
 
 .meta-label {
     font-weight: bold;
@@ -581,9 +576,32 @@ body > div.tooltip {
     gap: 5px;         
 }
 
-		.ontology-pill-copy-icon {
+		.ontology-pill:hover {
+    background-color: #276749;
+}
+
+.ontology-pill-copy-icon {
     font-size: 11px;
     opacity: 0.9;
+    flex-shrink: 0;
+}
+
+		.iri-pill {
+    background-color: #2563eb;
+    white-space: normal;
+    word-break: break-all;
+}
+
+.iri-pill:hover {
+    background-color: #1d4ed8;
+}
+
+		.property-pill-object {
+    background-color: #0056b3;
+}
+
+.property-pill-data {
+    background-color: #1e7e34;
 }
 		
 /* Maintain inner components relative to the remaining space */
@@ -987,7 +1005,7 @@ body > div.tooltip {
                     </tr>
                     <tr>
                         <td class="meta-label">URI / IRI</td>
-                        <td><span id="val-uri">-</span> </td>
+                        <td><span id="val-uri-cell">-</span> </td>
                     </tr>
                     <tr>
                         <td class="meta-label">Parent Classes</td>
@@ -999,11 +1017,11 @@ body > div.tooltip {
                     </tr>
 					<tr>
                         <td class="meta-label">Object Properties</td>
-                        <td id="val-equivalent"></td>
+    						<td id="val-object-properties"></td>
                     </tr>
 					<tr>
                         <td class="meta-label">Datatype Properties</td>
-                        <td id="val-equivalent"></td>
+  						  <td id="val-datatype-properties"></td>
                     </tr>
                 </table>
             </div>
