@@ -59,6 +59,16 @@ function showNodeDetails(d) {
     setText('val-comment', meta.rdfsComment);
     setText('val-uri', meta.iri);
 
+    const copyToClipboard = (text, iconEl) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            if (!iconEl) return;
+            const original = iconEl.textContent;
+            iconEl.textContent = '✓';
+            setTimeout(() => { iconEl.textContent = original; }, 1000);
+        });
+    };
+
     const fillPills = (cellId, ids) => {
         const cell = document.getElementById(cellId);
         if (!cell) return;
