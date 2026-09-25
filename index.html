@@ -1045,27 +1045,6 @@ body > div.tooltip {
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-            const tabButtons = document.querySelectorAll('.global-tab-btn');
-            const pages = document.querySelectorAll('.page-content');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetId = button.getAttribute('data-target');
-
-                    // 1. Remove 'active' class from all buttons and pages
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    pages.forEach(page => page.classList.remove('active'));
-
-                    // 2. Add 'active' class to the clicked button and target page
-                    button.classList.add('active');
-                    const targetPage = document.getElementById(targetId);
-                    if (targetPage) {
-                        targetPage.classList.add('active');
-                    }
-                });
-            });
-        });
 	
 	function populateHomeMetadata() {
     // Check if vowlData exists
