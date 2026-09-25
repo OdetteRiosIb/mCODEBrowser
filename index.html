@@ -691,6 +691,39 @@ body > div.tooltip {
 		.details-card.collapsed .card-body {
     display: none;
 }
+
+		/* Ensure the overall page wrapper allows vertical flow and scrolling */
+#page-visualization.page-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.visualization-layout-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto; /* Allows it to take up available space but push footer down */
+}
+
+.edam-browser-wrapper {
+    display: flex;
+    flex: 1;
+    /* Remove fixed heights if they are locking the layout */
+}
+
+/* Ensure the footer has proper spacing and isn't trapped */
+.external-footer-text {
+    margin-top: 20px;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    background-color: #f9f9f9; /* Optional: gives it a subtle background */
+    border-top: 1px solid #eaeaea;
+    flex-shrink: 0; /* Prevents the footer from squishing */
+}
+
 /* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
