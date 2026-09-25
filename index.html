@@ -531,6 +531,16 @@ body > div.tooltip {
     box-shadow: -2px 0 5px rgba(0,0,0,0.03);
 }
 
+.pane-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 12px 16px;
+    margin: 0;
+    border-bottom: 1px solid #eaeaea; /* Creates a clean separator line inside the box */
+    background-color: #fcfcfc;       /* Light header background */
+}		
+
+		
 .metadata-card {
     background: #ffffff;
     border: 2px solid #e2e8f0;
@@ -977,15 +987,15 @@ body > div.tooltip {
 
         <!-- Right Column: Metadata Sidebar -->
         <div class="metadata-pane">
-            <div class="metadata-header-bar">
-                <h3 id="panel-title">Details of Class</h3>
+         <!--   <div class="metadata-header-bar">  -->
+       <!--     </div>  -->
+     
+            <div class="metadata-card">
+				 <h3 id="panel-title" class="pane-title"> Details of Class</h3>
                 <div class="metadata-actions">
                           <!--  <button title="Add term">+</button> -->
                           <!--  <button title="Edit term">✏️</button> -->
                 </div>
-            </div>
-     
-            <div class="metadata-card">
                 <table class="metadata-table">
                     <tr>
                         <td class="meta-label">rdfs:label</td>
