@@ -50,8 +50,8 @@ function showNodeDetails(d) {
     if (titleEl) {
         // If a node is selected, show its name; otherwise show a default header
         titleEl.textContent = d && d.data && d.data.text 
-            ? `Details of term "${d.data.text}"` 
-            : 'Details of term';
+            ? `Details of Class: "${d.data.text}"` 
+            : 'Details of Class';
     }
 
     setText('val-rdfs-label', meta.rdfsLabel);
