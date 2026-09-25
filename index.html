@@ -1769,6 +1769,19 @@ function executeFastSearch(query) {
     // Run jsTree's optimized native search filter
     tree.search(queryLower);
 }
+
+function toggleDetailsBox() {
+    const card = document.getElementById('details-card-container');
+    const btn = document.getElementById('card-toggle-btn');
+    
+    if (card.classList.contains('collapsed')) {
+        card.classList.remove('collapsed');
+        btn.textContent = '[ Hide - ]';
+    } else {
+        card.classList.add('collapsed');
+        btn.textContent = '[ Show + ]';
+    }
+}
 </script>
 	<footer class="site-footer">
     <div class="footer-container">
