@@ -521,12 +521,19 @@ body > div.tooltip {
 
 .metadata-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #dcd1b4;
     border-radius: 6px;
-    padding: 15px;
+    padding: 0px;
     margin-top: 10px;
+	overflow: hidden;
 }
 
+.metadata-card .pane-title {
+    background-color: transparent;
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+}
 .metadata-table {
     width: 100%;
     border-collapse: collapse;
@@ -543,6 +550,25 @@ body > div.tooltip {
     font-weight: bold;
     color: #334155;
     width: 100px;
+}
+
+metadata-card .card-header {
+    background-color: #fbf3db; /* Soft warm yellow */
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+	user-select: none;
+	margin:0 ;
+}
+
+/* The card body remains white */
+.metadata-card .card-body {
+    background-color: #ffffff;
+    padding: 10px;
+}
+
+/* Collapse behavior triggered by the toggle button */
+.metadata-card.collapsed .card-body {
+    display: none;
 }
 /* Green pill tags matching EDAM parent/URI display */
 .ontology-pill {
@@ -883,20 +909,17 @@ body > div.tooltip {
         </div>
 
         <!-- Right Column: Metadata Sidebar -->
-        <div class="metadata-pane">
+   <div class="metadata-pane">
     <div class="metadata-card" id="details-card-container">
         
-        <!-- Yellow Title Header Section -->
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="panel-title" class="pane-title" style="margin: 0;">Details of Class</h3>
-            <button id="card-toggle-btn" class="toggle-btn" onclick="toggleDetailsBox()">[ Hide - ]</button>
+        <!-- Header Bar: Clicking this toggles the collapse/expand -->
+        <div class="card-header" onclick="toggleDetailsBox()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="panel-title" class="pane-title" style="margin: 0; background: transparent;">Details of Class</h3>
+            <span id="toggle-indicator" style="font-size: 0.9rem; font-weight: bold; color: #555;">[ - ]</span>
         </div>
         
         <!-- Collapsible Body Section (White Background) -->
         <div class="card-body" id="card-body-content">
-            <div class="metadata-actions">
-                 <!-- Actions if needed -->
-            </div>
             <table class="metadata-table">
                 <tr>
                     <td class="meta-label">rdfs:label</td>
@@ -1668,6 +1691,19 @@ function executeFastSearch(query) {
 
     // Run jsTree's optimized native search filter
     tree.search(queryLower);
+}
+
+	function toggleDetailsBox() {
+    const card = document.getElementById('details-card-container');
+    const indicator = document.getElementById('toggle-indicator');
+    
+    if (card.classList.contains('collapsed')) {
+        card.classList.remove('collapsed');
+        indicator.textContent = '[ - ]';
+    } else {
+        card.classList.add('collapsed');
+        indicator.textContent = '[ + ]';
+    }
 }
 </script>
 	<footer class="site-footer">
