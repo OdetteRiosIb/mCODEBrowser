@@ -885,7 +885,7 @@ body > div.tooltip {
         <!-- Right Column: Metadata Sidebar -->
         <div class="metadata-pane">
             <div class="metadata-header-bar">
-                <h3 id="panel-title">Details of term</h3>
+                <h3 id="panel-title">Details of Class:</h3>
                 <div class="metadata-actions">
                     <button title="Add term">+</button>
                     <button title="Edit term">✏️</button>
@@ -912,15 +912,23 @@ body > div.tooltip {
                     </tr>
                     <tr>
                         <td class="meta-label">URI / IRI</td>
-                        <td><span id="val-uri">-</span> <button class="copy-btn">📋</button></td>
+                        <td><span id="val-uri">-</span></td>
                     </tr>
                     <tr>
-                        <td class="meta-label">Classes Parents</td>
+                        <td class="meta-label">Parent Classes</td>
                         <td id="val-parents"></td>
                     </tr>
                     <tr>
                         <td class="meta-label">Equivalent Classes</td>
                         <td id="val-equivalent"></td>
+                    </tr>
+					<tr>
+                        <td class="meta-label">Object Properties</td>
+                        <td id="val-object-properties"></td>
+                    </tr>
+					<tr>
+                        <td class="meta-label">Datatype Propertiess</td>
+                        <td id="val-datatype-properties"></td>
                     </tr>
                 </table>
             </div>
