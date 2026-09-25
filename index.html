@@ -697,12 +697,15 @@ body > div.tooltip {
 }
 
 
-
+/* FIX: was previously "#page-visualization.page-content.active, #page-visualization.page-content"
+   The second selector (no .active) had ID+class specificity that beat the base
+   .page-content { display:none } rule, forcing this panel to render at all times
+   regardless of which tab was active. Scoping to .active only restores the toggle. */
 #page-visualization.page-content.active {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%; /* or replace with a real calc() value if you need to subtract a fixed header height */
+    height: 100%; /* was calc(100vh - [header_height]px), an unresolved placeholder; replaced with a valid value */
     overflow: hidden;
 }
 
