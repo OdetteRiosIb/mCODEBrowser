@@ -897,11 +897,29 @@ body > div.tooltip {
                 <button id="tree-zoom-in" title="Zoom in">+</button>
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
-				<button id="tree-expand-all" title="Expand all tree">
-        				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+<button id="tree-expand-all" onclick="browser.interactive_tree().cmd().collapseNotSelectedElement()">
+	<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8V3h5"/>
+            <path d="M16 3h5v5"/>
+            <path d="M3 16h5v5"/>
+            <path d="M21 16v5h-5"/>
+            <path d="m3 3 6 6"/>
+            <path d="M21 3l-6 6"/>
+            <path d="M3 21l6-6"/>
+            <path d="M21 21l-6-6"/>
+        </svg>
    				 </button>
-    			<button id="tree-collapse-other" title="Collapse not selected elements">
-        				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
+<button id="tree-collapse-other" onclick="browser.interactive_tree().cmd().collapseNotSelectedElement()">
+	<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3v5H3"/>
+            <path d="M21 8h-5V3"/>
+            <path d="M3 16h5v5"/>
+            <path d="M16 21v-5h5"/>
+            <path d="m15 9 6-6"/>
+            <path d="M9 15l-6 6"/>
+            <path d="M15 15l6 6"/>
+            <path d="M9 9l-6-6"/>
+        </svg>
     			</button>
             </div>
         </div>
@@ -911,8 +929,8 @@ body > div.tooltip {
             <div class="metadata-header-bar">
                 <h3 id="panel-title">Details of term</h3>
                 <div class="metadata-actions">
-                    <button title="Add term">+</button>
-                    <button title="Edit term">✏️</button>
+                          <!--  <button title="Add term">+</button> -->
+                          <!--  <button title="Edit term">✏️</button> -->
                 </div>
             </div>
      
