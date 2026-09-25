@@ -47,7 +47,12 @@ function showNodeDetails(d) {
     };
 
     const titleEl = document.getElementById('panel-title');
-    if (titleEl) titleEl.textContent = `Details of Class: "${d.data.text}"`;
+    if (titleEl) {
+        // If a node is selected, show its name; otherwise show a default header
+        titleEl.textContent = d && d.data && d.data.text 
+            ? `Details of term "${d.data.text}"` 
+            : 'Details of term';
+    }
 
     setText('val-rdfs-label', meta.rdfsLabel);
     setText('val-pref-label', meta.prefLabel);
