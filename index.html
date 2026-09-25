@@ -511,12 +511,15 @@ body > div.tooltip {
     font-size: 12px;
     max-width: 260px;
 }
+		
 .metadata-pane {
-    width: 550px;
+    width: 600px;
+    min-width: 500px;
     background: #f8f9fa;
     padding: 20px;
     overflow-y: auto;
     box-shadow: -2px 0 5px rgba(0,0,0,0.03);
+    box-sizing: border-box;
 }
 
 .metadata-card {
@@ -538,18 +541,24 @@ body > div.tooltip {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+	table-layout: fixed;
 }
 
 .metadata-table td {
     padding: 8px 10px;
     border-bottom: 1px solid #edf2f7;
     vertical-align: top;
+
+	overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .meta-label {
     font-weight: bold;
     color: #334155;
     width: 100px;
+	min-width: 100px;
+
 }
 
 metadata-card .card-header {
@@ -564,6 +573,12 @@ metadata-card .card-header {
 .metadata-card .card-body {
     background-color: #ffffff;
     padding: 10px;
+}
+
+#val-uri-cell {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    white-space: normal;
 }
 
 /* Collapse behavior triggered by the toggle button */
@@ -1555,8 +1570,8 @@ async function syncFeedbackFromDatabase() {
                 </div>
             </div>
 
-            <div class="yellow-card" style="background-color: #f3f0fa; border-color: #d6cbe3;">
-                <div class="card-header"><div class="card-label" style="color: #6f42c1;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
+            <div class="yellow-card" style="background-color: #ECFFDC; border-color: #d6cbe3;">
+                <div class="card-header"><div class="card-label" style="color: #2f855a;">Equivalent Classes (owl:equivalentClass)</div><div class="toggle-icon">[ Hide − ]</div></div>
                 <div class="card-body">${equivalentsBlockHtml}</div>
             </div>
 
