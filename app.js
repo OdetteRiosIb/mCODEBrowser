@@ -36,7 +36,7 @@ function buildHierarchyFromRegistry(registry) {
     return { id: '__root__', text: 'mCODE-ORCHID', meta: {}, children: rootChildren };
 }
 
-/** Populates the right-hand "Details of term" panel for the clicked node. */
+/** Populates the right-hand "Details of Class:" panel for the clicked node. */
 function showNodeDetails(d) {
     if (!d || !d.data) return;
     const meta = d.data.meta || {};
@@ -47,7 +47,7 @@ function showNodeDetails(d) {
     };
 
     const titleEl = document.getElementById('panel-title');
-    if (titleEl) titleEl.textContent = `Details of term "${d.data.text}"`;
+    if (titleEl) titleEl.textContent = `Details of Class: "${d.data.text}"`;
 
     setText('val-rdfs-label', meta.rdfsLabel);
     setText('val-pref-label', meta.prefLabel);
