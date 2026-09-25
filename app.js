@@ -89,7 +89,7 @@ function showNodeDetails(d) {
         }
     }
 
-    const fillPills = (cellId, ids) => {
+   const fillPills = (cellId, ids) => {
         const cell = document.getElementById(cellId);
         if (!cell) return;
         cell.innerHTML = '';
@@ -97,6 +97,7 @@ function showNodeDetails(d) {
             const refNode = window.globalNodeRegistry ? window.globalNodeRegistry[refId] : null;
             if (!refNode) return;
 
+            // 'pill' must be declared here within the loop scope
             const pill = document.createElement('span');
             pill.className = 'ontology-pill';
             pill.title = 'Click to copy IRI';
