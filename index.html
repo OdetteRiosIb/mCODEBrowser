@@ -1214,6 +1214,7 @@ attributesList.forEach(a => {
             const uniqueId = classObj.id;
 			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+			if (isDeprecated(attr)) return;
 			if (isUndefinedExternalStub(attr)) return;   // <-- skip dangling external placeholders
 
 
@@ -1422,6 +1423,10 @@ attributesList.forEach(a => {
     const primitiveWords = ['literal','datetime','string','timestamp','boolean','integer','int'];
     let labelLower = String(label || '').trim().toLowerCase();
     return primitiveWords.includes(labelLower) || primitiveWords.includes(idLower);
+}
+
+	function isDeprecated(attr) {
+    return !!(attr && Array.isArray(attr.attributes) && attr.attributes.includes('deprecated'));
 }
 
 	function isUndefinedExternalStub(attr) {
