@@ -598,6 +598,34 @@ body > div.tooltip {
     flex-direction: column; 
     box-sizing: border-box; 
     height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width 0.2s ease, padding 0.2s ease;
+}
+#protege-sidebar.collapsed-panel {
+    padding-left: 0;
+    padding-right: 0;
+    border-right: none;
+}
+#protege-sidebar.no-transition {
+    transition: none;
+}
+
+#browser-panel-resizer {
+    width: 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f7fa;
+    border-right: 1px solid #dcdcdc;
+    color: #6b7d94;
+    cursor: col-resize;
+    user-select: none;
+}
+#browser-panel-resizer:hover {
+    background: #e5ecf5;
+    color: #104e8b;
 }
 	
 #protege-inspector { 
@@ -699,7 +727,7 @@ body > div.tooltip {
     <div class="global-tabs">
         <button class="global-tab-btn active" data-target="page-home">Home</button>
         <button class="global-tab-btn" data-target="page-browser">Browser View</button>
-        <button class="global-tab-btn" data-target="page-visualization">Interactive View</button>
+        <button class="global-tab-btn" data-target="page-visualization">Tree Visualization View</button>
 		<button class="global-tab-btn" data-target="page-downloads">Downloads</button>
     </div>
 </div>
@@ -867,6 +895,9 @@ body > div.tooltip {
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
+        <div id="browser-panel-resizer" title="Drag to resize — click to collapse or expand">
+        </div>
+
         <div id="protege-inspector">
             <p style="color:#666; font-style:italic; margin-top:40px;"> Select an ontology node from the tree view to inspect its structural details.</p>
         </div>
@@ -985,6 +1016,62 @@ $(document).ready(function() {
     let feedbackDatabase = {}; 
 	populateHomeMetadata();
 	loadOntologyDataAsync();
+
+    // BROWSER VIEW PANEL RESIZER (drag to resize, click to collapse/expand)
+    (function initBrowserPanelResizer() {
+        const sidebar = document.getElementById('protege-sidebar');
+        const resizer = document.getElementById('browser-panel-resizer');
+        if (!sidebar || !resizer) return;
+
+        const MIN_WIDTH = 220;
+        const MAX_WIDTH = 650;
+        let lastExpandedWidth = sidebar.offsetWidth || 380;
+        let isDragging = false;
+        let dragMoved = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            const delta = e.clientX - startX;
+            if (Math.abs(delta) > 3) dragMoved = true;
+            let newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startWidth + delta));
+            sidebar.style.width = newWidth + 'px';
+        }
+
+        function onMouseUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            sidebar.classList.remove('no-transition');
+            document.body.style.cursor = '';
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+
+            if (!dragMoved) {
+                const currentWidth = sidebar.offsetWidth;
+                if (currentWidth > 5) {
+                    lastExpandedWidth = currentWidth;
+                    sidebar.classList.add('collapsed-panel');
+                    sidebar.style.width = '0px';
+                } else {
+                    sidebar.classList.remove('collapsed-panel');
+                    sidebar.style.width = (lastExpandedWidth || 380) + 'px';
+                }
+            }
+        }
+
+        resizer.addEventListener('mousedown', function (e) {
+            isDragging = true;
+            dragMoved = false;
+            startX = e.clientX;
+            startWidth = sidebar.offsetWidth;
+            sidebar.classList.add('no-transition');
+            document.body.style.cursor = 'col-resize';
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            e.preventDefault();
+        });
+    })();
 
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
