@@ -2,15 +2,12 @@
 <html>
 <head>   
     <meta charset="UTF-8">    
-    <title>mCODE-ORCHID Taxonomy Browser</title>
+    <title>mCODE-ORCHID Taxonomy Browser</title> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
- <!--  Local ontology data file -->
-<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js"></script>
     <style>
 
 	/* Core Page Layout Overhaul */
@@ -28,6 +25,36 @@ body {
 }
 .jstree-node.filtered-match-parent > .jstree-icon { display: inline-block !important; }
 #protege-tree .jstree-container-ul { display: block !important; }
+
+/* Ontology loading banner */
+#ontology-loading-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff3cd;
+    color: #664d03;
+    padding: 8px 20px;
+    font-size: 0.9em;
+    border-bottom: 1px solid #ffe69c;
+}
+#ontology-loading-banner.error {
+    background: #f8d7da;
+    color: #842029;
+    border-bottom-color: #f5c2c7;
+}
+.ontology-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    animation: ontology-spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes ontology-spin {
+    to { transform: rotate(360deg); }
+}
 
 /* Global Top Header & Navigation Bar styling */
 .global-navbar {
@@ -72,30 +99,25 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* This applies to the container holding your Introduction and Authors text */
 .home-body-content, .text-content {
-    max-width: 1300px;   /* Increased from 800px to make the text range wider */
-    margin: 0 auto;       /* Keeps it centered */
-    padding: 0 20px;      /* Adds breathing room */
-    text-align: left;     /* Keeps the text readable */
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: left;
 }
 
-
-/* This is the container that holds your title, version, and text */
 .home-centered-container {
-    max-width: 1300px;   /* Increased from 800px to match the body content */
-    width: 95%;           /* Widened from 90% to use more screen space */
-    margin: 0 auto;       /* Ensures the container stays in the middle */
-    text-align: center;   /* Centers the title and version line */
+    max-width: 1300px;
+    width: 95%;
+    margin: 0 auto;
+    text-align: center;
 }
 
-/* Center the Title and Metadata */
 .home-centered-content h3, 
 .home-centered-content p:first-of-type {
     text-align: center;
 }
 
-/* Re-center the title and meta if they were forced left */
 .home-centered-container h1,
 .home-centered-container p:first-of-type {
     text-align: center;
@@ -104,43 +126,39 @@ html {
     scroll-behavior: smooth;
 }
 
-		/* Style for images placed within the main content area */
 .content-image {
     display: block;
-    margin: 20px auto;   /* Centers the image with spacing above and below */
-    max-width: 90%;      /* Ensures it doesn't overflow the centered container */
-    border: 1px solid #ccc; /* Optional: adds a subtle border to the image */
-    border-radius: 4px;  /* Optional: rounds the corners slightly */
+    margin: 20px auto;
+    max-width: 90%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-/* 2. Specific styles for Home Page only */
 #page-home.active {
     display: flex;
 	overflow-y: auto;
     flex-direction: column;
-    align-items: center; /* This ONLY centers the home page content */
+    align-items: center;
     padding: 40px;
 }
 
 .page-title {
-    font-size: 3.5rem;    /* Increased from 2.5rem to make it significantly larger */
-    font-weight: 700;     /* Bold weight ensures it remains readable at this size */
+    font-size: 3.5rem;
+    font-weight: 700;
     text-align: center;
     margin: 0 0 20px 0;
     color: #333;
 }
 		
-		/* Larger headings */
 .section-title {
-    font-size: 1.8rem; /* Increased size */
+    font-size: 1.8rem;
     margin-top: 30px;
     margin-bottom: 15px;
     color: #2c3e50;
 }
  
-/* Smaller subsection heading */
 .sub-section-title {
-    font-size: 1.1rem; /* Smaller size */
+    font-size: 1.1rem;
     font-weight: 600;
     color: #555;
     margin-top: 20px;
@@ -149,36 +167,35 @@ html {
 
 .funding-section {
     display: flex;
-    flex-direction: column; /* Stacks the rows vertically */
-    align-items: center;    /* Centers rows horizontally */
-    gap: 20px;              /* Space between the top and bottom rows */
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
     margin-top: 40px;
 }
 
 .logo-row {
     display: flex;
-    justify-content: center; /* Centers logos within the row */
+    justify-content: center;
     align-items: center;
-    gap: 30px;               /* Space between logos in the same row */
-    flex-wrap: wrap;         /* Ensures responsiveness on smaller screens */
+    gap: 30px;
+    flex-wrap: wrap;
 }
 
 .logo-row img {
-    height: 60px;            /* Uniform height */
+    height: 60px;
     width: auto;
     object-fit: contain;
 }
 		
-/* Page Level Switcher Framework */
 .page-content {
-    display: none; /* Hidden by default */
+    display: none;
     flex: 1;
     width: 100vw;
     overflow: hidden;
     box-sizing: border-box;
 }
 .page-content.active {
-    display: flex; /* Display active workspace layout */
+    display: flex;
 }
 
 .ontology-download {
@@ -187,7 +204,6 @@ html {
     color: #333;
 }
 
-/* Title */
 .ontology-title {
     font-size: 36px;
     font-weight: 300;
@@ -197,14 +213,13 @@ html {
 
 .ontology-download {
     width: 100%;
-    max-width: 1300px;   /* Matches the 1300px width of your other sections */
-    margin: 0 auto;       /* Centers the block on the page */
-    padding: 0 20px;      /* Aligns the side padding with your other content */
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
     padding-top: 2rem;
     box-sizing: border-box;
 }	
 
-/* Gray introductory box */
 .ontology-intro {
     display: inline-block;
     background-color: #eeeeee;
@@ -213,7 +228,6 @@ html {
     margin-bottom: 20px;
 }
 
-/* Section heading */
 .ontology-section-title {
     font-size: 34px;
     font-weight: 700;
@@ -221,7 +235,6 @@ html {
     margin-bottom: 20px;
 }
 
-/* Recommended download */
 .ontology-recommended {
     font-size: 16px;
     margin-bottom: 35px;
@@ -240,7 +253,6 @@ html {
     margin-right: 5px;
 }
 
-/* Horizontal line */
 .ontology-line {
     width: 100%;
     border-top: 1px solid #b8c9df;
@@ -248,7 +260,7 @@ html {
 }
 		
 .site-footer {
-    background-color: #1B2775; /* Deep dark navy blue */
+    background-color: #1B2775;
     color: #ffffff;
     padding: 10px 0;
     margin-top: 1px;
@@ -304,7 +316,7 @@ html {
 
 .footer-info {
     text-align: right;
-    color: #94a3b8; /* Soft muted gray for readability */
+    color: #94a3b8;
     font-size: 12px;
     line-height: 1.5;
     max-width: 480px;
@@ -314,60 +326,44 @@ html {
     margin: 0 0 4px 0;
 }
 
-/* =========================
-   TABLE
-   ========================= */
-
 .ontology-row {
     display: grid;
-
-    /*
-       File | Description | OBO | JSON | OWL
-    */
     grid-template-columns:
         75px
         minmax(400px, 1fr)
         105px
         105px
         105px;
-
     border-bottom: 1px solid #d5d5d5;
 }
 
-
-/* Header */
 .ontology-header {
     font-weight: bold;
     border-bottom: 1px solid #cccccc;
 }
 
-/* All cells */
 .file-column,
 .description-column,
 .download-column {
     padding: 10px 8px;
 }
 
-/* File name */
 .file-column {
     font-weight: bold;
 }
 
-/* Description */
 .description-column {
     line-height: 1.55;
     font-size: 16px;
     font-weight: normal;
 }
 
-/* Download columns */
 .download-column {
     text-align: center;
     font-size: 16px;
     line-height: 1.4;
 }
 
-/* Links */
 .download-column a {
     color: #4169c9;
     text-decoration: none;
@@ -377,14 +373,10 @@ html {
     text-decoration: underline;
 }
 
-
-/* File name should stay left aligned */
 .file-name {
     text-align: left;
 }
 
-
-/* External ontology links */
 .description-column a {
     color: #4169c9;
     text-decoration: none;
@@ -396,7 +388,7 @@ html {
 		
 .additional-downloads-container {
     margin-top: 50px;
-    border-top: 1px solid #e5e7eb; /* Adds a clean dividing line above the section */
+    border-top: 1px solid #e5e7eb;
     padding-top: 30px;
 }
 
@@ -415,7 +407,7 @@ html {
 }
 
 .file-desc {
-    color: #4b5563; /* Soft gray for the description text */
+    color: #4b5563;
     font-size: 15px;
 }
 		
@@ -438,8 +430,8 @@ html {
 
 .tree-pane, #ontology-tree-container {
     width: 100%;
-    height: 70vh; /* Full viewport height */
-    min-height: 500px; /* Fallback minimum height */
+    height: 70vh;
+    min-height: 500px;
     position: relative;
     overflow: hidden;
 }
@@ -470,7 +462,6 @@ html {
     background: #3a3a3a;
 }
 
-/* Styling for the interactive_tree() SVG (edam-tree-reusable-d3.js) */
 #ontology-tree-container .link {
     fill: none;
     stroke: #a9c4de;
@@ -548,7 +539,6 @@ body > div.tooltip {
     padding: 8px 10px;
     border-bottom: 1px solid #edf2f7;
     vertical-align: top;
-
 	overflow-wrap: anywhere;
     word-break: break-word;
 }
@@ -558,18 +548,16 @@ body > div.tooltip {
     color: #334155;
     width: 100px;
 	min-width: 100px;
-
 }
 
-. metadata-card .card-header {
-    background-color: #fbf3db; /* Soft warm yellow */
+.metadata-card .card-header {
+    background-color: #fbf3db;
     padding: 10px 14px;
     border-bottom: 1px solid #e5e7eb;
 	user-select: none;
 	margin:0 ;
 }
 
-/* The card body remains white */
 .metadata-card .card-body {
     background-color: #ffffff;
     padding: 10px;
@@ -581,11 +569,9 @@ body > div.tooltip {
     white-space: normal;
 }
 
-/* Collapse behavior triggered by the toggle button */
 .metadata-card.collapsed .card-body {
     display: none;
 }
-/* Green pill tags matching EDAM parent/URI display */
 .ontology-pill {
     display: inline-flex;
     align-items: center;
@@ -603,7 +589,6 @@ body > div.tooltip {
     margin-left: 10px;
 }
 		
-/* Maintain inner components relative to the remaining space */
 #protege-sidebar { 
     width: 380px; 
     border-right: 2px solid #b5c7de; 
@@ -642,7 +627,6 @@ body > div.tooltip {
 	background: #f4f7fa;
 }
 
-/* Fullscreen Visualization View Padding */
 .full-viz-container {
     flex: 1;
     padding: 25px;
@@ -652,74 +636,76 @@ body > div.tooltip {
     background: #f8fafc;
     height: 100%;
 }
-        
-        /* Left Sidebar Layout styling */
-        #protege-sidebar { width: 380px; border-right: 2px solid #b5c7de; padding: 15px; background: #f4f7fa; display: flex; flex-direction: column; box-sizing: border-box; }
-        #protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
-        #protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
-        #protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; margin-bottom: 15px; }
+        .tree-action-btn {
+    color: #ffffff;
+}
+.tree-action-btn svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+#protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
+#protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
+#protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; margin-bottom: 15px; }
 
-        /* Export Feedback Button */
-        .export-btn { background-color: #104e8b; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
-        .export-btn:hover { background-color: #003366; }
+.export-btn { background-color: #104e8b; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+.export-btn:hover { background-color: #003366; }
 
-        /* Right Inspector Panel display styling */
-        #protege-inspector { flex: 1; padding: 20px 30px; overflow-y: auto; background-color: #fff; box-sizing: border-box; }
-        .class-title { font-size: 2em; font-weight: bold; margin-bottom: 15px; color: #000; font-family: 'Arial', Arial, serif; }
+.class-title { font-size: 2em; font-weight: bold; margin-bottom: 15px; color: #000; font-family: 'Arial', Arial, serif; }
         
-        /* Collapsible Cards Layout */
-        .yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
-        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: justify; align-items: center; cursor: pointer; user-select: none; }
-        .card-header:hover { background-color: rgba(0,0,0,0.07); }
-        .card-label { font-weight: bold; color: #000; font-size: 0.95em; }
-        .toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; margin-left: auto; }
-        .card-body { padding: 12px 15px; font-size: 0.95em; color: #222; }
+.yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
+.card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: justify; align-items: center; cursor: pointer; user-select: none; }
+.card-header:hover { background-color: rgba(0,0,0,0.07); }
+.card-label { font-weight: bold; color: #000; font-size: 0.95em; }
+.toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; margin-left: auto; }
+.card-body { padding: 12px 15px; font-size: 0.95em; color: #222; }
         
-        .value-link { color: #0056b3; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px 0; }
-        .value-link:hover { text-decoration: underline; color: #003366; }
+.value-link { color: #0056b3; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px 0; }
+.value-link:hover { text-decoration: underline; color: #003366; }
         
-        /* Slot Properties Table styling */
-        .slot-section-title { color: #104e8b; font-weight: bold; font-size: 1.05em; margin: 25px 0 5px 0; display: flex; align-items: center; cursor: pointer; user-select: none; }
-        .slot-section-title:hover { color: #003366; }
-        .slot-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fff; }
-        .slot-table th { background-color: #b9d3ee; color: #000; border: 1px solid #9fb6cd; text-align: left; padding: 5px 8px; font-size: 0.9em; font-weight: normal; }
-        .slot-table td { border: 1px solid #b5c7de; padding: 6px 10px; font-size: 0.9em; vertical-align: top; }
-        .slot-table tr:nth-child(even) { background-color: #f9fafc; }
-        .slot-icon { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: middle; }
-        .prop-tag { font-size: 0.8em; font-style: italic; margin-left: 5px; }
+.slot-section-title { color: #104e8b; font-weight: bold; font-size: 1.05em; margin: 25px 0 5px 0; display: flex; align-items: center; cursor: pointer; user-select: none; }
+.slot-section-title:hover { color: #003366; }
+.slot-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fff; }
+.slot-table th { background-color: #b9d3ee; color: #000; border: 1px solid #9fb6cd; text-align: left; padding: 5px 8px; font-size: 0.9em; font-weight: normal; }
+.slot-table td { border: 1px solid #b5c7de; padding: 6px 10px; font-size: 0.9em; vertical-align: top; }
+.slot-table tr:nth-child(even) { background-color: #f9fafc; }
+.slot-icon { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: middle; }
+.prop-tag { font-size: 0.8em; font-style: italic; margin-left: 5px; }
 
-        /* Interactive Feedback Widget Styles */
-        .feedback-box { background: #f0f4f8; border: 1px solid #b5c7de; padding: 15px; border-radius: 4px; margin-top: 25px; }
-        .feedback-box h4 { margin-top: 0; color: #104e8b; font-size: 1.1em; margin-bottom: 10px; }
-        .feedback-input { width: 100%; min-height: 70px; box-sizing: border-box; padding: 8px; border: 1px solid #999; border-radius: 3px; font-family: sans-serif; font-size: 0.95em; resize: vertical; margin-bottom: 8px; }
-        .feedback-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .feedback-select { padding: 5px; border-radius: 3px; border: 1px solid #999; font-size: 0.9em; }
-        .submit-feedback-btn { background-color: #28a745; color: white; border: none; padding: 6px 12px; font-weight: bold; border-radius: 3px; cursor: pointer; }
-        .submit-feedback-btn:hover { background-color: #218838; }
-        .comment-item { background: white; border-left: 4px solid #104e8b; padding: 8px 12px; margin-top: 8px; border-radius: 0 3px 3px 0; font-size: 0.9em; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .tag-correction { border-left-color: #dc3545; }
-        .tag-missing { border-left-color: #ffc107; }
-        .tag-approved { border-left-color: #28a745; }
+.feedback-box { background: #f0f4f8; border: 1px solid #b5c7de; padding: 15px; border-radius: 4px; margin-top: 25px; }
+.feedback-box h4 { margin-top: 0; color: #104e8b; font-size: 1.1em; margin-bottom: 10px; }
+.feedback-input { width: 100%; min-height: 70px; box-sizing: border-box; padding: 8px; border: 1px solid #999; border-radius: 3px; font-family: sans-serif; font-size: 0.95em; resize: vertical; margin-bottom: 8px; }
+.feedback-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.feedback-select { padding: 5px; border-radius: 3px; border: 1px solid #999; font-size: 0.9em; }
+.submit-feedback-btn { background-color: #28a745; color: white; border: none; padding: 6px 12px; font-weight: bold; border-radius: 3px; cursor: pointer; }
+.submit-feedback-btn:hover { background-color: #218838; }
+.comment-item { background: white; border-left: 4px solid #104e8b; padding: 8px 12px; margin-top: 8px; border-radius: 0 3px 3px 0; font-size: 0.9em; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.tag-correction { border-left-color: #dc3545; }
+.tag-missing { border-left-color: #ffc107; }
+.tag-approved { border-left-color: #28a745; }
     </style>
 </head>
 <body>
 
-    <!-- Global Full-Width Top Navigation Bar -->
+<div id="ontology-loading-banner">
+    <span class="ontology-spinner"></span>
+    <span id="ontology-loading-text">Loading the full ontology taxonomy — this can take a moment. Feel free to browse <strong>Home</strong> or <strong>Downloads</strong> while you wait.</span>
+</div>
+
 <div class="global-navbar">
     <div class="app-title">mCODE-ORCHID Taxonomy Browser</div>
     <div class="global-tabs">
-        <!-- Only one button should be 'active' by default -->
         <button class="global-tab-btn active" data-target="page-home">Home</button>
         <button class="global-tab-btn" data-target="page-browser">Browser View</button>
         <button class="global-tab-btn" data-target="page-visualization">Tree Visualization View</button>
 		<button class="global-tab-btn" data-target="page-downloads">Downloads</button>
-
     </div>
 </div>
 
 
 <div id="page-home" class="page-content active">
-    <!-- Everything is wrapped in one single column container -->
     <div class="home-stack-container">
 		<h1 class="page-title">mCODE-ORCHID Ontology Browser</h1>        
         <p><strong>Version:</strong> v1.0.0 | <strong>Date:</strong> July 6th, 2026 | <span><strong>Authors:</strong> Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
@@ -740,7 +726,6 @@ body > div.tooltip {
 <h2 class="section-title">Acknowledgements</h2>
 <p>This project was funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM) </p>
             
-            <!-- Funding Logos Section -->
             <div class="funding-section">
                 <div class="logo-row">
                     <img src="logos/FRQS_logo.png" alt="Funder 1">
@@ -752,24 +737,19 @@ body > div.tooltip {
                     <img src="logos/AAPM_logo.png" alt="Funder 5">
                 </div>
             </div>
-        </div> <!-- This closes <div class="text-content"> -->
-    </div> <!-- This closes <div class="home-stack-container"> -->
-</div> <!-- This closes <div id="page-home" ...> -->
+        </div>
+    </div>
+</div>
 
-
-	<!-- PAGE downloads: downloads -->
 
 <div id="page-downloads" class="page-content">
-        <!-- Everything is wrapped in one single column container -->
     <div class="ontology-download">
 
             <h1 class="page-title">Download the ontology</h1>
             <p><span> By Odette Rios-Ibacache, Gaetan Butault, Amal Zouaq & John Kildea</span></p>
            <h3 style="margin-top:0; color:#104e8b;">Files are available in .OWL and .TTL formats. </h3>
-            <!-- Recommended download -->
     <div class="ontology-recommended">
         <span class="download-icon"></span>
-
         <a href="files/mCODE-orchid.owl" download>
 			<svg class="download-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -778,27 +758,20 @@ body > div.tooltip {
         </svg>
             <strong>Download mCODE-orchid.owl</strong>
         </a>
-
         <span>
             - Recommended last version
         </span>
     </div>
 
-    <!-- Horizontal line -->
     <div class="ontology-line"></div>
 
-
-    <!-- Table header -->
     <div class="ontology-row ontology-header">
-
         <div class="file-column">
             File<br>Name
         </div>
-
         <div class="description-column">
             Description
         </div>
-
         <div class="download-column">
             <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -807,7 +780,6 @@ body > div.tooltip {
     </svg><br>
             Download<br>.owl file
         </div>
-
         <div class="download-column">
             <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -816,7 +788,6 @@ body > div.tooltip {
     </svg><br>
             Download<br>.ttl file
         </div>
-
         <div class="download-column">
             <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -825,39 +796,30 @@ body > div.tooltip {
     </svg><br>
             Download<br>.json file
         </div>
-
     </div>
 
-
-    <!-- GO-BASIC row -->
     <div class="ontology-row">
-
         <div class="file-column file-name">
             mCODE-orchid<br> v1.0.0
         </div>
-
         <div class="description-column">
             First created version, guided by the mCODE 4.0.0 (STU4) Terminology Standards Value Sets. Our model reuses established ontologies (SNOMED CT, LOINC, NCIt, RxNorm, UCUM, GO, O3) and maps image features to specific RadLex and O3 identifiers. 
         </div>
-
         <div class="download-column">
             <a href="files/mCODE-orchid.owl" download>
                 mCODE-orchid.owl
             </a>
         </div>
-
         <div class="download-column">
             <a href="files/mCODE-orchid.ttl" download>
                 mCODE-orchid.ttl
             </a>
         </div>
-
         <div class="download-column">
             <a href="files/mCODE-orchid.json" download>
                 mCODE-orchid.json
             </a>
         </div>
-
     </div>
    <div class="additional-downloads-container">
     <h2 class="ontology-section-title" style="margin-top: 40px;">Description files</h2>
@@ -865,7 +827,6 @@ body > div.tooltip {
     Explore alternative descriptive file formats below.
 </p>
 
-    <!-- File Item 1 -->
     <div class="additional-file-row">
         <div class="file-info">
             <a href="files/ontology-description.docx" download class="download-link">
@@ -880,7 +841,6 @@ body > div.tooltip {
         </div>
     </div>
 
-    <!-- File Item 2 (Duplicate this block to add more files) -->
     <div class="additional-file-row">
         <div class="file-info">
             <a href="files/protege-export.csv" download class="download-link">
@@ -896,14 +856,14 @@ body > div.tooltip {
     </div>
 </div>
 </div>
-           </div> <!-- This closes <div class="text-content"> -->
+</div>
 	
-    <!-- PAGE VIEWPORT 1: BROWSER VIEW (Contains the classic side-by-side layout) -->
 <div id="page-browser" class="page-content">
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
-            <div id="protege-tree">Assembling ontology nodes...</div>
+			<div id="search-results-dropdown" style="display:none; background:#fff; border:1px solid #b5c7de; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+			<div id="protege-tree">Assembling ontology nodes...</div>
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
@@ -917,27 +877,39 @@ body > div.tooltip {
 	<div class="visualization-layout-container">
 		
     	<div class="edam-browser-wrapper">
-        <!-- Left Column: The Interactive Tree View -->
         <div class="tree-pane">
             <div id="ontology-tree-container" style="width: 100%; height: 100%;"></div>
             <div class="tree-zoom-controls">
                 <button id="tree-zoom-in" title="Zoom in">+</button>
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
+                <button id="tree-expand-all" class="tree-action-btn" title="Expand all descendants" aria-label="Expand all descendants">
+				<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+                        <path d="M11 11 L4 4 M4 4 H9 M4 4 V9" />
+                        <path d="M17 11 L24 4 M24 4 H19 M24 4 V9" />
+                        <path d="M11 17 L4 24 M4 24 H9 M4 24 V19" />
+                        <path d="M17 17 L24 24 M24 24 H19 M24 24 V19" />
+                    </svg>
+				</button>
+                <button id="tree-collapse-all" class="tree-action-btn" title="Collapse branches without selected descendants" aria-label="Collapse branches without selected descendants">
+					<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+                        <path d="M4 4 L12 12 M8 12 H12 V8" />
+                        <path d="M24 4 L16 12 M16 8 V12 H20" />
+                        <path d="M4 24 L12 16 M8 16 H12 V20" />
+                        <path d="M24 24 L16 16 M16 20 V16 H20" />
+                    </svg>
+                </button>
             </div>
         </div>
 
-        <!-- Right Column: Metadata Sidebar -->
    <div class="metadata-pane">
     <div class="metadata-card" id="details-card-container">
         
-        <!-- Header Bar: Clicking this toggles the collapse/expand -->
         <div class="card-header" onclick="toggleDetailsBox()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
             <h3 id="panel-title" class="pane-title" style="margin: 0; background: transparent;">Details of Class</h3>
             <span id="toggle-indicator" style="font-size: 0.9rem; font-weight: bold; color: #555;">[ - ]</span>
         </div>
         
-        <!-- Collapsible Body Section (White Background) -->
         <div class="card-body" id="card-body-content">
             <table class="metadata-table">
                 <tr>
@@ -977,14 +949,12 @@ body > div.tooltip {
                     <td id="val-datatype-properties"></td>
                 </tr>
             </table>
-        </div><!-- End of card-body -->
+        </div>
         
     </div>
 </div>
-        <!-- End of metadata-pane -->
 
-    </div> <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
-    	<!-- Text placed outside and below the white square -->
+    </div>
     <div class="external-footer-text">
 	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="url">https://doi.org/10.21105/joss.00698</a>)    	</div>
 	</div>
@@ -992,34 +962,28 @@ body > div.tooltip {
 
 <script>
 	function populateHomeMetadata() {
-    // Check if vowlData exists
     if (typeof vowlData !== 'undefined' && vowlData.header) {
         const header = vowlData.header;
         const other = header.other;
 
-        // Populate Version
         $('#meta-version').text(header.version);
 
-        // Populate Comment
         if (header.comments && header.comments.en) {
             $('#meta-comment').text(header.comments.en);
         }
 
-        // Extract metadata from the 'other' object
         if (other) {
-            // Populate Year/Date
             const dateEntry = other.creation_date ? other.creation_date[0].value : "N/A";
             $('#meta-year').text(dateEntry);
 
-            // Populate Authors
             const authorEntry = other.created_by ? other.created_by[0].value : "N/A";
             $('#meta-authors').text(authorEntry);
         }
     }
 }
+
 $(document).ready(function() {
-	// Initialize Supabase once using the proper global reference
-window.supabase = window.supabase.createClient(
+	window.supabase = window.supabase.createClient(
     'https://ikihocvwctkfmzkofvus.supabase.co', 
     'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
 );
@@ -1028,19 +992,18 @@ window.supabase = window.supabase.createClient(
     window.masterIdLabelMap = {}; 
     let feedbackDatabase = {}; 
 	populateHomeMetadata();
+	loadOntologyDataAsync();
+
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
     $('.global-tab-btn').on('click', function() {
     const targetPage = $(this).data('target');
     
-    // 1. Update Buttons
     $('.global-tab-btn').removeClass('active');
     $(this).addClass('active');
     
-    // 2. Update Panels (this hides all, then shows the target)
     $('.page-content').removeClass('active');
     $('#' + targetPage).addClass('active');
 
-    // 3. Optional: Trigger viz if needed
     if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
         window.initializeEdamGraphicView();
     }
@@ -1053,17 +1016,12 @@ window.supabase = window.supabase.createClient(
         
         clearTimeout(searchDebounceTimeout);
         
-        // INSTANT RESET: If the user erases everything, reset the tree immediately
         if (!inputVal.trim()) {
-            const tree = $('#protege-tree').jstree(true);
-            if (tree) {
-                tree.clear_search();
-                tree.close_all();
-            }
+            document.getElementById('search-results-dropdown').style.display = 'none';
+            document.getElementById('search-results-dropdown').innerHTML = '';
             return;
         }
 
-        // DEBOUNCE TIMER: Waits 250ms after you stop typing to filter smoothly
         searchDebounceTimeout = setTimeout(() => {
             executeFastSearch(inputVal);
         }, 250); 
@@ -1095,7 +1053,6 @@ window.supabase = window.supabase.createClient(
 
     if (!commentText) return alert("Please type out a comment before saving.");
 
-    // 1. Send data to Supabase
     try {
         const { error } = await window.supabase
             .from('Feedback') 
@@ -1106,9 +1063,8 @@ window.supabase = window.supabase.createClient(
                 tag: labelType 
             }]);
 
-        if (error) throw error; // If Supabase returns an error, jump to catch
+        if (error) throw error;
 
-        // 2. Only update local UI if database save succeeded
         if (!feedbackDatabase[classId]) {
             feedbackDatabase[classId] = { classId: classId, className: className, notes: [] };
         }
@@ -1169,18 +1125,37 @@ window.supabase = window.supabase.createClient(
 
     // 6. DATA PROCESSOR PIPELINE
     window.processOntologyData = function(vowlData) {
+		const DEBUG = false;
+		
         let rawClasses = vowlData.class || [];
         let attributesList = vowlData.classAttribute || [];
         let propertiesList = vowlData.property || [];
         let propertyAttributes = vowlData.propertyAttribute || [];
 
         let attrMap = {};
-        attributesList.forEach(a => { attrMap[a.id] = a; });
+        attributesList.forEach(a => {
+            if (!attrMap[a.id]) {
+                attrMap[a.id] = { ...a };
+                return;
+            }
+            const existing = attrMap[a.id];
+            if (DEBUG) console.warn(`Duplicate attribute record for id "${a.id}" — merging fields.`);
+            for (const key in a) {
+                const newVal = a[key];
+                const oldVal = existing[key];
+                if (Array.isArray(newVal) || Array.isArray(oldVal)) {
+                    const oldArr = Array.isArray(oldVal) ? oldVal : (oldVal ? [oldVal] : []);
+                    const newArr = Array.isArray(newVal) ? newVal : (newVal ? [newVal] : []);
+                    existing[key] = [...new Set([...oldArr, ...newArr])];
+                } else if ((oldVal === undefined || oldVal === null || oldVal === '' || oldVal === 'None') && newVal) {
+                    existing[key] = newVal;
+                }
+            }
+        });
         
         let propAttrMap = {};
         propertyAttributes.forEach(pa => { propAttrMap[pa.id] = pa; });
 
-        // Helper to extract a clean string out of WebVOWL structures
         function extractCleanString(val) {
             if (!val || val === 'None') return '';
             if (typeof val === 'string') return val.trim();
@@ -1193,47 +1168,40 @@ window.supabase = window.supabase.createClient(
 
         rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
-            const attr = attributesList.find(a => a.id === uniqueId) || {};
-            
+			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+			if (isDeprecated(attr)) return;
+			if (isEmptyPlaceholder(attr)) return;
+			if (isAnonymousExpression(attr)) return;
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
             let prefLabel = '';
             let altLabel = '';
-            
-            // 1. Initialize definition strictly empty so fallbacks can execute cleanly
             let skosDef = '';
 
-            // 2. CHECK TOP-LEVEL FIELDS (Where rdfs:comment / rdfs:description live)
             if (attr.description) skosDef = extractAnnotation(attr.description);
 
-            // 3. CHECK NESTED ANNOTATIONS OBJECTS (Where your custom SKOS definition lives)
             if (attr.annotations) {
                 for (let key in attr.annotations) {
                     let cleanKey = key.toLowerCase();
                     let extractedVal = extractAnnotation(attr.annotations[key]);
 
-		    console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
+		            if (DEBUG) console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
 
                     if (!extractedVal || extractedVal === 'None') continue;
 
-                    // Capture custom SKOS / IAO labels and synonyms
                     if (cleanKey.includes('preflabel')) {
                         prefLabel = extractedVal;
                     }
                     if (cleanKey.includes('altlabel') || cleanKey.includes('synonym')) {
                         altLabel = extractedVal;
                     }
-                    
-                    // Capture definitions by looking for both the label and the absolute URI fragment
                     if (cleanKey.includes('definition') || cleanKey.includes('iao_0000115')) {
-                        
                         skosDef = extractedVal; 
                     }
                 }
             }
 
-            // Final text fallback for UI display hierarchy
             let displayName = prefLabel || (rdfsLabel !== 'None' ? rdfsLabel : null) || window.masterIdLabelMap[uniqueId] || cleanUrlFallback(uniqueId);
             
             if (typeof isPrimitiveType === "function" && isPrimitiveType(uniqueId, displayName, (classObj.type || '') + " " + (attr.type || ''))) {
@@ -1253,13 +1221,35 @@ window.supabase = window.supabase.createClient(
                     prefLabel: prefLabel || 'None', 
                     altLabel: altLabel || 'None', 
                     rdfsComment: extractAnnotation(attr.comment) || 'None', 
-                    comment: skosDef || 'No explicit description found.', // Passes the parsed SKOS definition directly down to the panel
+                    comment: skosDef || 'No explicit description found.',
                     superclasses: [], 
                     subclasses: [], 
                     slots: [], 
                     equivalent: equivalents
                 }
             };
+        });
+
+		rawClasses.forEach(classObj => {
+            const uniqueId = classObj.id;
+            const attr = attrMap[uniqueId] || {};
+            const childNode = window.globalNodeRegistry[uniqueId];
+            if (!childNode) return;
+
+            let superClasses = attr.superClasses || [];
+            if (!Array.isArray(superClasses)) superClasses = [superClasses];
+
+            let intersectionMembers = attr.intersection || [];
+            if (!Array.isArray(intersectionMembers)) intersectionMembers = [intersectionMembers];
+
+            let combinedSuperCandidates = [...superClasses, ...intersectionMembers];
+
+            combinedSuperCandidates.forEach(supId => {
+                if (window.globalNodeRegistry[supId] && supId !== uniqueId) {
+                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
+                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
+                }
+            });
         });
 
         // Two-Way (Bidirectional) Equivalence Bridge Injection
@@ -1274,23 +1264,6 @@ window.supabase = window.supabase.createClient(
                     }
                 });
             }
-        });
-
-        rawClasses.forEach(classObj => {
-            const uniqueId = classObj.id;
-            const attr = attrMap[uniqueId] || {};
-            const childNode = window.globalNodeRegistry[uniqueId];
-            if (!childNode) return;
-
-            let superClasses = attr.superClasses || [];
-            if (!Array.isArray(superClasses)) superClasses = [superClasses];
-
-            superClasses.forEach(supId => {
-                if (window.globalNodeRegistry[supId]) {
-                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
-                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
-                }
-            });
         });
 
         propertiesList.forEach(prop => {
@@ -1325,58 +1298,116 @@ window.supabase = window.supabase.createClient(
             }
         });
 
-        let jsTreeData = [];
-        let processedTreePaths = new Set();
-
-        function addNodeToTree(classId, treeParentId, currentPathList) {
-            let node = window.globalNodeRegistry[classId];
-            if (!node || currentPathList.includes(classId)) return;
-            
-            let updatedPathList = [...currentPathList, classId];
-            let pathKeyString = updatedPathList.join('->');
-            if (processedTreePaths.has(pathKeyString)) return;
-            processedTreePaths.add(pathKeyString); 
-
-            let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
-            jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
-            
-            let crossSubclasses = node.meta.subclasses || []; 
-            crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
-        }
-
-        // Target window scope registry precisely to catch missing isolated components
-        Object.keys(window.globalNodeRegistry).forEach(classId => {
-            const node = window.globalNodeRegistry[classId];
-            if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
-                addNodeToTree(classId, '#', []);
-            }
-        });
-
-        renderTreeInterface(jsTreeData);
+        renderTreeInterface();
+        hideOntologyLoadingBanner();
     };
 
-    function renderTreeInterface(jsTreeData) {
+    function buildJsTreeNodeObj(originalId, treeNodeId, pathList) {
+        const node = window.globalNodeRegistry[originalId];
+        const childIds = getAllSubclasses(originalId).filter(subId => !pathList.includes(subId));
+        return {
+            id: treeNodeId,
+            text: node.text,
+            data: { originalId: originalId },
+            children: childIds.length > 0
+        };
+    }
+
+    function getRootNodes() {
+        let roots = [];
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
+            const n = window.globalNodeRegistry[classId];
+            if (!n.meta.superclasses || n.meta.superclasses.length === 0) {
+                roots.push(buildJsTreeNodeObj(classId, classId, [classId]));
+            }
+        });
+        return roots;
+    }
+
+    function getChildNodes(node) {
+        const treeParentId = node.id;
+        const originalId = node.data.originalId;
+        const pathSoFar = treeParentId.split('::');
+
+        return getAllSubclasses(originalId)
+            .filter(subId => !pathSoFar.includes(subId))
+            .map(subId => buildJsTreeNodeObj(subId, treeParentId + '::' + subId, [...pathSoFar, subId]));
+    }
+
+    function renderTreeInterface() {
         $('#protege-tree').jstree("destroy").jstree({
-            'core': { 
-                'data': jsTreeData, 
+            'core': {
+                'data': function (node, callback) {
+                    if (node.id === '#') {
+                        callback(getRootNodes());
+                    } else {
+                        callback(getChildNodes(node));
+                    }
+                },
                 'themes': { 'variant': 'small', 'icons': true, 'dots': true }
             },
-            'search': {
-                'show_only_matches': true,
-                'show_only_matches_children': false
-            },
-            'plugins': ["wholerow", "search"]
+            'plugins': ["wholerow"]
         });
     }
 
     // 7. DATA WRAPPER HELPER UTILITIES
     function isPrimitiveType(id, label, type) {
-        let idLower = String(id || '').toLowerCase();
-        let labelLower = String(label || '').toLowerCase();
         let typeLower = String(type || '').toLowerCase();
         if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
-        if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
-        return /\bliteral\b|\bdatetime\b|\bstring\b|\bstrin\b|\btimestamp\b|text\/value|\bboolean\b|\binteger\b|\bint\b/.test(idLower + " " + labelLower);
+        let idLower = String(id || '').trim().toLowerCase();
+        if (idLower.startsWith('xsd:') || idLower === 'rdfs:literal') return true;
+        const primitiveWords = ['literal','datetime','string','timestamp','boolean','integer','int'];
+        let labelLower = String(label || '').trim().toLowerCase();
+        return primitiveWords.includes(labelLower) || primitiveWords.includes(idLower);
+    }
+
+    function isDeprecated(attr) {
+        return !!(attr && Array.isArray(attr.attributes) && attr.attributes.includes('deprecated'));
+    }
+
+    function isEmptyPlaceholder(attr) {
+        if (!attr) return true;
+        const annotations = attr.annotations || {};
+        const hasRealAnnotations = Object.keys(annotations).length > 0;
+        const labelObj = attr.label || {};
+        const labelKeys = Object.keys(labelObj);
+        const hasOnlyFallbackLabel = labelKeys.length === 0 ||
+            (labelKeys.length === 1 && labelKeys[0] === 'IRI-based');
+        return hasOnlyFallbackLabel && !hasRealAnnotations;
+    }
+
+    function isAnonymousExpression(attr) {
+        if (!attr) return false;
+        const attrs = attr.attributes || [];
+        return attrs.includes('anonymous');
+    }
+
+    // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
+    function loadOntologyDataAsync() {
+        const script = document.createElement('script');
+        script.src = 'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0-data/ontology-data.js';
+        script.onload = function () {
+            if (typeof window.vowlData !== 'undefined') {
+                window.processOntologyData(window.vowlData);
+            } else {
+                showOntologyLoadError('Ontology file loaded, but "window.vowlData" was not found inside it.');
+            }
+        };
+        script.onerror = function () {
+            showOntologyLoadError('Could not download the ontology data file. Check your connection and try reloading.');
+        };
+        document.body.appendChild(script);
+    }
+
+    function hideOntologyLoadingBanner() {
+        $('#ontology-loading-banner').fadeOut(200);
+    }
+
+    function showOntologyLoadError(message) {
+        const banner = $('#ontology-loading-banner');
+        banner.addClass('error');
+        banner.find('.ontology-spinner').remove();
+        $('#ontology-loading-text').text(message);
     }
 
     function safeUnwrap(field) {
@@ -1407,7 +1438,6 @@ window.supabase = window.supabase.createClient(
         return cleanUrlFallback(fallbackId);
     }
 
-	
     function getAnyDescription(coreObj, attrObj) {
         const targets = [coreObj, attrObj].filter(Boolean);
         for (let i = 0; i < targets.length; i++) {
@@ -1449,39 +1479,40 @@ window.supabase = window.supabase.createClient(
         return Array.from(supers);
     }
 
-function extractAnnotation(val) {
-            if (!val || val === 'None') return '';
-            if (typeof val === 'string') return val.trim();
-            if (Array.isArray(val) && val.length > 0) return extractAnnotation(val[0]);
-            if (typeof val === 'object') {
-                return val.value || val.en || val['en-us'] || val.undefined || Object.values(val)[0] || '';
-            }
-            return String(val);
+    function extractAnnotation(val) {
+        if (!val || val === 'None') return '';
+        if (typeof val === 'string') return val.trim();
+        if (Array.isArray(val) && val.length > 0) return extractAnnotation(val[0]);
+        if (typeof val === 'object') {
+            return val.value || val.en || val['en-us'] || val.undefined || Object.values(val)[0] || '';
         }
-async function syncFeedbackFromDatabase() {
-    try {
-        const { data, error } = await window.supabase
-            .from('Feedback')
-            .select('*');
-
-        if (error) throw error; // Jump to catch if there's a database error
-
-        data.forEach(row => {
-            if (!feedbackDatabase[row.node_id]) {
-                feedbackDatabase[row.node_id] = { classId: row.node_id, className: row.class_name, notes: [] };
-            }
-            feedbackDatabase[row.node_id].notes.push({
-                timestamp: row.created_at,
-                tag: row.tag,
-                text: row.comment
-            });
-        });
-        console.log("Database synchronized.");
-    } catch (err) {
-        console.error("Database sync skipped or failed:", err);
-        // We DO NOT return here; we let the code finish so the tree still renders
+        return String(val);
     }
-}
+
+    async function syncFeedbackFromDatabase() {
+        try {
+            const { data, error } = await window.supabase
+                .from('Feedback')
+                .select('*');
+
+            if (error) throw error;
+
+            data.forEach(row => {
+                if (!feedbackDatabase[row.node_id]) {
+                    feedbackDatabase[row.node_id] = { classId: row.node_id, className: row.class_name, notes: [] };
+                }
+                feedbackDatabase[row.node_id].notes.push({
+                    timestamp: row.created_at,
+                    tag: row.tag,
+                    text: row.comment
+                });
+            });
+            console.log("Database synchronized.");
+        } catch (err) {
+            console.error("Database sync skipped or failed:", err);
+        }
+    }
+
     // 8. JSTREE TREE EVENT LISTENER FOR CONCEPT INSPECTION
     $('#protege-tree').on("changed.jstree", function (e, data) {
         if(!data.selected.length) return;
@@ -1622,19 +1653,39 @@ async function syncFeedbackFromDatabase() {
         renderActiveCommentsList(node.id);
     });
 
+    function getPrimaryAncestorPath(classId, visited = new Set()) {
+        if (visited.has(classId)) return [classId];
+        visited.add(classId);
+        const node = window.globalNodeRegistry[classId];
+        if (!node || !node.meta.superclasses || node.meta.superclasses.length === 0) {
+            return [classId];
+        }
+        return [...getPrimaryAncestorPath(node.meta.superclasses[0], visited), classId];
+    }
+
     window.selectTaxonomyNode = function(nodeId) {
         if (!nodeId) return;
         const tree = $('#protege-tree').jstree(true);
-        if (tree) {
-            let allNodes = tree.get_json('#', { flat: true });
-            let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
-            if (match) {
+        if (!tree) return;
+
+        const pathIds = getPrimaryAncestorPath(nodeId);
+        let cumulativeTreeId = null;
+
+        function openNext(index) {
+            cumulativeTreeId = cumulativeTreeId ? cumulativeTreeId + '::' + pathIds[index] : pathIds[index];
+
+            if (index === pathIds.length - 1) {
                 tree.deselect_all();
-                tree.select_node(match.id);
-                tree._open_to(match.id);
-                document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                tree.select_node(cumulativeTreeId);
+                setTimeout(() => {
+                    document.getElementById(cumulativeTreeId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+                return;
             }
+            tree.open_node(cumulativeTreeId, function () { openNext(index + 1); });
         }
+
+        openNext(0);
     };
 
     function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
@@ -1687,32 +1738,50 @@ async function syncFeedbackFromDatabase() {
         return html;
     }
 
-    // 9. FINAL STEP: SAFE RUN POPULATOR
-    if (typeof window.vowlData !== 'undefined') {
-        setTimeout(function() {
-            window.processOntologyData(window.vowlData);
-        }, 150);
-    } else {
-        $('#protege-tree').html('<span style="color:red; font-size:0.9em; padding:10px; display:block;">Error: "ontology-data.js" not detected or missing window.vowlData object.</span>');
-    }
 });
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
 function executeFastSearch(query) {
-    const tree = $('#protege-tree').jstree(true);
-    if (!tree) return;
-
     let queryLower = query.toLowerCase().trim();
+    const resultsBox = document.getElementById('search-results-dropdown');
     if (!queryLower) {
-        tree.clear_search();
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
         return;
     }
 
-    // Run jsTree's optimized native search filter
-    tree.search(queryLower);
+    const matches = Object.values(window.globalNodeRegistry)
+        .filter(n => n.text.toLowerCase().includes(queryLower))
+        .slice(0, 25);
+
+    if (matches.length === 0) {
+        resultsBox.innerHTML = '<div style="padding:8px; color:#888; font-style:italic;">No matches found.</div>';
+        resultsBox.style.display = 'block';
+        return;
+    }
+
+    resultsBox.innerHTML = matches.map(m => `
+        <div class="search-result-item" data-id="${m.id}" 
+             style="padding:6px 10px; cursor:pointer; border-bottom:1px solid #eee;">
+            ${m.text}
+        </div>
+    `).join('');
+    resultsBox.style.display = 'block';
 }
 
-	function toggleDetailsBox() {
+$(document).on('click', '.search-result-item', function() {
+    const targetId = $(this).data('id');
+    document.getElementById('search-results-dropdown').style.display = 'none';
+    window.selectTaxonomyNode(targetId);
+});
+
+$(document).on('mouseenter', '.search-result-item', function() {
+    $(this).css('background', '#eef4fb');
+}).on('mouseleave', '.search-result-item', function() {
+    $(this).css('background', 'transparent');
+});
+
+function toggleDetailsBox() {
     const card = document.getElementById('details-card-container');
     const indicator = document.getElementById('toggle-indicator');
     
@@ -1727,21 +1796,18 @@ function executeFastSearch(query) {
 </script>
 	<footer class="site-footer">
     <div class="footer-container">
-        <!-- Left Side Links -->
         <div class="footer-links">
 			<a href="https://odetteriosib.github.io/mCODEBrowser/">Home</a>
 			<a href="mailto:odette.riosibacache@mail.mcgill.ca">Contact us</a>
             <a href="terms.html">Citation</a>
         </div>
         
-        <!-- Center/Right Resource Logo -->
         <div class="footer-logo-section">
             <div class="footer-logo-text">
                 mCODE-ORCHID: <br>Ontology for Radiomics, Clinical Health, and Imaging Data<br>
             </div>
         </div>
         
-        <!-- Right Side Copyright & Funding Info -->
         <div class="footer-info">
             <p>Copyright © 2026 </p>
             <p>Funded by Fonds de recherche du Québec – Santé (FRQS) and the American Association of Physicists in Medicine (AAPM)</p>
@@ -1758,8 +1824,6 @@ function executeFastSearch(query) {
 }
 </script>
 
-
-<!-- Run your application script -->
 <script type="module" src="app.js"></script>
 </body>
 
