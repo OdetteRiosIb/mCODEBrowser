@@ -134,14 +134,14 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: supId, label: getRegistryLabel(supId), role: 'Superclass',
             color: '#b0e0e6', size: 40,
-            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#b1fad8' }
+            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
     if (overflowSuperclasses.length) {
         satellites.push({
             id: null, label: `+${overflowSuperclasses.length} more`, role: 'Superclass', isOverflow: true,
             overflowIds: overflowSuperclasses, color: '#e2e8f0', size: 34,
-            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#b1fad8' }
+            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     }
 
@@ -149,29 +149,29 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: subId, label: getRegistryLabel(subId), role: 'Subclass',
             color: '#aec6cf', size: 38,
-            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#f7d7fc' }
+            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
     if (overflowSubclasses.length) {
         satellites.push({
             id: null, label: `+${overflowSubclasses.length} more`, role: 'Subclass', isOverflow: true,
             overflowIds: overflowSubclasses, color: '#e2e8f0', size: 34,
-            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#f7d7fc' }
+            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     }
 
     cappedProperties.forEach(slot => {
         satellites.push({
             id: slot.range, label: getRegistryLabel(slot.range), role: 'Class',
-            color: '#aec6cf', size: 36,
-            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#ffff9e' }
+            color: '#e3cfff', size: 36,
+            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#ff7f50' }
         });
     });
     if (overflowProperties.length) {
         satellites.push({
             id: null, label: `+${overflowProperties.length} more`, role: 'Class', isOverflow: true,
             overflowProps: overflowProperties, color: '#e2e8f0', size: 34,
-            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#ffff9e' }
+            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#ff7f50' }
         });
     }
 
