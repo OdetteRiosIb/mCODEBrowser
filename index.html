@@ -1537,11 +1537,36 @@ async function setCachedRegistry(registry) {
     }
 }
 
-// URL of the pre-processed ontology JSON (already flattened/merged — no more
-// client-side parsing needed). Point this at wherever you host ontology-fixed.json
-// (e.g. a GitHub raw URL, a release asset, or your own static hosting).
+// URL of the pre-processed, gzip-compressed ontology JSON. It's committed to
+// the repo (not a release asset) so jsDelivr/raw.githubusercontent.com can
+// serve it with CORS headers. Update the branch (@main) if yours differs.
 const ONTOLOGY_JSON_URL =
-    'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0-json/ontology-fixed.json';
+    'https://cdn.jsdelivr.net/gh/OdetteRiosIb/mCODEBrowser@main/ontology-fixed.json.gz';
+
+// Fallback in case jsDelivr hasn't picked up a very recent push yet:
+// 'https://raw.githubusercontent.com/OdetteRiosIb/mCODEBrowser/main/ontology-fixed.json.gz'
+
+// Fetches a gzip-compressed URL and returns the parsed JSON. Uses the
+// browser's native DecompressionStream (supported in all current browsers —
+// Chrome/Edge 80+, Firefox 113+, Safari 16.4+), so no extra library is needed.
+async function fetchGzippedJson(url) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+    }
+
+    if (typeof DecompressionStream === 'undefined') {
+        throw new Error(
+            'This browser does not support gzip decompression (DecompressionStream). ' +
+            'Please use a recent version of Chrome, Edge, Firefox, or Safari.'
+        );
+    }
+
+    const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
+    const text = await new Response(decompressedStream).text();
+    return JSON.parse(text);
+}
 
 // Converts the flat, pre-computed JSON (one record per class, keyed by IRI)
 // into the { id, text, meta: {...} } shape that the rest of the app expects
@@ -1596,20 +1621,14 @@ async function loadOntologyDataAsync() {
         return;
     }
 
-    // 2. No cache — fetch the pre-processed JSON directly.
-    // fetch() + JSON.parse() is far faster than injecting a <script> tag that
+    // 2. No cache — fetch the pre-processed, gzipped JSON and decompress it
+    // in the browser. This is far faster than injecting a <script> tag that
     // defines a giant JS variable, and since the JSON is already merged/deduped
     // we can skip processOntologyData() entirely.
     console.log('No cached ontology found. Fetching JSON...');
 
     try {
-        const response = await fetch(ONTOLOGY_JSON_URL);
-
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
-
-        const flatData = await response.json();
+        const flatData = await fetchGzippedJson(ONTOLOGY_JSON_URL);
 
         window.globalNodeRegistry = adaptFlatOntologyJson(flatData);
 
