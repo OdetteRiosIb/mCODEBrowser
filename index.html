@@ -1359,7 +1359,7 @@ $(document).ready(function() {
             }
         });
 
-        propertiesList.forEach(prop => {
+                propertiesList.forEach(prop => {
             const propId = prop.id;
             const attr = propAttrMap[propId] || {};
             let name = window.masterIdLabelMap[propId] || cleanUrlFallback(propId);
@@ -1371,19 +1371,25 @@ $(document).ready(function() {
                 if (!Array.isArray(domains)) domains = [domains];
                 domains.forEach(domainId => {
                     if (domainId && window.globalNodeRegistry[domainId]) {
-                        let targetRangeName = window.masterIdLabelMap[rangeId] || (window.globalNodeRegistry[rangeId] ? window.globalNodeRegistry[rangeId].text : cleanUrlFallback(rangeId || 'Literal Value'));
+                        let targetRangeName = window.masterIdLabelMap[rangeId] ||
+                            (window.globalNodeRegistry[rangeId]
+                                ? window.globalNodeRegistry[rangeId].text
+                                : cleanUrlFallback(rangeId || 'Literal Value'));
+
                         let rangeLower = String(targetRangeName).toLowerCase();
-                        
+
                         if (rangeLower === 'literal' || rangeLower.includes('string')) {
                             targetRangeName = 'Literal (Text/Value)';
                         } else if (rangeLower === 'datetime' || rangeLower.includes('date')) {
                             targetRangeName = 'dateTime (Timestamp)';
                         }
 
-                        window.globalNodeRegistry[domainId].meta.slots.push({ 
-                            name: name, 
-                            type: safeType.includes("objectproperty") ? 'Object Property' : 'Data Property', 
-                            range: targetRangeName, 
+                        window.globalNodeRegistry[domainId].meta.slots.push({
+                            name: name,
+                            type: safeType.includes("objectproperty")
+                                ? 'Object Property'
+                                : 'Data Property',
+                            range: targetRangeName,
                             comment: extractCleanString(getAnyDescription(prop, attr))
                         });
                     }
@@ -1393,7 +1399,11 @@ $(document).ready(function() {
 
         renderTreeInterface();
         hideOntologyLoadingBanner();
+
+        // Save processed ontology to IndexedDB cache
+        setCachedRegistry(window.globalNodeRegistry);
     };
+
 
     function buildJsTreeNodeObj(originalId, treeNodeId, pathList) {
         const node = window.globalNodeRegistry[originalId];
@@ -1476,22 +1486,98 @@ $(document).ready(function() {
     }
 
     // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
-    function loadOntologyDataAsync() {
-        const script = document.createElement('script');
-        script.src = 'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js';
-        script.onload = function () {
-            if (typeof window.vowlData !== 'undefined') {
-                window.processOntologyData(window.vowlData);
-            } else {
-                showOntologyLoadError('Ontology file loaded, but "window.vowlData" was not found inside it.');
+   const DB_NAME = 'mcode-orchid-cache';
+const STORE_NAME = 'ontology';
+const ONTOLOGY_VERSION = 'v1.0.0'; // bump this string whenever you republish the data
+
+function openCacheDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+
+        req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+                req.result.createObjectStore(STORE_NAME);
             }
         };
-        script.onerror = function () {
-            showOntologyLoadError('Could not download the ontology data file. Check your connection and try reloading.');
-        };
-        document.body.appendChild(script);
+
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function getCachedRegistry() {
+    try {
+        const db = await openCacheDB();
+
+        return await new Promise((resolve, reject) => {
+            const req = db
+                .transaction(STORE_NAME, 'readonly')
+                .objectStore(STORE_NAME)
+                .get(ONTOLOGY_VERSION);
+
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+        });
+    } catch {
+        return null;
+    }
+}
+
+async function setCachedRegistry(registry) {
+    try {
+        const db = await openCacheDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+
+        tx.objectStore(STORE_NAME).put(
+            registry,
+            ONTOLOGY_VERSION
+        );
+    } catch (e) {
+        console.warn('Cache write failed', e);
+    }
+}
+
+async function loadOntologyDataAsync() {
+    // 1. Try IndexedDB first
+    const cached = await getCachedRegistry();
+
+    if (cached) {
+        console.log('Loaded ontology from IndexedDB cache');
+
+        window.globalNodeRegistry = cached;
+
+        renderTreeInterface();
+        hideOntologyLoadingBanner();
+
+        return;
     }
 
+    // 2. No cache — download ontology-data.js
+    console.log('No cached ontology found. Downloading...');
+
+    const script = document.createElement('script');
+
+    script.src =
+        'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js';
+
+    script.onload = function () {
+        if (typeof window.vowlData !== 'undefined') {
+            window.processOntologyData(window.vowlData);
+        } else {
+            showOntologyLoadError(
+                'Ontology file loaded, but "window.vowlData" was not found inside it.'
+            );
+        }
+    };
+
+    script.onerror = function () {
+        showOntologyLoadError(
+            'Could not download the ontology data file. Check your connection and try reloading.'
+        );
+    };
+
+    document.body.appendChild(script);
+}
     function hideOntologyLoadingBanner() {
         $('#ontology-loading-banner').fadeOut(200);
     }
