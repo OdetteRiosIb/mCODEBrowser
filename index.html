@@ -1488,7 +1488,7 @@ $(document).ready(function() {
     // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
    const DB_NAME = 'mcode-orchid-cache';
 const STORE_NAME = 'ontology';
-const ONTOLOGY_VERSION = 'v1.0.0'; // bump this string whenever you republish the data
+const ONTOLOGY_VERSION = 'v2.0.0-json'; // bumped: cache format changed when switching from ontology-data.js to ontology-fixed.json
 
 function openCacheDB() {
     return new Promise((resolve, reject) => {
@@ -1537,6 +1537,50 @@ async function setCachedRegistry(registry) {
     }
 }
 
+// URL of the pre-processed ontology JSON (already flattened/merged — no more
+// client-side parsing needed). Point this at wherever you host ontology-fixed.json
+// (e.g. a GitHub raw URL, a release asset, or your own static hosting).
+const ONTOLOGY_JSON_URL =
+    'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0-json/ontology-fixed.json';
+
+// Converts the flat, pre-computed JSON (one record per class, keyed by IRI)
+// into the { id, text, meta: {...} } shape that the rest of the app expects
+// in window.globalNodeRegistry. Unlike processOntologyData(), this does a
+// single O(n) pass — no attribute merging, no dedup, no bidirectional
+// superclass/subclass injection — because ontology-fixed.json already has
+// that resolved.
+function adaptFlatOntologyJson(flatData) {
+    const registry = {};
+
+    for (const id in flatData) {
+        const v = flatData[id];
+
+        const slots = []
+            .concat(v.objectProperties || [])
+            .concat(v.dataProperties || []);
+
+        registry[id] = {
+            id: v.id || id,
+            text: v.text || v.prefLabel || v.rdfsLabel || id,
+            meta: {
+                type: 'Class',
+                iri: v.id || id,
+                rdfsLabel: v.rdfsLabel || 'None',
+                prefLabel: v.prefLabel || 'None',
+                altLabel: v.altLabel || 'None',
+                rdfsComment: v.rdfsComment || 'None',
+                comment: v.definition || 'No explicit description found.',
+                superclasses: v.superclasses || [],
+                subclasses: v.subclasses || [],
+                slots: slots,
+                equivalent: v.equivalent || []
+            }
+        };
+    }
+
+    return registry;
+}
+
 async function loadOntologyDataAsync() {
     // 1. Try IndexedDB first
     const cached = await getCachedRegistry();
@@ -1552,31 +1596,34 @@ async function loadOntologyDataAsync() {
         return;
     }
 
-    // 2. No cache — download ontology-data.js
-    console.log('No cached ontology found. Downloading...');
+    // 2. No cache — fetch the pre-processed JSON directly.
+    // fetch() + JSON.parse() is far faster than injecting a <script> tag that
+    // defines a giant JS variable, and since the JSON is already merged/deduped
+    // we can skip processOntologyData() entirely.
+    console.log('No cached ontology found. Fetching JSON...');
 
-    const script = document.createElement('script');
+    try {
+        const response = await fetch(ONTOLOGY_JSON_URL);
 
-    script.src =
-        'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js';
-
-    script.onload = function () {
-        if (typeof window.vowlData !== 'undefined') {
-            window.processOntologyData(window.vowlData);
-        } else {
-            showOntologyLoadError(
-                'Ontology file loaded, but "window.vowlData" was not found inside it.'
-            );
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
         }
-    };
 
-    script.onerror = function () {
+        const flatData = await response.json();
+
+        window.globalNodeRegistry = adaptFlatOntologyJson(flatData);
+
+        renderTreeInterface();
+        hideOntologyLoadingBanner();
+
+        // Save processed ontology to IndexedDB cache for instant loads next time
+        setCachedRegistry(window.globalNodeRegistry);
+    } catch (err) {
+        console.error(err);
         showOntologyLoadError(
             'Could not download the ontology data file. Check your connection and try reloading.'
         );
-    };
-
-    document.body.appendChild(script);
+    }
 }
     function hideOntologyLoadingBanner() {
         $('#ontology-loading-banner').fadeOut(200);
