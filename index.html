@@ -2,14 +2,15 @@
 <html>
 <head>   
     <meta charset="UTF-8">    
-    <title>mCODE-ORCHID Taxonomy Browser</title> 
+    <title>mCODE-ORCHID Taxonomy Browser</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-	<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-	data.js"></script>
- 
+
+ <!--  Local ontology data file -->
+<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js"></script>
     <style>
 
 	/* Core Page Layout Overhaul */
@@ -902,8 +903,7 @@ body > div.tooltip {
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
-			<div id="search-results-dropdown" style="display:none; background:#fff; border:1px solid #b5c7de; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
-			<div id="protege-tree">Assembling ontology nodes...</div>
+            <div id="protege-tree">Assembling ontology nodes...</div>
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
@@ -924,25 +924,7 @@ body > div.tooltip {
                 <button id="tree-zoom-in" title="Zoom in">+</button>
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
-				 <span class="tree-control-divider" aria-hidden="true"></span>
-                <button id="tree-expand-all" class="tree-action-btn" title="Expand all descendants" aria-label="Expand all descendants">
-				<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-                        <path d="M11 11 L4 4 M4 4 H9 M4 4 V9" />
-                        <path d="M17 11 L24 4 M24 4 H19 M24 4 V9" />
-                        <path d="M11 17 L4 24 M4 24 H9 M4 24 V19" />
-                        <path d="M17 17 L24 24 M24 24 H19 M24 24 V19" />
-                    </svg>
-				</button>
-                <button id="tree-collapse-all" class="tree-action-btn" title="Collapse branches without selected descendants" aria-label="Collapse branches without selected descendants">
-					<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-                        <path d="M4 4 L12 12 M8 12 H12 V8" />
-                        <path d="M24 4 L16 12 M16 8 V12 H20" />
-                        <path d="M4 24 L12 16 M8 16 H12 V20" />
-                        <path d="M24 24 L16 16 M16 20 V16 H20" />
-                    </svg>
-                </button>
             </div>
-            
         </div>
 
         <!-- Right Column: Metadata Sidebar -->
@@ -1059,19 +1041,8 @@ window.supabase = window.supabase.createClient(
     $('#' + targetPage).addClass('active');
 
     // 3. Optional: Trigger viz if needed
-    if (targetPage === 'page-visualization' &&
-        !window._edamVisualizationInitialized &&
-        typeof window.initializeEdamGraphicView === 'function') {
-
-        window._edamVisualizationInitialized = true;
-
-        // Let the tab paint first. The expensive D3 hierarchy work then
-        // happens after the browser has rendered the visualization panel.
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                window.initializeEdamGraphicView();
-            });
-        });
+    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
+        window.initializeEdamGraphicView();
     }
 });
 
@@ -1084,8 +1055,11 @@ window.supabase = window.supabase.createClient(
         
         // INSTANT RESET: If the user erases everything, reset the tree immediately
         if (!inputVal.trim()) {
-            document.getElementById('search-results-dropdown').style.display = 'none';
-            document.getElementById('search-results-dropdown').innerHTML = '';
+            const tree = $('#protege-tree').jstree(true);
+            if (tree) {
+                tree.clear_search();
+                tree.close_all();
+            }
             return;
         }
 
@@ -1195,34 +1169,13 @@ window.supabase = window.supabase.createClient(
 
     // 6. DATA PROCESSOR PIPELINE
     window.processOntologyData = function(vowlData) {
-		const DEBUG = false;
-		
         let rawClasses = vowlData.class || [];
         let attributesList = vowlData.classAttribute || [];
         let propertiesList = vowlData.property || [];
         let propertyAttributes = vowlData.propertyAttribute || [];
 
         let attrMap = {};
-attributesList.forEach(a => {
-    if (!attrMap[a.id]) {
-        attrMap[a.id] = { ...a };
-        return;
-    }
-    const existing = attrMap[a.id];
-    if (DEBUG) console.warn(`Duplicate attribute record for id "${a.id}" — merging fields.`);
-	for (const key in a) {
-        const newVal = a[key];
-        const oldVal = existing[key];
-        if (Array.isArray(newVal) || Array.isArray(oldVal)) {
-            const oldArr = Array.isArray(oldVal) ? oldVal : (oldVal ? [oldVal] : []);
-            const newArr = Array.isArray(newVal) ? newVal : (newVal ? [newVal] : []);
-            existing[key] = [...new Set([...oldArr, ...newArr])];
-        } else if ((oldVal === undefined || oldVal === null || oldVal === '' || oldVal === 'None') && newVal) {
-            existing[key] = newVal;
-        }
-        // otherwise keep the first non-empty scalar we already have
-    }
-});
+        attributesList.forEach(a => { attrMap[a.id] = a; });
         
         let propAttrMap = {};
         propertyAttributes.forEach(pa => { propAttrMap[pa.id] = pa; });
@@ -1240,12 +1193,9 @@ attributesList.forEach(a => {
 
         rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
-			const attr = attrMap[uniqueId] || {};            
+            const attr = attributesList.find(a => a.id === uniqueId) || {};
+            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
-			if (isDeprecated(attr)) return;
-			if (isEmptyPlaceholder(attr)) return;
-			if (isAnonymousExpression(attr)) return;
-
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
             let prefLabel = '';
@@ -1263,7 +1213,7 @@ attributesList.forEach(a => {
                     let cleanKey = key.toLowerCase();
                     let extractedVal = extractAnnotation(attr.annotations[key]);
 
-		            if (DEBUG) console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
+		    console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
 
                     if (!extractedVal || extractedVal === 'None') continue;
 
@@ -1312,30 +1262,6 @@ attributesList.forEach(a => {
             };
         });
 
-		rawClasses.forEach(classObj => {
-            const uniqueId = classObj.id;
-            const attr = attrMap[uniqueId] || {};
-            const childNode = window.globalNodeRegistry[uniqueId];
-            if (!childNode) return;
-
-            let superClasses = attr.superClasses || [];
-            if (!Array.isArray(superClasses)) superClasses = [superClasses];
-
-            // owl:intersectionOf classes (common in SNOMED-derived equivalence axioms)
-            // store their real parent inside "intersection" instead of "superClasses".
-            let intersectionMembers = attr.intersection || [];
-            if (!Array.isArray(intersectionMembers)) intersectionMembers = [intersectionMembers];
-
-            let combinedSuperCandidates = [...superClasses, ...intersectionMembers];
-
-            combinedSuperCandidates.forEach(supId => {
-                if (window.globalNodeRegistry[supId] && supId !== uniqueId) {
-                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
-                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
-                }
-            });
-        });
-
         // Two-Way (Bidirectional) Equivalence Bridge Injection
         Object.keys(window.globalNodeRegistry).forEach(classId => {
             let node = window.globalNodeRegistry[classId];
@@ -1350,30 +1276,22 @@ attributesList.forEach(a => {
             }
         });
 
-        // Build the final child index once.  This replaces repeated Set/array
-        // construction while the browser tree is being expanded.
-        Object.values(window.globalNodeRegistry).forEach(node => {
-            const childIds = new Set(node.meta.subclasses || []);
+        rawClasses.forEach(classObj => {
+            const uniqueId = classObj.id;
+            const attr = attrMap[uniqueId] || {};
+            const childNode = window.globalNodeRegistry[uniqueId];
+            if (!childNode) return;
 
-            // Preserve the existing equivalent-class behaviour: children of an
-            // equivalent class are also available under this node.
-            (node.meta.equivalent || []).forEach(eqId => {
-                const eqNode = window.globalNodeRegistry[eqId];
-                if (eqNode && eqNode.meta.subclasses) {
-                    eqNode.meta.subclasses.forEach(id => childIds.add(id));
+            let superClasses = attr.superClasses || [];
+            if (!Array.isArray(superClasses)) superClasses = [superClasses];
+
+            superClasses.forEach(supId => {
+                if (window.globalNodeRegistry[supId]) {
+                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
+                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
                 }
             });
-
-            node.meta.children = Array.from(childIds).filter(id => id !== node.id);
         });
-
-        // Lightweight search index: normalize labels once instead of doing
-        // toLowerCase() across every node for every keystroke.
-        window.ontologySearchIndex = Object.values(window.globalNodeRegistry).map(node => ({
-            id: node.id,
-            text: node.text || '',
-            normalized: String(node.text || '').toLowerCase()
-        }));
 
         propertiesList.forEach(prop => {
             const propId = prop.id;
@@ -1407,102 +1325,59 @@ attributesList.forEach(a => {
             }
         });
 
-        // Do not recursively build the complete jsTree at startup.
-        // jsTree loads each branch on demand, so creating every multi-parent
-        // path here only wastes CPU and memory.
-        renderTreeInterface();
-    };
-function isAnonymousExpression(attr) {
-    if (!attr) return false;
-    const attrs = attr.attributes || [];
-    return attrs.includes('anonymous');
-}
-    // Build the tree node object for one class, at one specific path.
-    // treeNodeId embeds the full ancestor chain (joined by "::") so the
-    // same class can legitimately appear more than once (multi-parent).
-    function buildJsTreeNodeObj(originalId, treeNodeId, pathList) {
-        const node = window.globalNodeRegistry[originalId];
-        if (!node) return null;
+        let jsTreeData = [];
+        let processedTreePaths = new Set();
 
-        const children = node.meta.children || [];
-        const hasChildren = children.some(childId => !pathList.includes(childId));
+        function addNodeToTree(classId, treeParentId, currentPathList) {
+            let node = window.globalNodeRegistry[classId];
+            if (!node || currentPathList.includes(classId)) return;
+            
+            let updatedPathList = [...currentPathList, classId];
+            let pathKeyString = updatedPathList.join('->');
+            if (processedTreePaths.has(pathKeyString)) return;
+            processedTreePaths.add(pathKeyString); 
 
-        return {
-            id: treeNodeId,
-            text: node.text,
-            data: { originalId: originalId },
-            children: hasChildren
-        };
-    }
+            let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
+            jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
+            
+            let crossSubclasses = node.meta.subclasses || []; 
+            crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
+        }
 
-    function getRootNodes() {
-        let roots = [];
+        // Target window scope registry precisely to catch missing isolated components
         Object.keys(window.globalNodeRegistry).forEach(classId => {
-            const n = window.globalNodeRegistry[classId];
-            if (!n.meta.superclasses || n.meta.superclasses.length === 0) {
-                roots.push(buildJsTreeNodeObj(classId, classId, [classId]));
+            const node = window.globalNodeRegistry[classId];
+            if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
+                addNodeToTree(classId, '#', []);
             }
         });
-        return roots;
-    }
 
-    function getChildNodes(node) {
-        const treeParentId = node.id;
-        const originalId = node.data.originalId;
-        const pathSoFar = treeParentId.split('::');
+        renderTreeInterface(jsTreeData);
+    };
 
-        const childIds = window.globalNodeRegistry[originalId]?.meta.children || [];
-
-        return childIds
-            .filter(subId => !pathSoFar.includes(subId))   // avoid cycles
-            .map(subId => buildJsTreeNodeObj(
-                subId,
-                treeParentId + '::' + subId,
-                [...pathSoFar, subId]
-            ))
-            .filter(Boolean);
-    }
-    function renderTreeInterface() {
+    function renderTreeInterface(jsTreeData) {
         $('#protege-tree').jstree("destroy").jstree({
-            'core': {
-                'data': function (node, callback) {
-                    if (node.id === '#') {
-                        callback(getRootNodes());
-                    } else {
-                        callback(getChildNodes(node));
-                    }
-                },
+            'core': { 
+                'data': jsTreeData, 
                 'themes': { 'variant': 'small', 'icons': true, 'dots': true }
             },
-            'plugins': ["wholerow"]
+            'search': {
+                'show_only_matches': true,
+                'show_only_matches_children': false
+            },
+            'plugins': ["wholerow", "search"]
         });
     }
 
     // 7. DATA WRAPPER HELPER UTILITIES
     function isPrimitiveType(id, label, type) {
-    let typeLower = String(type || '').toLowerCase();
-    if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
-    let idLower = String(id || '').trim().toLowerCase();
-    if (idLower.startsWith('xsd:') || idLower === 'rdfs:literal') return true;
-    const primitiveWords = ['literal','datetime','string','timestamp','boolean','integer','int'];
-    let labelLower = String(label || '').trim().toLowerCase();
-    return primitiveWords.includes(labelLower) || primitiveWords.includes(idLower);
-}
-
-	function isDeprecated(attr) {
-    return !!(attr && Array.isArray(attr.attributes) && attr.attributes.includes('deprecated'));
-}
-
-	function isUndefinedExternalStub(attr) {
-    if (!attr) return false;
-    const attrs = attr.attributes || [];
-    const flaggedExternalOrDeprecated = attrs.includes('external') || attrs.includes('deprecated');
-    const labelObj = attr.label || {};
-    const labelKeys = Object.keys(labelObj);
-    // A stub has NO real annotation label — the only key present is the "IRI-based" fallback
-    const hasOnlyFallbackLabel = labelKeys.length === 1 && labelKeys[0] === 'IRI-based';
-    return flaggedExternalOrDeprecated && hasOnlyFallbackLabel;
-}
+        let idLower = String(id || '').toLowerCase();
+        let labelLower = String(label || '').toLowerCase();
+        let typeLower = String(type || '').toLowerCase();
+        if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
+        if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
+        return /\bliteral\b|\bdatetime\b|\bstring\b|\bstrin\b|\btimestamp\b|text\/value|\bboolean\b|\binteger\b|\bint\b/.test(idLower + " " + labelLower);
+    }
 
     function safeUnwrap(field) {
         if (!field) return '';
@@ -1549,7 +1424,16 @@ function isAnonymousExpression(attr) {
     }
 
     function getAllSubclasses(classId) {
-        return window.globalNodeRegistry[classId]?.meta.children || [];
+        let node = window.globalNodeRegistry[classId];
+        if (!node) return [];
+        let subs = new Set(node.meta.subclasses || []);
+        if (node.meta.equivalent) {
+            node.meta.equivalent.forEach(eqId => {
+                let eqNode = window.globalNodeRegistry[eqId];
+                if (eqNode && eqNode.meta.subclasses) { eqNode.meta.subclasses.forEach(subId => subs.add(subId)); }
+            });
+        }
+        return Array.from(subs);
     }
 
     function getAllSuperclasses(classId) {
@@ -1738,39 +1622,19 @@ async function syncFeedbackFromDatabase() {
         renderActiveCommentsList(node.id);
     });
 
-    function getPrimaryAncestorPath(classId, visited = new Set()) {
-        if (visited.has(classId)) return [classId];
-        visited.add(classId);
-        const node = window.globalNodeRegistry[classId];
-        if (!node || !node.meta.superclasses || node.meta.superclasses.length === 0) {
-            return [classId];
-        }
-        return [...getPrimaryAncestorPath(node.meta.superclasses[0], visited), classId];
-    }
-	
-	window.selectTaxonomyNode = function(nodeId) {
+    window.selectTaxonomyNode = function(nodeId) {
         if (!nodeId) return;
         const tree = $('#protege-tree').jstree(true);
-        if (!tree) return;
-
-        const pathIds = getPrimaryAncestorPath(nodeId);
-        let cumulativeTreeId = null;
-
-        function openNext(index) {
-            cumulativeTreeId = cumulativeTreeId ? cumulativeTreeId + '::' + pathIds[index] : pathIds[index];
-
-            if (index === pathIds.length - 1) {
+        if (tree) {
+            let allNodes = tree.get_json('#', { flat: true });
+            let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
+            if (match) {
                 tree.deselect_all();
-                tree.select_node(cumulativeTreeId);
-                setTimeout(() => {
-                    document.getElementById(cumulativeTreeId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 50);
-                return;
+                tree.select_node(match.id);
+                tree._open_to(match.id);
+                document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-            tree.open_node(cumulativeTreeId, function () { openNext(index + 1); });
         }
-
-        openNext(0);
     };
 
     function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
@@ -1835,46 +1699,18 @@ async function syncFeedbackFromDatabase() {
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
 function executeFastSearch(query) {
+    const tree = $('#protege-tree').jstree(true);
+    if (!tree) return;
+
     let queryLower = query.toLowerCase().trim();
-    const resultsBox = document.getElementById('search-results-dropdown');
     if (!queryLower) {
-        resultsBox.style.display = 'none';
-        resultsBox.innerHTML = '';
+        tree.clear_search();
         return;
     }
 
-    const searchIndex = window.ontologySearchIndex || [];
-    const matches = searchIndex
-        .filter(n => n.normalized.includes(queryLower))
-        .slice(0, 25)
-        .map(n => window.globalNodeRegistry[n.id]);
-
-    if (matches.length === 0) {
-        resultsBox.innerHTML = '<div style="padding:8px; color:#888; font-style:italic;">No matches found.</div>';
-        resultsBox.style.display = 'block';
-        return;
-    }
-
-    resultsBox.innerHTML = matches.map(m => `
-        <div class="search-result-item" data-id="${m.id}" 
-             style="padding:6px 10px; cursor:pointer; border-bottom:1px solid #eee;">
-            ${m.text}
-        </div>
-    `).join('');
-    resultsBox.style.display = 'block';
+    // Run jsTree's optimized native search filter
+    tree.search(queryLower);
 }
-
-	$(document).on('click', '.search-result-item', function() {
-    const targetId = $(this).data('id');
-    document.getElementById('search-results-dropdown').style.display = 'none';
-    window.selectTaxonomyNode(targetId);
-});
-
-$(document).on('mouseenter', '.search-result-item', function() {
-    $(this).css('background', '#eef4fb');
-}).on('mouseleave', '.search-result-item', function() {
-    $(this).css('background', 'transparent');
-});
 
 	function toggleDetailsBox() {
     const card = document.getElementById('details-card-container');
@@ -1925,8 +1761,6 @@ $(document).on('mouseenter', '.search-result-item', function() {
 
 <!-- Run your application script -->
 <script type="module" src="app.js"></script>
-<!--  Local ontology data file -->
-
 </body>
 
 
