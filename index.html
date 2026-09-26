@@ -246,6 +246,102 @@ html {
     margin-bottom: 28px;
 }
 		
+
+/* =========================================
+   Ontology preparation / loading panel
+   ========================================= */
+#ontology-loading-panel {
+    position: fixed;
+    left: 24px;
+    bottom: 0;
+    width: min(455px, calc(100vw - 48px));
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #d8d8d8;
+    border-top: 4px solid #1B2775;
+    border-radius: 7px 7px 0 0;
+    box-shadow: 0 -3px 14px rgba(0,0,0,0.14);
+    padding: 13px 16px 15px;
+    z-index: 10000;
+    display: none;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+#ontology-loading-panel.visible {
+    display: block;
+}
+
+.loading-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.loading-row {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333;
+}
+
+.loading-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 9px;
+}
+
+.loading-progress-track {
+    flex: 1;
+    height: 13px;
+    border: 1px solid #cfcfcf;
+    background-color: #fff;
+    background-image: radial-gradient(#cfcfcf 0.8px, transparent 0.8px);
+    background-size: 4px 4px;
+    overflow: hidden;
+}
+
+#ontology-loading-fill {
+    width: 0%;
+    height: 100%;
+    background: #111;
+}
+
+#ontology-loading-panel.is-processing #ontology-loading-fill {
+    animation: ontologyLoadingPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes ontologyLoadingPulse {
+    0%   { width: 4%; }
+    70%  { width: 72%; }
+    100% { width: 86%; }
+}
+
+#ontology-loading-panel.loading-complete #ontology-loading-fill {
+    width: 100%;
+    animation: none;
+    transition: width 0.25s ease;
+}
+
+#ontology-loading-percent {
+    min-width: 42px;
+    font-size: 14px;
+    text-align: right;
+}
+
+#ontology-loading-panel.loading-complete {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+@media (max-width: 600px) {
+    #ontology-loading-panel {
+        left: 10px;
+        width: calc(100vw - 20px);
+    }
+}
+
 .site-footer {
     background-color: #1B2775; /* Deep dark navy blue */
     color: #ffffff;
@@ -1175,14 +1271,78 @@ window.supabase = window.supabase.createClient(
         downloadAnchor.remove();
     });
 
+    // 6. ONTOLOGY LOADING STATUS
+    const ontologyLoadingPanel = document.getElementById('ontology-loading-panel');
+
+    function updateOntologyLoading(percent, currentClasses, totalClasses, relationshipsText, propertiesText) {
+        if (!ontologyLoadingPanel) return;
+
+        ontologyLoadingPanel.classList.add('visible');
+        ontologyLoadingPanel.classList.add('is-processing');
+        ontologyLoadingPanel.classList.remove('loading-complete');
+
+        const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+        const fill = document.getElementById('ontology-loading-fill');
+        const pctLabel = document.getElementById('ontology-loading-percent');
+
+        if (fill && pct >= 100) fill.style.width = '100%';
+        if (pctLabel) pctLabel.textContent = Math.round(pct) + '%';
+
+        if (currentClasses != null) {
+            const el = document.getElementById('loading-classes-current');
+            if (el) el.textContent = Number(currentClasses).toLocaleString();
+        }
+        if (totalClasses != null) {
+            const el = document.getElementById('loading-classes-total');
+            if (el) el.textContent = Number(totalClasses).toLocaleString();
+        }
+        if (relationshipsText != null) {
+            const el = document.getElementById('loading-relationships');
+            if (el) el.textContent = relationshipsText;
+        }
+        if (propertiesText != null) {
+            const el = document.getElementById('loading-properties');
+            if (el) el.textContent = propertiesText;
+        }
+    }
+
+    function finishOntologyLoading(totalClasses) {
+        if (!ontologyLoadingPanel) return;
+
+        ontologyLoadingPanel.classList.remove('is-processing');
+        ontologyLoadingPanel.classList.add('loading-complete');
+
+        const fill = document.getElementById('ontology-loading-fill');
+        const pctLabel = document.getElementById('ontology-loading-percent');
+        if (fill) fill.style.width = '100%';
+        if (pctLabel) pctLabel.textContent = '100%';
+
+        const current = document.getElementById('loading-classes-current');
+        const total = document.getElementById('loading-classes-total');
+        if (current) current.textContent = Number(totalClasses || 0).toLocaleString();
+        if (total) total.textContent = Number(totalClasses || 0).toLocaleString();
+
+        const relationships = document.getElementById('loading-relationships');
+        const properties = document.getElementById('loading-properties');
+        if (relationships) relationships.textContent = 'ready';
+        if (properties) properties.textContent = 'ready';
+
+        setTimeout(() => {
+            ontologyLoadingPanel.classList.remove('visible');
+            ontologyLoadingPanel.classList.remove('loading-complete');
+        }, 650);
+    }
+
     // 6. DATA PROCESSOR PIPELINE
     window.processOntologyData = function(vowlData) {
-		const DEBUG = false;
-		
+        const DEBUG = false;
+
         let rawClasses = vowlData.class || [];
         let attributesList = vowlData.classAttribute || [];
         let propertiesList = vowlData.property || [];
         let propertyAttributes = vowlData.propertyAttribute || [];
+
+        updateOntologyLoading(8, 0, rawClasses.length, 'processing...', 'waiting...');
 
         let attrMap = {};
 attributesList.forEach(a => {
@@ -1293,6 +1453,8 @@ attributesList.forEach(a => {
             };
         });
 
+        updateOntologyLoading(55, rawClasses.length, rawClasses.length, 'processing...', 'waiting...');
+
 		rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
             const attr = attrMap[uniqueId] || {};
@@ -1316,6 +1478,8 @@ attributesList.forEach(a => {
                 }
             });
         });
+
+        updateOntologyLoading(72, rawClasses.length, rawClasses.length, 'ready', 'processing...');
 
         // Two-Way (Bidirectional) Equivalence Bridge Injection
         Object.keys(window.globalNodeRegistry).forEach(classId => {
@@ -1356,6 +1520,8 @@ attributesList.forEach(a => {
             normalized: String(node.text || '').toLowerCase()
         }));
 
+        updateOntologyLoading(80, rawClasses.length, rawClasses.length, 'ready', 'processing...');
+
         propertiesList.forEach(prop => {
             const propId = prop.id;
             const attr = propAttrMap[propId] || {};
@@ -1388,10 +1554,14 @@ attributesList.forEach(a => {
             }
         });
 
+        updateOntologyLoading(96, rawClasses.length, rawClasses.length, 'ready', 'ready');
+
         // Do not recursively build the complete jsTree at startup.
         // jsTree loads each branch on demand, so creating every multi-parent
         // path here only wastes CPU and memory.
         renderTreeInterface();
+
+        finishOntologyLoading(rawClasses.length);
     };
 function isAnonymousExpression(attr) {
     if (!attr) return false;
@@ -1806,6 +1976,16 @@ async function syncFeedbackFromDatabase() {
 
     // 9. FINAL STEP: SAFE RUN POPULATOR
     if (typeof window.vowlData !== 'undefined') {
+        // Show the panel before the heavy processing starts so the browser
+        // can paint it instead of appearing frozen on a blank page.
+        updateOntologyLoading(
+            0,
+            0,
+            (window.vowlData.class || []).length,
+            'processing...',
+            'waiting...'
+        );
+
         setTimeout(function() {
             window.processOntologyData(window.vowlData);
         }, 150);
@@ -1870,7 +2050,36 @@ $(document).on('mouseenter', '.search-result-item', function() {
     }
 }
 </script>
-	<footer class="site-footer">
+	
+<!-- Ontology loading status panel -->
+<div id="ontology-loading-panel" role="status" aria-live="polite" aria-atomic="true">
+    <div class="loading-title">Preparing ontology browser</div>
+
+    <div class="loading-row">
+        Classes:
+        <span id="loading-classes-current">0</span> /
+        <span id="loading-classes-total">0</span>
+    </div>
+
+    <div class="loading-row">
+        Relationships:
+        <span id="loading-relationships">processing...</span>
+    </div>
+
+    <div class="loading-row">
+        Properties:
+        <span id="loading-properties">waiting...</span>
+    </div>
+
+    <div class="loading-progress-row">
+        <div class="loading-progress-track" aria-hidden="true">
+            <div id="ontology-loading-fill"></div>
+        </div>
+        <span id="ontology-loading-percent">0%</span>
+    </div>
+</div>
+
+<footer class="site-footer">
     <div class="footer-container">
         <!-- Left Side Links -->
         <div class="footer-links">
