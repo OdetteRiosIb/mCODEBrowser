@@ -902,7 +902,8 @@ body > div.tooltip {
         <div id="protege-sidebar">
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
-            <div id="protege-tree">Assembling ontology nodes...</div>
+			<div id="search-results-dropdown" style="display:none; background:#fff; border:1px solid #b5c7de; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+			<div id="protege-tree">Assembling ontology nodes...</div>
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
@@ -1054,11 +1055,8 @@ window.supabase = window.supabase.createClient(
         
         // INSTANT RESET: If the user erases everything, reset the tree immediately
         if (!inputVal.trim()) {
-            const tree = $('#protege-tree').jstree(true);
-            if (tree) {
-                tree.clear_search();
-                tree.close_all();
-            }
+            document.getElementById('search-results-dropdown').style.display = 'none';
+            document.getElementById('search-results-dropdown').innerHTML = '';
             return;
         }
 
@@ -1398,20 +1396,56 @@ attributesList.forEach(a => {
             }
         });
 
-        renderTreeInterface(jsTreeData);
+        renderTreeInterface();
     };
 
-    function renderTreeInterface(jsTreeData) {
+    // Build the tree node object for one class, at one specific path.
+    // treeNodeId embeds the full ancestor chain (joined by "::") so the
+    // same class can legitimately appear more than once (multi-parent).
+    function buildJsTreeNodeObj(originalId, treeNodeId, pathList) {
+        const node = window.globalNodeRegistry[originalId];
+        const childIds = getAllSubclasses(originalId).filter(subId => !pathList.includes(subId));
+        return {
+            id: treeNodeId,
+            text: node.text,
+            data: { originalId: originalId },
+            children: childIds.length > 0   // tells jsTree whether to draw an expand arrow
+        };
+    }
+
+    function getRootNodes() {
+        let roots = [];
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
+            const n = window.globalNodeRegistry[classId];
+            if (!n.meta.superclasses || n.meta.superclasses.length === 0) {
+                roots.push(buildJsTreeNodeObj(classId, classId, [classId]));
+            }
+        });
+        return roots;
+    }
+
+    function getChildNodes(node) {
+        const treeParentId = node.id;
+        const originalId = node.data.originalId;
+        const pathSoFar = treeParentId.split('::');
+
+        return getAllSubclasses(originalId)
+            .filter(subId => !pathSoFar.includes(subId))   // avoid cycles
+            .map(subId => buildJsTreeNodeObj(subId, treeParentId + '::' + subId, [...pathSoFar, subId]));
+    }
+    function renderTreeInterface() {
         $('#protege-tree').jstree("destroy").jstree({
-            'core': { 
-                'data': jsTreeData, 
+            'core': {
+                'data': function (node, callback) {
+                    if (node.id === '#') {
+                        callback(getRootNodes());
+                    } else {
+                        callback(getChildNodes(node));
+                    }
+                },
                 'themes': { 'variant': 'small', 'icons': true, 'dots': true }
             },
-            'search': {
-                'show_only_matches': true,
-                'show_only_matches_children': false
-            },
-            'plugins': ["wholerow", "search"]
+            'plugins': ["wholerow"]
         });
     }
 
@@ -1684,19 +1718,39 @@ async function syncFeedbackFromDatabase() {
         renderActiveCommentsList(node.id);
     });
 
-    window.selectTaxonomyNode = function(nodeId) {
+    function getPrimaryAncestorPath(classId, visited = new Set()) {
+        if (visited.has(classId)) return [classId];
+        visited.add(classId);
+        const node = window.globalNodeRegistry[classId];
+        if (!node || !node.meta.superclasses || node.meta.superclasses.length === 0) {
+            return [classId];
+        }
+        return [...getPrimaryAncestorPath(node.meta.superclasses[0], visited), classId];
+    }
+	
+	window.selectTaxonomyNode = function(nodeId) {
         if (!nodeId) return;
         const tree = $('#protege-tree').jstree(true);
-        if (tree) {
-            let allNodes = tree.get_json('#', { flat: true });
-            let match = allNodes.find(n => (n.data && n.data.originalId === nodeId) || n.id === nodeId);
-            if (match) {
+        if (!tree) return;
+
+        const pathIds = getPrimaryAncestorPath(nodeId);
+        let cumulativeTreeId = null;
+
+        function openNext(index) {
+            cumulativeTreeId = cumulativeTreeId ? cumulativeTreeId + '::' + pathIds[index] : pathIds[index];
+
+            if (index === pathIds.length - 1) {
                 tree.deselect_all();
-                tree.select_node(match.id);
-                tree._open_to(match.id);
-                document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                tree.select_node(cumulativeTreeId);
+                setTimeout(() => {
+                    document.getElementById(cumulativeTreeId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+                return;
             }
+            tree.open_node(cumulativeTreeId, function () { openNext(index + 1); });
         }
+
+        openNext(0);
     };
 
     function buildSubclassTreeHtml(nodeId, currentBranchPath = []) {
@@ -1761,18 +1815,44 @@ async function syncFeedbackFromDatabase() {
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
 function executeFastSearch(query) {
-    const tree = $('#protege-tree').jstree(true);
-    if (!tree) return;
-
     let queryLower = query.toLowerCase().trim();
+    const resultsBox = document.getElementById('search-results-dropdown');
     if (!queryLower) {
-        tree.clear_search();
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
         return;
     }
 
-    // Run jsTree's optimized native search filter
-    tree.search(queryLower);
+    const matches = Object.values(window.globalNodeRegistry)
+        .filter(n => n.text.toLowerCase().includes(queryLower))
+        .slice(0, 25);
+
+    if (matches.length === 0) {
+        resultsBox.innerHTML = '<div style="padding:8px; color:#888; font-style:italic;">No matches found.</div>';
+        resultsBox.style.display = 'block';
+        return;
+    }
+
+    resultsBox.innerHTML = matches.map(m => `
+        <div class="search-result-item" data-id="${m.id}" 
+             style="padding:6px 10px; cursor:pointer; border-bottom:1px solid #eee;">
+            ${m.text}
+        </div>
+    `).join('');
+    resultsBox.style.display = 'block';
 }
+
+	$(document).on('click', '.search-result-item', function() {
+    const targetId = $(this).data('id');
+    document.getElementById('search-results-dropdown').style.display = 'none';
+    window.selectTaxonomyNode(targetId);
+});
+
+$(document).on('mouseenter', '.search-result-item', function() {
+    $(this).css('background', '#eef4fb');
+}).on('mouseleave', '.search-result-item', function() {
+    $(this).css('background', 'transparent');
+});
 
 	function toggleDetailsBox() {
     const card = document.getElementById('details-card-container');
