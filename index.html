@@ -271,7 +271,7 @@ html {
     border-radius: 0;
     box-shadow: 0 -3px 14px rgba(0,0,0,0.14);
     padding: 13px 16px 15px;
-    height: 138px;
+    height: 120px;
     z-index: 10000;
     overflow: hidden;
     transform: translateZ(0);
@@ -1122,8 +1122,22 @@ body > div.tooltip {
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
 				 <span class="tree-control-divider" aria-hidden="true"></span>
-				<button id="tree-expand-all" class="tree-action-btn" title="Expand all descendants" aria-label="Expand all descendants">&#8659;</button>
-                <button id="tree-collapse-all" class="tree-action-btn" title="Collapse branches without selected descendants" aria-label="Collapse branches without selected descendants">&#8657;</button>
+                <button id="tree-expand-all" class="tree-action-btn" title="Expand all descendants" aria-label="Expand all descendants">
+				<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+                        <path d="M11 11 L4 4 M4 4 H9 M4 4 V9" />
+                        <path d="M17 11 L24 4 M24 4 H19 M24 4 V9" />
+                        <path d="M11 17 L4 24 M4 24 H9 M4 24 V19" />
+                        <path d="M17 17 L24 24 M24 24 H19 M24 24 V19" />
+                    </svg>
+				</button>
+                <button id="tree-collapse-all" class="tree-action-btn" title="Collapse branches without selected descendants" aria-label="Collapse branches without selected descendants">
+					<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+                        <path d="M4 4 L12 12 M8 12 H12 V8" />
+                        <path d="M24 4 L16 12 M16 8 V12 H20" />
+                        <path d="M4 24 L12 16 M8 16 H12 V20" />
+                        <path d="M24 24 L16 16 M16 20 V16 H20" />
+                    </svg>
+                </button>
                
             </div>
         </div>
