@@ -1488,8 +1488,6 @@ $(document).ready(function() {
     // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
    const DB_NAME = 'mcode-orchid-cache';
 const STORE_NAME = 'ontology';
-const ONTOLOGY_VERSION = 'v2.0.0-json'; // bumped: cache format changed when switching from ontology-data.js to ontology-fixed.json
-
 function openCacheDB() {
     return new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, 1);
@@ -1535,7 +1533,7 @@ async function setCachedRegistry(registry) {
     } catch (e) {
         console.warn('Cache write failed', e);
     }
-}
+} 
 
 // URL of the pre-processed, gzip-compressed ontology JSON. It's committed to
 // the repo (not a release asset) so jsDelivr/raw.githubusercontent.com can
