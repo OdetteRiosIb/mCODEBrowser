@@ -1,3 +1,367 @@
+Pasted text.txt
+Document
+Pasted text.txt
+Document
+okay so I have this code 
+
+where can i optimize and change the code?
+
+Yes — the screenshot tells us exactly what happened: Unexpected end of input means your JavaScript is missing a closing } or ) somewhere, most likely because the replacement of the tab-loading code wasn't closed properly.
+
+The error is at the very end of your file (2078), which strongly suggests the browser reached </script> while still inside a function.
+
+Most likely fix
+
+At the very bottom of your JavaScript, immediately before:
+
+</script>
+
+make sure you have:
+
+});
+</script>
+
+That }); closes your:
+
+$(document).ready(function() {
+Your overall structure should look like this
+$(document).ready(function() {
+
+    // Supabase
+    window.supabase = window.supabase.createClient(
+        'https://ikihocvwctkfmzkofvus.supabase.co',
+        'sb_publishable_GOimXv5hqS7zuk34HpwRmw_sMchz-Na'
+    );
+
+    window.globalNodeRegistry = {};
+    window.masterIdLabelMap = {};
+
+    // ------------------------------------------------
+    // LAZY LOADING
+    // ------------------------------------------------
+
+    let ontologyLoadPromise = null;
+    let ontologyProcessed = false;
+    let appJsLoadPromise = null;
+
+    function loadScriptOnce(src, globalName, label) {
+        return new Promise((resolve, reject) => {
+
+            if (globalName && typeof window[globalName] !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            const existing = document.querySelector(
+                `script[data-lazy-src="${src}"]`
+            );
+
+            if (existing) {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                existing.addEventListener('error', () => {
+                    reject(new Error(`Failed to load ${label}`));
+                }, { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+
+            script.src = src;
+            script.async = true;
+            script.dataset.lazySrc = src;
+
+            script.onload = () => resolve();
+
+            script.onerror = () => {
+                reject(new Error(`Failed to load ${label}`));
+            };
+
+            document.body.appendChild(script);
+        });
+    }
+
+
+    function ensureOntologyLoaded() {
+
+        if (ontologyProcessed) {
+            return Promise.resolve();
+        }
+
+        if (ontologyLoadPromise) {
+            return ontologyLoadPromise;
+        }
+
+        $('#protege-tree').html(
+            '<span style="color:#666; padding:10px; display:block;">Preparing ontology browser...</span>'
+        );
+
+        ontologyLoadPromise = loadScriptOnce(
+            'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js',
+            'vowlData',
+            'ontology data'
+        )
+        .then(() => {
+
+            return new Promise(resolve => {
+
+                const process = () => {
+
+                    window.processOntologyData(window.vowlData);
+
+                    ontologyProcessed = true;
+
+                    if (typeof populateHomeMetadata === 'function') {
+                        populateHomeMetadata();
+                    }
+
+                    resolve();
+                };
+
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(process);
+                } else {
+                    setTimeout(process, 50);
+                }
+
+            });
+
+        })
+        .catch(err => {
+
+            console.error(err);
+
+            $('#protege-tree').html(
+                '<span style="color:#b42318; padding:10px; display:block;">Unable to load ontology data.</span>'
+            );
+
+            ontologyLoadPromise = null;
+
+            throw err;
+        });
+
+        return ontologyLoadPromise;
+    }
+
+
+    function ensureAppJsLoaded() {
+
+        if (typeof window.initializeEdamGraphicView === 'function') {
+            return Promise.resolve();
+        }
+
+        if (appJsLoadPromise) {
+            return appJsLoadPromise;
+        }
+
+        appJsLoadPromise = loadScriptOnce(
+            './app.js',
+            null,
+            'visualization application'
+        );
+
+        return appJsLoadPromise;
+    }
+
+
+    // ------------------------------------------------
+    // PAGE TABS
+    // ------------------------------------------------
+
+    $('.global-tab-btn').on('click', async function() {
+
+        const targetPage = $(this).data('target');
+
+        $('.global-tab-btn').removeClass('active');
+        $(this).addClass('active');
+
+        $('.page-content').removeClass('active');
+        $('#' + targetPage).addClass('active');
+
+
+        if (targetPage === 'page-browser') {
+
+            try {
+                await ensureOntologyLoaded();
+            } catch (err) {
+                console.error(err);
+            }
+
+        }
+
+
+        if (targetPage === 'page-visualization') {
+
+            try {
+
+                await ensureOntologyLoaded();
+
+                await ensureAppJsLoaded();
+
+                if (
+                    typeof window.initializeEdamGraphicView === 'function'
+                ) {
+                    window.initializeEdamGraphicView();
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+
+        }
+
+    });
+
+
+    // ------------------------------------------------
+    // OTHER CODE
+    // ------------------------------------------------
+
+    // Keep the rest of your existing code here.
+
+
+});   // <-- IMPORTANT: closes $(document).ready()
+And at the bottom of the HTML:
+<!-- app.js and ontology-data.js are loaded dynamically when needed -->
+
+</script>
+</body>
+</html>
+
+Do not put the two original <script> tags back.
+
+One important thing
+
+Don't just add random } characters to fix the error. If you accidentally deleted one of the closing pieces inside the new lazy-loading code, adding one at the bottom could hide the real problem.
+
+If you upload your current edited HTML file (the version that's giving you the 2078 error), I can pinpoint the exact missing character and give you the corrected file rather than having you hunt through 2,000+ lines.
+
+Pasted text.txt
+Document
+please look up the code ans ee what it is missing
+
+
+
+Yes. I checked the actual file you just uploaded, and I found the exact problem. You are missing one closing });.
+
+The JavaScript starts the main block here:
+
+$(document).ready(function() {
+
+but after buildSuperclassTreeHtml() you go directly into:
+
+// 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
+function executeFastSearch(query) {
+
+The $(document).ready(function() { ... }) block was never closed.
+
+That is exactly why Chrome reports:
+
+Uncaught SyntaxError: Unexpected end of input
+
+The exact place to fix
+
+In your file, you currently have this at approximately the end of buildSuperclassTreeHtml():
+
+function buildSuperclassTreeHtml(nodeId) {
+    // ...
+    html += `</ul>`;
+    return html;
+}
+
+
+
+// 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
+function executeFastSearch(query) {
+
+Change it to:
+
+function buildSuperclassTreeHtml(nodeId) {
+    // ...
+    html += `</ul>`;
+    return html;
+}
+
+});  // <-- ADD THIS LINE
+
+
+// 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
+function executeFastSearch(query) {
+
+That's the missing piece.
+
+Why this happened
+
+Originally, your code had the closing:
+
+});
+
+after the old automatic ontology-loading section. When we removed that old section to make ontology loading lazy, the closing }); was removed along with it.
+
+So the browser sees:
+
+$(document).ready(function() {
+    ...
+    ...
+    ...
+    function buildSuperclassTreeHtml() {
+        ...
+    }
+
+    function executeFastSearch() {
+        ...
+    }
+
+    function toggleDetailsBox() {
+        ...
+    }
+
+</script>
+
+and says, essentially, "You opened a function but never closed it."
+
+Your uploaded file confirms the main script begins with $(document).ready(function() { and the missing closure occurs before the standalone search worker.
+
+Also: you did the bottom part correctly
+
+I checked the bottom of your current file too. You have:
+
+<!-- app.js and ontology-data.js are loaded dynamically when needed -->
+
+and you no longer have:
+
+<script type="module" src="app.js"></script>
+<script src="...ontology-data.js"></script>
+
+So do not put those back.
+
+Just add:
+
+});
+
+at the location above.
+
+After adding it, save → refresh the page → the SyntaxError should be gone.
+
+give me the whole html file
+
+Absolutely. I checked your uploaded HTML and created a complete corrected version with:
+
+The missing }); fixed.
+ontology-data.js no longer loaded on initial page load.
+app.js no longer loaded on initial page load.
+Ontology loads when Browser View is opened.
+Ontology processing is deferred to browser idle time.
+Visualization loads app.js only when needed.
+The old automatic processOntologyData() block removed.
+Home images set to lazy-load where applicable.
+Download the complete HTML
+
+Download mCODE-ORCHID-optimized-complete.html
+
+Replace your current HTML file with this one and upload it to GitHub Pages.
+
+One important note: I based this on the HTML file you uploaded, rather than rebuilding the page from scratch, so your existing content and layout are retained. 
+
 <!DOCTYPE html>
 <html>
 <head>   
@@ -2020,7 +2384,7 @@ async function syncFeedbackFromDatabase() {
         return html;
     }
 
-
+});
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
 function executeFastSearch(query) {
@@ -2115,3 +2479,5 @@ $(document).on('mouseenter', '.search-result-item', function() {
 
 
 </html>
+mCODE-ORCHID-optimized-complete.html
+HTML
