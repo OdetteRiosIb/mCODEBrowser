@@ -133,7 +133,7 @@ function renderBubbleDiagram(nodeData) {
     cappedSuperclasses.forEach(supId => {
         satellites.push({
             id: supId, label: getRegistryLabel(supId), role: 'Superclass',
-            color: '#b0e0e6', size: 40,
+            color: '#b6fca9', size: 40,
             edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
@@ -148,7 +148,7 @@ function renderBubbleDiagram(nodeData) {
     cappedSubclasses.forEach(subId => {
         satellites.push({
             id: subId, label: getRegistryLabel(subId), role: 'Subclass',
-            color: '#aec6cf', size: 38,
+            color: '#f9deff', size: 38,
             edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
@@ -264,7 +264,7 @@ function renderBubbleDiagram(nodeData) {
         .attr('transform', `translate(${cx},${cy})`);
     centerGroup.append('circle')
         .attr('r', centerRadius)
-        .attr('fill', '#ffb347')
+        .attr('fill', '#fcf4ac')
         .attr('stroke', '#e08e00');
     const centerLines = [...wrapBubbleLabel(centerLabel, 14), '(Selected Class)'];
     centerLines.forEach((line, i) => {
