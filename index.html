@@ -1385,7 +1385,7 @@ $(document).ready(function() {
     // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
     function loadOntologyDataAsync() {
         const script = document.createElement('script');
-        script.src = 'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0-data/ontology-data.js';
+        script.src = 'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js';
         script.onload = function () {
             if (typeof window.vowlData !== 'undefined') {
                 window.processOntologyData(window.vowlData);
