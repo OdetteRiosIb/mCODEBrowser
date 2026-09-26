@@ -1041,8 +1041,19 @@ window.supabase = window.supabase.createClient(
     $('#' + targetPage).addClass('active');
 
     // 3. Optional: Trigger viz if needed
-    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
-        window.initializeEdamGraphicView();
+    if (targetPage === 'page-visualization' &&
+        !window._edamVisualizationInitialized &&
+        typeof window.initializeEdamGraphicView === 'function') {
+
+        window._edamVisualizationInitialized = true;
+
+        // Let the tab paint first. The expensive D3 hierarchy work then
+        // happens after the browser has rendered the visualization panel.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                window.initializeEdamGraphicView();
+            });
+        });
     }
 });
 
@@ -1321,22 +1332,30 @@ attributesList.forEach(a => {
             }
         });
 
-        rawClasses.forEach(classObj => {
-            const uniqueId = classObj.id;
-            const attr = attrMap[uniqueId] || {};
-            const childNode = window.globalNodeRegistry[uniqueId];
-            if (!childNode) return;
+        // Build the final child index once.  This replaces repeated Set/array
+        // construction while the browser tree is being expanded.
+        Object.values(window.globalNodeRegistry).forEach(node => {
+            const childIds = new Set(node.meta.subclasses || []);
 
-            let superClasses = attr.superClasses || [];
-            if (!Array.isArray(superClasses)) superClasses = [superClasses];
-
-            superClasses.forEach(supId => {
-                if (window.globalNodeRegistry[supId]) {
-                    if (!childNode.meta.superclasses.includes(supId)) childNode.meta.superclasses.push(supId);
-                    if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
+            // Preserve the existing equivalent-class behaviour: children of an
+            // equivalent class are also available under this node.
+            (node.meta.equivalent || []).forEach(eqId => {
+                const eqNode = window.globalNodeRegistry[eqId];
+                if (eqNode && eqNode.meta.subclasses) {
+                    eqNode.meta.subclasses.forEach(id => childIds.add(id));
                 }
             });
+
+            node.meta.children = Array.from(childIds).filter(id => id !== node.id);
         });
+
+        // Lightweight search index: normalize labels once instead of doing
+        // toLowerCase() across every node for every keystroke.
+        window.ontologySearchIndex = Object.values(window.globalNodeRegistry).map(node => ({
+            id: node.id,
+            text: node.text || '',
+            normalized: String(node.text || '').toLowerCase()
+        }));
 
         propertiesList.forEach(prop => {
             const propId = prop.id;
@@ -1370,33 +1389,9 @@ attributesList.forEach(a => {
             }
         });
 
-        let jsTreeData = [];
-        let processedTreePaths = new Set();
-
-        function addNodeToTree(classId, treeParentId, currentPathList) {
-            let node = window.globalNodeRegistry[classId];
-            if (!node || currentPathList.includes(classId)) return;
-            
-            let updatedPathList = [...currentPathList, classId];
-            let pathKeyString = updatedPathList.join('->');
-            if (processedTreePaths.has(pathKeyString)) return;
-            processedTreePaths.add(pathKeyString); 
-
-            let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
-            jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
-            
-            let crossSubclasses = node.meta.subclasses || []; 
-            crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
-        }
-
-        // Target window scope registry precisely to catch missing isolated components
-        Object.keys(window.globalNodeRegistry).forEach(classId => {
-            const node = window.globalNodeRegistry[classId];
-            if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
-                addNodeToTree(classId, '#', []);
-            }
-        });
-
+        // Do not recursively build the complete jsTree at startup.
+        // jsTree loads each branch on demand, so creating every multi-parent
+        // path here only wastes CPU and memory.
         renderTreeInterface();
     };
 function isAnonymousExpression(attr) {
@@ -1409,12 +1404,16 @@ function isAnonymousExpression(attr) {
     // same class can legitimately appear more than once (multi-parent).
     function buildJsTreeNodeObj(originalId, treeNodeId, pathList) {
         const node = window.globalNodeRegistry[originalId];
-        const childIds = getAllSubclasses(originalId).filter(subId => !pathList.includes(subId));
+        if (!node) return null;
+
+        const children = node.meta.children || [];
+        const hasChildren = children.some(childId => !pathList.includes(childId));
+
         return {
             id: treeNodeId,
             text: node.text,
             data: { originalId: originalId },
-            children: childIds.length > 0   // tells jsTree whether to draw an expand arrow
+            children: hasChildren
         };
     }
 
@@ -1434,9 +1433,16 @@ function isAnonymousExpression(attr) {
         const originalId = node.data.originalId;
         const pathSoFar = treeParentId.split('::');
 
-        return getAllSubclasses(originalId)
+        const childIds = window.globalNodeRegistry[originalId]?.meta.children || [];
+
+        return childIds
             .filter(subId => !pathSoFar.includes(subId))   // avoid cycles
-            .map(subId => buildJsTreeNodeObj(subId, treeParentId + '::' + subId, [...pathSoFar, subId]));
+            .map(subId => buildJsTreeNodeObj(
+                subId,
+                treeParentId + '::' + subId,
+                [...pathSoFar, subId]
+            ))
+            .filter(Boolean);
     }
     function renderTreeInterface() {
         $('#protege-tree').jstree("destroy").jstree({
@@ -1525,16 +1531,7 @@ function isAnonymousExpression(attr) {
     }
 
     function getAllSubclasses(classId) {
-        let node = window.globalNodeRegistry[classId];
-        if (!node) return [];
-        let subs = new Set(node.meta.subclasses || []);
-        if (node.meta.equivalent) {
-            node.meta.equivalent.forEach(eqId => {
-                let eqNode = window.globalNodeRegistry[eqId];
-                if (eqNode && eqNode.meta.subclasses) { eqNode.meta.subclasses.forEach(subId => subs.add(subId)); }
-            });
-        }
-        return Array.from(subs);
+        return window.globalNodeRegistry[classId]?.meta.children || [];
     }
 
     function getAllSuperclasses(classId) {
@@ -1828,9 +1825,11 @@ function executeFastSearch(query) {
         return;
     }
 
-    const matches = Object.values(window.globalNodeRegistry)
-        .filter(n => n.text.toLowerCase().includes(queryLower))
-        .slice(0, 25);
+    const searchIndex = window.ontologySearchIndex || [];
+    const matches = searchIndex
+        .filter(n => n.normalized.includes(queryLower))
+        .slice(0, 25)
+        .map(n => window.globalNodeRegistry[n.id]);
 
     if (matches.length === 0) {
         resultsBox.innerHTML = '<div style="padding:8px; color:#888; font-style:italic;">No matches found.</div>';
