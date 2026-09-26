@@ -1175,7 +1175,26 @@ window.supabase = window.supabase.createClient(
         let propertyAttributes = vowlData.propertyAttribute || [];
 
         let attrMap = {};
-        attributesList.forEach(a => { attrMap[a.id] = a; });
+attributesList.forEach(a => {
+    if (!attrMap[a.id]) {
+        attrMap[a.id] = { ...a };
+        return;
+    }
+    const existing = attrMap[a.id];
+    console.warn(`Duplicate attribute record for id "${a.id}" — merging fields.`);
+    for (const key in a) {
+        const newVal = a[key];
+        const oldVal = existing[key];
+        if (Array.isArray(newVal) || Array.isArray(oldVal)) {
+            const oldArr = Array.isArray(oldVal) ? oldVal : (oldVal ? [oldVal] : []);
+            const newArr = Array.isArray(newVal) ? newVal : (newVal ? [newVal] : []);
+            existing[key] = [...new Set([...oldArr, ...newArr])];
+        } else if ((oldVal === undefined || oldVal === null || oldVal === '' || oldVal === 'None') && newVal) {
+            existing[key] = newVal;
+        }
+        // otherwise keep the first non-empty scalar we already have
+    }
+});
         
         let propAttrMap = {};
         propertyAttributes.forEach(pa => { propAttrMap[pa.id] = pa; });
@@ -1193,8 +1212,7 @@ window.supabase = window.supabase.createClient(
 
         rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
-            const attr = attributesList.find(a => a.id === uniqueId) || {};
-            
+			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
@@ -1395,13 +1413,14 @@ window.supabase = window.supabase.createClient(
 
     // 7. DATA WRAPPER HELPER UTILITIES
     function isPrimitiveType(id, label, type) {
-        let idLower = String(id || '').toLowerCase();
-        let labelLower = String(label || '').toLowerCase();
-        let typeLower = String(type || '').toLowerCase();
-        if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
-        if (idLower.includes('xsd:') || idLower.startsWith('rdfs:literal')) return true;
-        return /\bliteral\b|\bdatetime\b|\bstring\b|\bstrin\b|\btimestamp\b|text\/value|\bboolean\b|\binteger\b|\bint\b/.test(idLower + " " + labelLower);
-    }
+    let typeLower = String(type || '').toLowerCase();
+    if (typeLower.includes('datatype') || typeLower.includes('literal')) return true;
+    let idLower = String(id || '').trim().toLowerCase();
+    if (idLower.startsWith('xsd:') || idLower === 'rdfs:literal') return true;
+    const primitiveWords = ['literal','datetime','string','timestamp','boolean','integer','int'];
+    let labelLower = String(label || '').trim().toLowerCase();
+    return primitiveWords.includes(labelLower) || primitiveWords.includes(idLower);
+}
 
     function safeUnwrap(field) {
         if (!field) return '';
