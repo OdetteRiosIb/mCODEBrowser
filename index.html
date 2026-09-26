@@ -674,6 +674,20 @@ body > div.tooltip {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+/* Scroll independently inside Downloads */
+#page-downloads {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#page-downloads .ontology-download {
+    flex-shrink: 0;
+    padding-bottom: 40px;
+}
+		
 #protege-sidebar h3 { margin-top: 0; color: #104e8b; font-size: 1.1em; border-bottom: 2px solid #104e8b; padding-bottom: 5px; margin-bottom: 10px; }
 #protege-search { width: 100%; padding: 6px; border: 1px solid #999; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9em; }
 #protege-tree { flex: 1; overflow-y: auto; background: #fff; border: 1px solid #b5c7de; padding: 5px; margin-bottom: 15px; }
@@ -727,7 +741,7 @@ body > div.tooltip {
     <div class="global-tabs">
         <button class="global-tab-btn active" data-target="page-home">Home</button>
         <button class="global-tab-btn" data-target="page-browser">Browser View</button>
-        <button class="global-tab-btn" data-target="page-visualization">Tree Visualization View</button>
+        <button class="global-tab-btn" data-target="page-visualization">Interactive View</button>
 		<button class="global-tab-btn" data-target="page-downloads">Downloads</button>
     </div>
 </div>
