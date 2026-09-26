@@ -220,7 +220,10 @@ function renderBubbleDiagram(nodeData) {
             .on('click', () => {
                 const registryEntry = window.globalNodeRegistry ? window.globalNodeRegistry[sat.id] : null;
                 if (registryEntry) {
-                    renderBubbleDiagram({ id: registryEntry.id, text: registryEntry.text, meta: registryEntry.meta });
+                    // Route through showNodeDetails (not just renderBubbleDiagram) so the
+                    // Details-of-Class card, tree selection highlight, and bubble map all
+                    // stay in sync with whichever bubble was clicked.
+                    showNodeDetails({ data: registryEntry });
                 }
             });
         group.append('circle')
