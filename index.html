@@ -1214,7 +1214,8 @@ attributesList.forEach(a => {
 			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
 			if (isDeprecated(attr)) return;
-			if (isUndefinedExternalStub(attr)) return;   // <-- skip dangling external placeholders
+			if (isEmptyPlaceholder(attr)) return;
+			if (isAnonymousExpression(attr)) return;
 
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
@@ -1398,7 +1399,11 @@ attributesList.forEach(a => {
 
         renderTreeInterface();
     };
-
+function isAnonymousExpression(attr) {
+    if (!attr) return false;
+    const attrs = attr.attributes || [];
+    return attrs.includes('anonymous');
+}
     // Build the tree node object for one class, at one specific path.
     // treeNodeId embeds the full ancestor chain (joined by "::") so the
     // same class can legitimately appear more than once (multi-parent).
