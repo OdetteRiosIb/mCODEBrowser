@@ -171,7 +171,7 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: null, label: `+${overflowProperties.length} more`, role: 'Class', isOverflow: true,
             overflowProps: overflowProperties, color: '#e2e8f0', size: 34,
-            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#ff7f50' }
+            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#ffff9e' }
         });
     }
 
