@@ -1214,6 +1214,8 @@ attributesList.forEach(a => {
             const uniqueId = classObj.id;
 			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+			if (isUndefinedExternalStub(attr)) return;   // <-- skip dangling external placeholders
+
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
             let prefLabel = '';
@@ -1420,6 +1422,17 @@ attributesList.forEach(a => {
     const primitiveWords = ['literal','datetime','string','timestamp','boolean','integer','int'];
     let labelLower = String(label || '').trim().toLowerCase();
     return primitiveWords.includes(labelLower) || primitiveWords.includes(idLower);
+}
+
+	function isUndefinedExternalStub(attr) {
+    if (!attr) return false;
+    const attrs = attr.attributes || [];
+    const flaggedExternalOrDeprecated = attrs.includes('external') || attrs.includes('deprecated');
+    const labelObj = attr.label || {};
+    const labelKeys = Object.keys(labelObj);
+    // A stub has NO real annotation label — the only key present is the "IRI-based" fallback
+    const hasOnlyFallbackLabel = labelKeys.length === 1 && labelKeys[0] === 'IRI-based';
+    return flaggedExternalOrDeprecated && hasOnlyFallbackLabel;
 }
 
     function safeUnwrap(field) {
