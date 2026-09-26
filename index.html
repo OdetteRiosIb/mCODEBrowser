@@ -23,7 +23,15 @@ body {
     display: flex; 
     flex-direction: column; /* Stack navbar on top, views below */
     background: #fff; 
-    font-family: Arial, sans-serif; 
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    transition: padding-bottom 0.2s ease;
+}
+
+/* Reserve space for the fixed loading panel so it never covers the footer
+   or the bottom of the active page while the ontology is preparing. */
+body.ontology-loading-active {
+    padding-bottom: 138px;
 }
 .jstree-node.filtered-match-parent > .jstree-icon { display: inline-block !important; }
 #protege-tree .jstree-container-ul { display: block !important; }
@@ -252,17 +260,21 @@ html {
    ========================================= */
 #ontology-loading-panel {
     position: fixed;
-    left: 24px;
+    left: 0;
+    right: 0;
     bottom: 0;
-    width: min(455px, calc(100vw - 48px));
+    width: 100vw;
     box-sizing: border-box;
     background: #ffffff;
     border: 1px solid #d8d8d8;
     border-top: 4px solid #1B2775;
-    border-radius: 7px 7px 0 0;
+    border-radius: 0;
     box-shadow: 0 -3px 14px rgba(0,0,0,0.14);
     padding: 13px 16px 15px;
+    height: 138px;
     z-index: 10000;
+    overflow: hidden;
+    transform: translateZ(0);
     display: none;
     font-family: Arial, sans-serif;
     color: #222;
@@ -278,10 +290,28 @@ html {
     margin-bottom: 10px;
 }
 
+.loading-stats {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 42px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
 .loading-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
     font-size: 14px;
     line-height: 1.55;
     color: #333;
+}
+
+.loading-label {
+    font-weight: 600;
 }
 
 .loading-progress-row {
@@ -336,9 +366,21 @@ html {
 }
 
 @media (max-width: 600px) {
+    .loading-stats {
+        gap: 8px 22px;
+    }
+
+    body.ontology-loading-active {
+        padding-bottom: 150px;
+    }
+
     #ontology-loading-panel {
-        left: 10px;
-        width: calc(100vw - 20px);
+        left: 0;
+        right: 0;
+        width: 100vw;
+        height: 150px;
+        padding-left: 12px;
+        padding-right: 12px;
     }
 }
 
@@ -563,6 +605,18 @@ html {
 
 .tree-zoom-controls button:hover {
     background: #3a3a3a;
+}
+
+.tree-zoom-controls .tree-action-btn {
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tree-control-divider {
+    height: 5px;
+    width: 28px;
+    display: block;
 }
 
 /* Styling for the interactive_tree() SVG (edam-tree-reusable-d3.js) */
@@ -819,20 +873,22 @@ body > div.tooltip {
 <div id="ontology-loading-panel" class="visible is-processing" role="status" aria-live="polite" aria-atomic="true">
     <div class="loading-title">Preparing ontology browser</div>
 
-    <div class="loading-row">
-        Classes:
-        <span id="loading-classes-current">0</span> /
-        <span id="loading-classes-total">0</span>
-    </div>
+    <div class="loading-stats">
+        <div class="loading-row">
+            <span class="loading-label">Classes:</span>
+            <span id="loading-classes-current">0</span> /
+            <span id="loading-classes-total">0</span>
+        </div>
 
-    <div class="loading-row">
-        Relationships:
-        <span id="loading-relationships">processing...</span>
-    </div>
+        <div class="loading-row">
+            <span class="loading-label">Relationships:</span>
+            <span id="loading-relationships">processing...</span>
+        </div>
 
-    <div class="loading-row">
-        Properties:
-        <span id="loading-properties">waiting...</span>
+        <div class="loading-row">
+            <span class="loading-label">Properties:</span>
+            <span id="loading-properties">waiting...</span>
+        </div>
     </div>
 
     <div class="loading-progress-row">
@@ -1061,9 +1117,14 @@ body > div.tooltip {
         <div class="tree-pane">
             <div id="ontology-tree-container" style="width: 100%; height: 100%;"></div>
             <div class="tree-zoom-controls">
+                
                 <button id="tree-zoom-in" title="Zoom in">+</button>
                 <button id="tree-zoom-out" title="Zoom out">&minus;</button>
                 <button id="tree-zoom-reset" title="Reset view">&#8962;</button>
+				 <span class="tree-control-divider" aria-hidden="true"></span>
+				<button id="tree-expand-all" class="tree-action-btn" title="Expand all descendants" aria-label="Expand all descendants">&#8659;</button>
+                <button id="tree-collapse-all" class="tree-action-btn" title="Collapse branches without selected descendants" aria-label="Collapse branches without selected descendants">&#8657;</button>
+               
             </div>
         </div>
 
@@ -1317,6 +1378,10 @@ window.supabase = window.supabase.createClient(
     // 6. ONTOLOGY LOADING STATUS
     const ontologyLoadingPanel = document.getElementById('ontology-loading-panel');
 
+    // Reserve the panel's space from the start. This keeps the footer and the
+    // bottom of every tab visible instead of allowing the fixed panel to cover them.
+    document.body.classList.add('ontology-loading-active');
+
     function updateOntologyLoading(percent, currentClasses, totalClasses, relationshipsText, propertiesText) {
         if (!ontologyLoadingPanel) return;
 
@@ -1373,6 +1438,7 @@ window.supabase = window.supabase.createClient(
         setTimeout(() => {
             ontologyLoadingPanel.classList.remove('visible');
             ontologyLoadingPanel.classList.remove('loading-complete');
+            document.body.classList.remove('ontology-loading-active');
         }, 650);
     }
 
@@ -2183,7 +2249,6 @@ $(document).on('mouseenter', '.search-result-item', function() {
 <!-- Run your application script -->
 <script type="module" src="app.js"></script>
 <!--  Local ontology data file -->
-<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js"></script>
 </body>
 
 
