@@ -180,13 +180,6 @@ html {
     display: flex; /* Display active workspace layout */
 }
 
-/* Downloads page: allow its long content to scroll independently. */
-#page-downloads {
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-}
-
 .ontology-download {
     width: 100%;
     font-family: Arial, Helvetica, sans-serif;
@@ -436,20 +429,16 @@ html {
 }
 
 .tree-pane {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 1;
     position: relative;
     background: #ffffff;
     border-right: 1px solid #dcdcdc;
-    height: 70vh;
-    min-height: 500px;
-    overflow: hidden;
 }
 
-#ontology-tree-container {
+.tree-pane, #ontology-tree-container {
     width: 100%;
-    height: 100%;
-    min-height: 500px;
+    height: 70vh; /* Full viewport height */
+    min-height: 500px; /* Fallback minimum height */
     position: relative;
     overflow: hidden;
 }
@@ -679,7 +668,7 @@ body > div.tooltip {
         
         /* Collapsible Cards Layout */
         .yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
-        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: justify; align-items: center; cursor: pointer; user-select: none; }
         .card-header:hover { background-color: rgba(0,0,0,0.07); }
         .card-label { font-weight: bold; color: #000; font-size: 0.95em; }
         .toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; margin-left: auto; }
@@ -914,10 +903,7 @@ body > div.tooltip {
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
 			<div id="search-results-dropdown" style="display:none; background:#fff; border:1px solid #b5c7de; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
-            <div id="ontology-progress-container"></div>
-            <div id="protege-tree">
-                <span style="color:#666; padding:10px; display:block;">Preparing ontology browser...</span>
-            </div>
+			<div id="protege-tree">Assembling ontology nodes...</div>
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
@@ -1000,7 +986,7 @@ body > div.tooltip {
     </div> <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
     	<!-- Text placed outside and below the white square -->
     <div class="external-footer-text">
-	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="https://doi.org/10.21105/joss.00698" target="_blank" rel="noopener noreferrer">https://doi.org/10.21105/joss.00698</a>)    	</div>
+	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="url">https://doi.org/10.21105/joss.00698</a>)    	</div>
 	</div>
 </div>
 
@@ -1043,334 +1029,21 @@ window.supabase = window.supabase.createClient(
     let feedbackDatabase = {}; 
 	populateHomeMetadata();
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
-    // ============================================================
-// BACKGROUND ONTOLOGY LOADING
-// ============================================================
-
-let ontologyLoadPromise = null;
-let ontologyProcessed = false;
-let appJsLoadPromise = null;
-
-function loadScriptOnce(src, globalName, label, asModule = false) {
-    return new Promise((resolve, reject) => {
-
-        // Already loaded
-        if (globalName && typeof window[globalName] !== 'undefined') {
-            resolve();
-            return;
-        }
-
-        // Already being loaded
-        const existing = document.querySelector(
-            `script[data-lazy-src="${src}"]`
-        );
-
-        if (existing) {
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => {
-                reject(new Error(`Failed to load ${label}`));
-            }, { once: true });
-            return;
-        }
-
-        // Create script dynamically
-        const script = document.createElement('script');
-
-        script.src = src;
-        script.async = true;
-        if (asModule) script.type = 'module';
-        script.dataset.lazySrc = src;
-
-        script.onload = () => resolve();
-
-        script.onerror = () => {
-            reject(new Error(`Failed to load ${label}`));
-        };
-
-        document.body.appendChild(script);
-    });
-}
-
-
-// ------------------------------------------------------------
-// Progressive ontology loading helpers
-// ------------------------------------------------------------
-
-const ontologyProgressState = {
-    phase: 'download',
-    classesDone: 0,
-    classesTotal: 0,
-    relationshipsDone: 0,
-    relationshipsTotal: 0,
-    propertiesDone: 0,
-    propertiesTotal: 0
-};
-
-function getOntologyProgressPercent() {
-    // Overall progress is intentionally phase-weighted so the bar reflects
-    // the actual work being done, rather than only the class counter.
-    if (ontologyProgressState.phase === 'download') return 5;
-
-    let percent = 5;
-    if (ontologyProgressState.classesTotal > 0) {
-        percent += 50 * Math.min(1, ontologyProgressState.classesDone / ontologyProgressState.classesTotal);
-    }
-    if (ontologyProgressState.phase === 'relationships' || ontologyProgressState.phase === 'properties' || ontologyProgressState.phase === 'ready') {
-        percent += 25 * (ontologyProgressState.relationshipsTotal > 0
-            ? Math.min(1, ontologyProgressState.relationshipsDone / ontologyProgressState.relationshipsTotal)
-            : 1);
-    }
-    if (ontologyProgressState.phase === 'properties' || ontologyProgressState.phase === 'ready') {
-        percent += 20 * (ontologyProgressState.propertiesTotal > 0
-            ? Math.min(1, ontologyProgressState.propertiesDone / ontologyProgressState.propertiesTotal)
-            : 1);
-    }
-    return Math.max(0, Math.min(100, Math.round(percent)));
-}
-
-function renderOntologyProgress(message = 'Preparing ontology browser') {
-    const progress = document.getElementById('ontology-progress-container');
-    if (!progress) return;
-
-    progress.style.display = 'block';
-    progress.style.cssText = 'padding:10px 8px; margin:6px 0; background:#fff; color:#27445f; font-size:0.95em;';
-
-    const percent = getOntologyProgressPercent();
-
-    let classesText = 'Classes: waiting…';
-    let relationshipsText = 'Relationships: waiting…';
-    let propertiesText = 'Properties: waiting…';
-
-    if (ontologyProgressState.classesTotal > 0) {
-        classesText = `Classes: ${ontologyProgressState.classesDone.toLocaleString()} / ${ontologyProgressState.classesTotal.toLocaleString()}`;
-    }
-
-    if (ontologyProgressState.phase === 'relationships') {
-        relationshipsText = 'Relationships: processing…';
-    } else if (ontologyProgressState.phase === 'properties' || ontologyProgressState.phase === 'ready') {
-        relationshipsText = 'Relationships: complete';
-    }
-
-    if (ontologyProgressState.phase === 'properties') {
-        propertiesText = `Properties: ${ontologyProgressState.propertiesDone.toLocaleString()} / ${ontologyProgressState.propertiesTotal.toLocaleString()}`;
-    } else if (ontologyProgressState.phase === 'ready') {
-        propertiesText = `Properties: ${ontologyProgressState.propertiesTotal.toLocaleString()} / ${ontologyProgressState.propertiesTotal.toLocaleString()}`;
-    }
-
-    progress.innerHTML = `
-        <div style="font-size:1.12em;font-weight:700;margin-bottom:14px;color:#1f2937;">${message}</div>
-        <div style="font-size:1em;line-height:1.55;">
-            <div>${classesText}</div>
-            <div>${relationshipsText}</div>
-            <div>${propertiesText}</div>
-        </div>
-        <div style="margin-top:13px;display:flex;align-items:center;gap:9px;">
-            <div style="flex:1;height:28px;background-image:radial-gradient(#777 0.8px, transparent 0.8px);background-size:4px 4px;border:0;overflow:hidden;">
-                <div style="height:100%;width:${percent}%;background:#111;transition:width .2s ease;"></div>
-            </div>
-            <strong style="font-size:1em;min-width:38px;">${percent}%</strong>
-        </div>
-    `;
-}
-
-function setOntologyStatus(message, detail = '') {
-    renderOntologyProgress(message || 'Preparing ontology browser');
-    if (detail) {
-        const progress = document.getElementById('ontology-progress-container');
-        if (progress) {
-            const hint = document.createElement('div');
-            hint.style.cssText = 'margin-top:7px;color:#66788a;font-size:.88em;';
-            hint.textContent = detail;
-            progress.appendChild(hint);
-        }
-    }
-}
-
-function yieldToBrowser() {
-    return new Promise(resolve => {
-        if ('requestAnimationFrame' in window) {
-            requestAnimationFrame(() => setTimeout(resolve, 0));
-        } else {
-            setTimeout(resolve, 0);
-        }
-    });
-}
-
-// ------------------------------------------------------------
-// Load ontology data
-// ------------------------------------------------------------
-
-function ensureOntologyLoaded() {
-
-    // Already completely processed
-    if (ontologyProcessed) {
-        return Promise.resolve();
-    }
-
-    // Already loading
-    if (ontologyLoadPromise) {
-        return ontologyLoadPromise;
-    }
-
-    setOntologyStatus('Preparing ontology browser');
-
-    ontologyLoadPromise = loadScriptOnce(
-        'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js',
-        'vowlData',
-        'ontology data'
-    )
-    .then(() => {
-
-        // Give the browser a chance to render the page first
-        return new Promise(resolve => {
-
-            const process = async () => {
-                try {
-                    setOntologyStatus('Preparing ontology browser');
-                    await window.processOntologyData(window.vowlData);
-                    ontologyProcessed = true;
-                    populateHomeMetadata();
-                    setOntologyStatus('Ontology ready', 'The hierarchy is ready. Expand nodes to load their children.');
-                    resolve();
-                } catch (err) {
-                    console.error(err);
-                    reject(err);
-                }
-            };
-
-            // Prefer idle time so this does not block the UI
-            if ('requestIdleCallback' in window) {
-
-                requestIdleCallback(process, {
-                    timeout: 3000
-                });
-
-            } else {
-
-                setTimeout(process, 100);
-            }
-        });
-
-    })
-    .catch(error => {
-
-        console.error('Ontology loading error:', error);
-
-        ontologyLoadPromise = null;
-
-        throw error;
-    });
-
-    return ontologyLoadPromise;
-}
-
-
-// ------------------------------------------------------------
-// Load visualization application
-// ------------------------------------------------------------
-
-function ensureAppJsLoaded() {
-    if (typeof window.initializeEdamGraphicView === 'function') {
-        return Promise.resolve(window.initializeEdamGraphicView);
-    }
-
-    if (window.visualizationModuleReady) {
-        return window.visualizationModuleReady.then(() => {
-            if (typeof window.initializeEdamGraphicView !== 'function') {
-                throw new Error('Visualization module loaded, but initializeEdamGraphicView() was not found.');
-            }
-            return window.initializeEdamGraphicView;
-        });
-    }
-
-    return Promise.reject(new Error('Visualization module has not finished loading.'));
-}
-
-// ============================================================
-// TAB HANDLER
-// ============================================================
-
-$('.global-tab-btn').on('click', async function() {
-
+    $('.global-tab-btn').on('click', function() {
     const targetPage = $(this).data('target');
-
-    // Update navigation
+    
+    // 1. Update Buttons
     $('.global-tab-btn').removeClass('active');
     $(this).addClass('active');
-
-    // Switch page
+    
+    // 2. Update Panels (this hides all, then shows the target)
     $('.page-content').removeClass('active');
     $('#' + targetPage).addClass('active');
 
-
-    // Browser View
-    if (targetPage === 'page-browser') {
-
-        try {
-
-            await ensureOntologyLoaded();
-
-        } catch (error) {
-
-            console.error(error);
-
-            $('#protege-tree').html(
-                '<span style="color:#b42318; padding:10px; display:block;">' +
-                'Unable to load ontology data.' +
-                '</span>'
-            );
-        }
+    // 3. Optional: Trigger viz if needed
+    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
+        window.initializeEdamGraphicView();
     }
-
-
-    // Downloads View: always start at the top of the downloads page.
-    // This is useful when the user previously scrolled through the long
-    // downloads list and then returns to the tab.
-    if (targetPage === 'page-downloads') {
-        const downloadsPage = document.getElementById('page-downloads');
-        if (downloadsPage) {
-            downloadsPage.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-
-    // Visualization View
-    if (targetPage === 'page-visualization') {
-
-        try {
-
-            await ensureOntologyLoaded();
-
-            const vizContainer = document.getElementById('ontology-tree-container');
-            if (vizContainer) {
-                vizContainer.innerHTML = '<div style=\"padding:20px;color:#66788a;\">Preparing tree visualization…</div>';
-            }
-
-            const initializeVisualization = await ensureAppJsLoaded();
-            await yieldToBrowser();
-
-            if (typeof initializeVisualization === 'function') {
-                await initializeVisualization();
-            } else if (vizContainer) {
-                vizContainer.innerHTML = '<div style=\"padding:20px;color:#b42318;\">The visualization script loaded, but its initializer was not found. Check app.js.</div>';
-            }
-
-        } catch (error) {
-
-            console.error('Tree visualization error:', error);
-
-            const vizContainer = document.getElementById('ontology-tree-container');
-            if (vizContainer) {
-                vizContainer.innerHTML =
-                    '<div style=\"padding:20px;color:#b42318;background:#fff5f5;border:1px solid #f0b7b7;border-radius:4px;\">' +
-                    '<strong>Unable to display the tree visualization.</strong>' +
-                    '<div style=\"margin-top:8px;font-size:0.92em;\">' +
-                    String(error && error.message ? error.message : error) +
-                    '</div></div>';
-            }
-        }
-    }
-
 });
 
     // 3. AUTOMATIC SEARCH & AUTO-RESET FILTER LISTENER
@@ -1492,22 +1165,13 @@ $('.global-tab-btn').on('click', async function() {
     });
 
     // 6. DATA PROCESSOR PIPELINE
-    window.processOntologyData = async function(vowlData) {
+    window.processOntologyData = function(vowlData) {
 		const DEBUG = false;
 		
         let rawClasses = vowlData.class || [];
         let attributesList = vowlData.classAttribute || [];
         let propertiesList = vowlData.property || [];
         let propertyAttributes = vowlData.propertyAttribute || [];
-
-        ontologyProgressState.phase = 'classes';
-        ontologyProgressState.classesDone = 0;
-        ontologyProgressState.classesTotal = rawClasses.length;
-        ontologyProgressState.relationshipsDone = 0;
-        ontologyProgressState.relationshipsTotal = 0;
-        ontologyProgressState.propertiesDone = 0;
-        ontologyProgressState.propertiesTotal = propertiesList.length;
-        renderOntologyProgress('Preparing ontology browser');
 
         let attrMap = {};
 attributesList.forEach(a => {
@@ -1545,14 +1209,13 @@ attributesList.forEach(a => {
             return '';
         }
 
-        for (let classIndex = 0; classIndex < rawClasses.length; classIndex++) {
-            const classObj = rawClasses[classIndex];
+        rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
 			const attr = attrMap[uniqueId] || {};            
-            if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") continue;
-			if (isDeprecated(attr)) continue;
-			if (isEmptyPlaceholder(attr)) continue;
-			if (isAnonymousExpression(attr)) continue;
+            if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
+			if (isDeprecated(attr)) return;
+			if (isEmptyPlaceholder(attr)) return;
+			if (isAnonymousExpression(attr)) return;
 
 
             let rdfsLabel = extractAnnotation(attr.label) || 'None';
@@ -1595,7 +1258,7 @@ attributesList.forEach(a => {
             let displayName = prefLabel || (rdfsLabel !== 'None' ? rdfsLabel : null) || window.masterIdLabelMap[uniqueId] || cleanUrlFallback(uniqueId);
             
             if (typeof isPrimitiveType === "function" && isPrimitiveType(uniqueId, displayName, (classObj.type || '') + " " + (attr.type || ''))) {
-                continue; 
+                return; 
             }
 
             let equivalents = attr.equivalent || [];
@@ -1618,30 +1281,13 @@ attributesList.forEach(a => {
                     equivalent: equivalents
                 }
             };
-            ontologyProgressState.classesDone = classIndex + 1;
-            if (classIndex % 250 === 0 || classIndex === rawClasses.length - 1) {
-                renderOntologyProgress('Preparing ontology browser');
-                await yieldToBrowser();
-            }
-        }
+        });
 
-        ontologyProgressState.phase = 'relationships';
-        ontologyProgressState.relationshipsTotal = rawClasses.reduce((total, classObj) => {
-            const attr = attrMap[classObj.id] || {};
-            const supers = Array.isArray(attr.superClasses) ? attr.superClasses : (attr.superClasses ? [attr.superClasses] : []);
-            const intersections = Array.isArray(attr.intersection) ? attr.intersection : (attr.intersection ? [attr.intersection] : []);
-            return total + supers.length + intersections.length;
-        }, 0);
-        ontologyProgressState.relationshipsDone = 0;
-        renderOntologyProgress('Preparing ontology browser');
-        await yieldToBrowser();
-
-        for (let relationshipIndex = 0; relationshipIndex < rawClasses.length; relationshipIndex++) {
-            const classObj = rawClasses[relationshipIndex];
+		rawClasses.forEach(classObj => {
             const uniqueId = classObj.id;
             const attr = attrMap[uniqueId] || {};
             const childNode = window.globalNodeRegistry[uniqueId];
-            if (!childNode) continue;
+            if (!childNode) return;
 
             let superClasses = attr.superClasses || [];
             if (!Array.isArray(superClasses)) superClasses = [superClasses];
@@ -1659,13 +1305,7 @@ attributesList.forEach(a => {
                     if (!window.globalNodeRegistry[supId].meta.subclasses.includes(uniqueId)) window.globalNodeRegistry[supId].meta.subclasses.push(uniqueId);
                 }
             });
-
-            ontologyProgressState.relationshipsDone += combinedSuperCandidates.length;
-            if (relationshipIndex % 250 === 0 || relationshipIndex === rawClasses.length - 1) {
-                renderOntologyProgress('Preparing ontology browser');
-                await yieldToBrowser();
-            }
-        }
+        });
 
         // Two-Way (Bidirectional) Equivalence Bridge Injection
         Object.keys(window.globalNodeRegistry).forEach(classId => {
@@ -1698,20 +1338,7 @@ attributesList.forEach(a => {
             });
         });
 
-        // The class hierarchy is now usable. Render it before processing the
-        // potentially large property/slot list so users can start browsing.
-        renderTreeInterface();
-        const progressContainer = document.getElementById('ontology-progress-container');
-        if (progressContainer) progressContainer.style.display = 'none';
-        await yieldToBrowser();
-
-        ontologyProgressState.phase = 'properties';
-        ontologyProgressState.propertiesDone = 0;
-        renderOntologyProgress('Preparing ontology browser');
-        await yieldToBrowser();
-
-        for (let propertyIndex = 0; propertyIndex < propertiesList.length; propertyIndex++) {
-            const prop = propertiesList[propertyIndex];
+        propertiesList.forEach(prop => {
             const propId = prop.id;
             const attr = propAttrMap[propId] || {};
             let name = window.masterIdLabelMap[propId] || cleanUrlFallback(propId);
@@ -1741,22 +1368,36 @@ attributesList.forEach(a => {
                     }
                 });
             }
-            ontologyProgressState.propertiesDone = propertyIndex + 1;
-            if (propertyIndex % 500 === 0 || propertyIndex === propertiesList.length - 1) {
-                renderOntologyProgress('Preparing ontology browser');
-                await yieldToBrowser();
-            }
+        });
+
+        let jsTreeData = [];
+        let processedTreePaths = new Set();
+
+        function addNodeToTree(classId, treeParentId, currentPathList) {
+            let node = window.globalNodeRegistry[classId];
+            if (!node || currentPathList.includes(classId)) return;
+            
+            let updatedPathList = [...currentPathList, classId];
+            let pathKeyString = updatedPathList.join('->');
+            if (processedTreePaths.has(pathKeyString)) return;
+            processedTreePaths.add(pathKeyString); 
+
+            let treeNodeId = treeParentId === '#' ? classId : treeParentId + "::" + classId;
+            jsTreeData.push({ id: treeNodeId, parent: treeParentId, text: node.text, data: { originalId: classId } });
+            
+            let crossSubclasses = node.meta.subclasses || []; 
+            crossSubclasses.forEach(subId => addNodeToTree(subId, treeNodeId, updatedPathList));
         }
 
+        // Target window scope registry precisely to catch missing isolated components
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
+            const node = window.globalNodeRegistry[classId];
+            if (!node.meta.superclasses || node.meta.superclasses.length === 0) {
+                addNodeToTree(classId, '#', []);
+            }
+        });
 
-        // Tree nodes are created lazily by getRootNodes()/getChildNodes().
-        ontologyProgressState.phase = 'ready';
-        ontologyProgressState.classesDone = ontologyProgressState.classesTotal;
-        ontologyProgressState.relationshipsDone = ontologyProgressState.relationshipsTotal;
-        ontologyProgressState.propertiesDone = ontologyProgressState.propertiesTotal;
-        const finalProgressContainer = document.getElementById('ontology-progress-container');
-        if (finalProgressContainer) finalProgressContainer.style.display = 'none';
-        await yieldToBrowser();
+        renderTreeInterface();
     };
 function isAnonymousExpression(attr) {
     if (!attr) return false;
@@ -1778,28 +1419,13 @@ function isAnonymousExpression(attr) {
     }
 
     function getRootNodes() {
-        const roots = [];
-        const registryIds = new Set(Object.keys(window.globalNodeRegistry));
-
-        registryIds.forEach(classId => {
+        let roots = [];
+        Object.keys(window.globalNodeRegistry).forEach(classId => {
             const n = window.globalNodeRegistry[classId];
-            const supers = Array.isArray(n.meta.superclasses) ? n.meta.superclasses : [];
-            // A superclass that is not itself present in the registry cannot
-            // be expanded in this browser, so it should not prevent this
-            // class from being treated as a visible root.
-            const internalSupers = supers.filter(id => registryIds.has(id));
-            if (internalSupers.length === 0) {
+            if (!n.meta.superclasses || n.meta.superclasses.length === 0) {
                 roots.push(buildJsTreeNodeObj(classId, classId, [classId]));
             }
         });
-
-        // Safety fallback for malformed/cyclic hierarchy data. Never leave
-        // the tree completely blank if the registry contains valid classes.
-        if (roots.length === 0 && registryIds.size > 0) {
-            const fallbackIds = Array.from(registryIds).slice(0, 50);
-            return fallbackIds.map(classId => buildJsTreeNodeObj(classId, classId, [classId]));
-        }
-
         return roots;
     }
 
@@ -1813,16 +1439,7 @@ function isAnonymousExpression(attr) {
             .map(subId => buildJsTreeNodeObj(subId, treeParentId + '::' + subId, [...pathSoFar, subId]));
     }
     function renderTreeInterface() {
-        const $tree = $('#protege-tree');
-
-        // Do not call jstree("destroy") on an element that has never
-        // been initialized. This also makes re-rendering safe.
-        const existingTree = $tree.jstree(true);
-        if (existingTree) {
-            $tree.jstree('destroy');
-        }
-
-        $tree.empty().jstree({
+        $('#protege-tree').jstree("destroy").jstree({
             'core': {
                 'data': function (node, callback) {
                     if (node.id === '#') {
@@ -1833,7 +1450,7 @@ function isAnonymousExpression(attr) {
                 },
                 'themes': { 'variant': 'small', 'icons': true, 'dots': true }
             },
-            'plugins': ['wholerow']
+            'plugins': ["wholerow"]
         });
     }
 
@@ -1850,28 +1467,6 @@ function isAnonymousExpression(attr) {
 
 	function isDeprecated(attr) {
     return !!(attr && Array.isArray(attr.attributes) && attr.attributes.includes('deprecated'));
-}
-
-/*
- * The data pipeline calls isEmptyPlaceholder() before registering each
- * class. The previous version referenced that helper but never defined it,
- * which stopped processOntologyData() at the first ontology class.
- *
- * Keep the test conservative: only explicit placeholder markers are
- * filtered. Missing labels are not treated as placeholders.
- */
-function isEmptyPlaceholder(attr) {
-    if (!attr) return false;
-
-    const attrs = Array.isArray(attr.attributes) ? attr.attributes : [];
-
-    return (
-        attr.placeholder === true ||
-        attr.isPlaceholder === true ||
-        attrs.includes('placeholder') ||
-        attrs.includes('empty-placeholder') ||
-        attrs.includes('empty')
-    );
 }
 
 	function isUndefinedExternalStub(attr) {
@@ -2213,6 +1808,14 @@ async function syncFeedbackFromDatabase() {
         return html;
     }
 
+    // 9. FINAL STEP: SAFE RUN POPULATOR
+    if (typeof window.vowlData !== 'undefined') {
+        setTimeout(function() {
+            window.processOntologyData(window.vowlData);
+        }, 150);
+    } else {
+        $('#protege-tree').html('<span style="color:red; font-size:0.9em; padding:10px; display:block;">Error: "ontology-data.js" not detected or missing window.vowlData object.</span>');
+    }
 });
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
@@ -2303,241 +1906,10 @@ $(document).on('mouseenter', '.search-result-item', function() {
 </script>
 
 
-<!-- app.js and ontology-data.js are loaded dynamically when needed -->
-
-<!-- Progressive Tree Visualization module. This replaces the old app.js loader so
-     the visualization can build its hierarchy in small chunks and keep the UI responsive. -->
-<script type="module">
-import * as d3 from "d3";
-import { interactive_tree } from './edam-tree-reusable-d3.js';
-
-let myTree = null;
-let treeInitialized = false;
-
-function vizStatus(title, detail = '', percent = null) {
-    const el = document.getElementById('ontology-tree-container');
-    if (!el) return;
-
-    let box = document.getElementById('viz-progress-box');
-    if (!box) {
-        box = document.createElement('div');
-        box.id = 'viz-progress-box';
-        box.style.cssText = 'padding:24px; margin:20px; background:#fff; border-left:5px solid #d9d9d9; font-family:Arial,sans-serif; color:#222; max-width:760px;';
-        el.innerHTML = '';
-        el.appendChild(box);
-    }
-
-    const pct = percent == null ? '' : `<span style="font-size:28px;margin-left:10px;">${Math.round(percent)}%</span>`;
-    const bar = percent == null ? '' : `
-        <div style="display:flex;align-items:center;margin-top:20px;gap:12px;">
-            <div style="width:280px;height:28px;background:#eee;overflow:hidden;position:relative;border:1px solid #ddd;">
-                <div style="height:100%;width:${Math.max(0,Math.min(100,percent))}%;background:#111;"></div>
-            </div>${pct}
-        </div>`;
-    box.innerHTML = `<div style="font-size:25px;font-weight:700;margin-bottom:14px;">${title}</div>
-        <div style="font-size:19px;margin:7px 0;">${detail}</div>${bar}`;
-}
-
-function yieldToBrowser() {
-    return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
-}
-
-async function buildHierarchyFromRegistryProgressive(registry) {
-    const ids = Object.keys(registry);
-    const total = ids.length;
-    const rootIds = ids.filter(id => {
-        const node = registry[id];
-        const supers = node && node.meta && Array.isArray(node.meta.superclasses)
-            ? node.meta.superclasses : [];
-        return supers.length === 0;
-    });
-
-    let built = 0;
-
-    // Build iteratively instead of using path.includes() + recursive calls.
-    // This avoids the long synchronous pause that made the visualization appear blank.
-    async function makeNode(id, path) {
-        const node = registry[id];
-        if (!node || path.has(id)) return null;
-
-        const nextPath = new Set(path);
-        nextPath.add(id);
-        const childIds = node.meta && Array.isArray(node.meta.subclasses)
-            ? node.meta.subclasses : [];
-
-        const children = [];
-        for (const childId of childIds) {
-            const child = await makeNode(childId, nextPath);
-            if (child) children.push(child);
-        }
-
-        built++;
-        if (built % 250 === 0) {
-            const percent = total ? (built / total) * 100 : 100;
-            vizStatus(
-                'Preparing tree visualization',
-                `Classes: ${Math.min(built,total).toLocaleString()} / ${total.toLocaleString()}<br>Relationships: building hierarchy…<br>Properties: already prepared`,
-                percent
-            );
-            await yieldToBrowser();
-        }
-        return {
-            id: node.id,
-            text: node.text,
-            meta: node.meta,
-            children: children.length ? children : undefined
-        };
-    }
-
-    // Process roots one at a time and yield between roots. Most importantly,
-    // do not attempt to render until the complete nested structure is valid.
-    const rootChildren = [];
-    for (let i = 0; i < rootIds.length; i++) {
-        const child = await makeNode(rootIds[i], new Set());
-        if (child) rootChildren.push(child);
-
-        const percent = total ? (built / total) * 100 : 100;
-        vizStatus(
-            'Preparing tree visualization',
-            `Classes: ${Math.min(built,total).toLocaleString()} / ${total.toLocaleString()}<br>Relationships: building hierarchy…<br>Properties: already prepared`,
-            percent
-        );
-        await yieldToBrowser();
-    }
-
-    // Safety fallback: if root metadata was incomplete, create top-level nodes
-    // from every registry item not reachable from a detected root.
-    if (!rootChildren.length && ids.length) {
-        const fallbackIds = ids.slice(0, 100);
-        for (const id of fallbackIds) {
-            const node = registry[id];
-            if (node) rootChildren.push({id:node.id,text:node.text,meta:node.meta,children:undefined});
-        }
-    }
-
-    return { id:'__root__', text:'mCODE-ORCHID', meta:{}, children:rootChildren };
-}
-
-function showNodeDetails(d) {
-    if (!d || !d.data) return;
-    const meta = d.data.meta || {};
-    const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value && value !== 'None' ? value : '-';
-    };
-    const titleEl = document.getElementById('panel-title');
-    if (titleEl) titleEl.textContent = d.data.text ? `Details of Class: "${d.data.text}"` : 'Details of Class';
-    setText('val-rdfs-label', meta.rdfsLabel);
-    setText('val-pref-label', meta.prefLabel);
-    setText('val-definition', meta.comment);
-    setText('val-comment', meta.rdfsComment);
-
-    const copyToClipboard = (text, iconEl) => {
-        if (!text || !navigator.clipboard) return;
-        navigator.clipboard.writeText(text).then(() => {
-            if (!iconEl) return;
-            const original = iconEl.textContent;
-            iconEl.textContent = '✓';
-            setTimeout(() => { iconEl.textContent = original; }, 1000);
-        });
-    };
-
-    const uriCell = document.getElementById('val-uri-cell');
-    if (uriCell) {
-        uriCell.innerHTML = '';
-        if (meta.iri && meta.iri !== 'None') {
-            const pill = document.createElement('span');
-            pill.className = 'ontology-pill iri-pill';
-            pill.title = 'Click to copy IRI';
-            const label = document.createElement('span');
-            label.textContent = meta.iri;
-            pill.appendChild(label);
-            const icon = document.createElement('span');
-            icon.className = 'ontology-pill-copy-icon';
-            icon.textContent = '🗐';
-            pill.appendChild(icon);
-            pill.addEventListener('click', () => copyToClipboard(meta.iri, icon));
-            uriCell.appendChild(pill);
-        } else uriCell.textContent = '-';
-    }
-
-    const fillPills = (cellId, ids) => {
-        const cell = document.getElementById(cellId);
-        if (!cell) return;
-        cell.innerHTML = '';
-        (ids || []).forEach(refId => {
-            const refNode = window.globalNodeRegistry ? window.globalNodeRegistry[refId] : null;
-            if (!refNode) return;
-            const pill = document.createElement('span');
-            pill.className = 'ontology-pill';
-            pill.title = 'Click to copy IRI';
-            const label = document.createElement('span');
-            label.textContent = refNode.text;
-            pill.appendChild(label);
-            const icon = document.createElement('span');
-            icon.className = 'ontology-pill-copy-icon';
-            icon.textContent = '🗐';
-            pill.appendChild(icon);
-            pill.addEventListener('click', () => copyToClipboard(refNode.meta ? refNode.meta.iri : null, icon));
-            cell.appendChild(pill);
-        });
-    };
-    const fillSlotPills = (cellId, slots, slotType, colorClass) => {
-        const cell = document.getElementById(cellId);
-        if (!cell) return;
-        cell.innerHTML = '';
-        (slots || []).filter(s => s.type === slotType).forEach(s => {
-            const pill = document.createElement('span');
-            pill.className = 'ontology-pill property-pill ' + colorClass;
-            if (s.range) pill.title = `Range: ${s.range}`;
-            pill.textContent = s.name;
-            cell.appendChild(pill);
-        });
-    };
-    fillPills('val-parents', meta.superclasses);
-    fillPills('val-equivalent', meta.equivalent);
-    fillSlotPills('val-object-properties', meta.slots, 'Object Property', 'property-pill-object');
-    fillSlotPills('val-datatype-properties', meta.slots, 'Data Property', 'property-pill-data');
-
-    if (myTree && myTree.cmd && d.data.id !== '__root__') myTree.cmd.selectElement(d.data.id, true, false);
-}
-
-window.initializeEdamGraphicView = async function () {
-    if (treeInitialized) return;
-    const registry = window.globalNodeRegistry;
-    if (!registry || Object.keys(registry).length === 0) {
-        throw new Error('Ontology registry is empty; the ontology must finish loading before the visualization can start.');
-    }
-
-    vizStatus('Preparing tree visualization', 'Classes: starting…<br>Relationships: waiting…<br>Properties: already prepared', 0);
-    const hierarchyData = await buildHierarchyFromRegistryProgressive(registry);
-
-    vizStatus('Rendering tree', `Classes: ${Object.keys(registry).length.toLocaleString()} / ${Object.keys(registry).length.toLocaleString()}<br>Relationships: ready<br>Properties: ready`, 100);
-    await yieldToBrowser();
-
-    const container = d3.select('#ontology-tree-container');
-    container.html('');
-    myTree = interactive_tree().clickedElementHandler(showNodeDetails).duration(150);
-    container.call(myTree);
-    myTree.data(hierarchyData);
-
-    if (hierarchyData.children && hierarchyData.children.length) {
-        myTree.cmd.expandElement(hierarchyData.children[0].id);
-    }
-
-    document.getElementById('tree-zoom-in')?.addEventListener('click', () => myTree.cmd.manualZoomInAndOut('in'));
-    document.getElementById('tree-zoom-out')?.addEventListener('click', () => myTree.cmd.manualZoomInAndOut('out'));
-    document.getElementById('tree-zoom-reset')?.addEventListener('click', () => myTree.cmd.resetPanAndZoom());
-    document.getElementById('tree-expand-all')?.addEventListener('click', () => myTree.cmd.expandAllDescendantElement());
-    document.getElementById('tree-collapse-all')?.addEventListener('click', () => myTree.cmd.collapseNotSelectedElement());
-
-    treeInitialized = true;
-    console.log('Ontology tree initialized successfully.');
-};
-
-window.visualizationModuleReady = Promise.resolve();
-</script>
-
+<!-- Run your application script -->
+<script type="module" src="app.js"></script>
+<!--  Local ontology data file -->
+<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js"></script>
 </body>
 
 
