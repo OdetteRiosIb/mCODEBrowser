@@ -1225,7 +1225,6 @@ attributesList.forEach(a => {
 			const attr = attrMap[uniqueId] || {};            
             if (classObj.type === "rdfs:Literal" || attr.type === "rdfs:Literal") return;
 			if (isDeprecated(attr)) return;
-			if (isEmptyPlaceholder(attr)) return;
 			if (isAnonymousExpression(attr)) return;
 
 
