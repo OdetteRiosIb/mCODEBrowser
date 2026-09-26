@@ -1488,7 +1488,6 @@ $(document).ready(function() {
     // 6b. ASYNC ONTOLOGY LOADER — doesn't block page render or tab switching
    const DB_NAME = 'mcode-orchid-cache';
 const STORE_NAME = 'ontology';
-const ONTOLOGY_VERSION = 'v2.0.1-json'; // bumped again: deprecated classes removed from ontology-fixed.json
 function openCacheDB() {
     return new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, 1);
