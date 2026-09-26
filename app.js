@@ -134,14 +134,14 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: supId, label: getRegistryLabel(supId), role: 'Superclass',
             color: '#b0e0e6', size: 40,
-            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
+            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#b1fad8' }
         });
     });
     if (overflowSuperclasses.length) {
         satellites.push({
             id: null, label: `+${overflowSuperclasses.length} more`, role: 'Superclass', isOverflow: true,
             overflowIds: overflowSuperclasses, color: '#e2e8f0', size: 34,
-            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
+            edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#b1fad8' }
         });
     }
 
@@ -149,14 +149,14 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: subId, label: getRegistryLabel(subId), role: 'Subclass',
             color: '#aec6cf', size: 38,
-            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
+            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#f7d7fc' }
         });
     });
     if (overflowSubclasses.length) {
         satellites.push({
             id: null, label: `+${overflowSubclasses.length} more`, role: 'Subclass', isOverflow: true,
             overflowIds: overflowSubclasses, color: '#e2e8f0', size: 34,
-            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
+            edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#f7d7fc' }
         });
     }
 
@@ -164,7 +164,7 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: slot.range, label: getRegistryLabel(slot.range), role: 'Class',
             color: '#aec6cf', size: 36,
-            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#ff7f50' }
+            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#ffff9e' }
         });
     });
     if (overflowProperties.length) {
