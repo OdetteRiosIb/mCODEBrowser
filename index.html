@@ -1,3 +1,5 @@
+please fix this code 
+
 <!DOCTYPE html>
 <html>
 <head>   
@@ -668,7 +670,7 @@ body > div.tooltip {
         
         /* Collapsible Cards Layout */
         .yellow-card { background-color: #fbf3db; border: 1px solid #dcd1b4; margin-bottom: 15px; border-radius: 2px; overflow: hidden; }
-        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: justify; align-items: center; cursor: pointer; user-select: none; }
+        .card-header { padding: 10px 15px; background-color: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .card-header:hover { background-color: rgba(0,0,0,0.07); }
         .card-label { font-weight: bold; color: #000; font-size: 0.95em; }
         .toggle-icon { font-size: 0.8em; color: #666; font-weight: bold; margin-left: auto; }
@@ -986,7 +988,7 @@ body > div.tooltip {
     </div> <!-- END OF edam-browser-wrapper (Closed here so the text goes outside!) -->
     	<!-- Text placed outside and below the white square -->
     <div class="external-footer-text">
-	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="url">https://doi.org/10.21105/joss.00698</a>)    	</div>
+	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="https://doi.org/10.21105/joss.00698" target="_blank" rel="noopener noreferrer">https://doi.org/10.21105/joss.00698</a>)    	</div>
 	</div>
 </div>
 
@@ -1439,7 +1441,16 @@ function isAnonymousExpression(attr) {
             .map(subId => buildJsTreeNodeObj(subId, treeParentId + '::' + subId, [...pathSoFar, subId]));
     }
     function renderTreeInterface() {
-        $('#protege-tree').jstree("destroy").jstree({
+        const $tree = $('#protege-tree');
+
+        // Do not call jstree("destroy") on an element that has never
+        // been initialized. This also makes re-rendering safe.
+        const existingTree = $tree.jstree(true);
+        if (existingTree) {
+            $tree.jstree('destroy');
+        }
+
+        $tree.empty().jstree({
             'core': {
                 'data': function (node, callback) {
                     if (node.id === '#') {
@@ -1450,7 +1461,7 @@ function isAnonymousExpression(attr) {
                 },
                 'themes': { 'variant': 'small', 'icons': true, 'dots': true }
             },
-            'plugins': ["wholerow"]
+            'plugins': ['wholerow']
         });
     }
 
@@ -1467,6 +1478,28 @@ function isAnonymousExpression(attr) {
 
 	function isDeprecated(attr) {
     return !!(attr && Array.isArray(attr.attributes) && attr.attributes.includes('deprecated'));
+}
+
+/*
+ * The data pipeline calls isEmptyPlaceholder() before registering each
+ * class. The previous version referenced that helper but never defined it,
+ * which stopped processOntologyData() at the first ontology class.
+ *
+ * Keep the test conservative: only explicit placeholder markers are
+ * filtered. Missing labels are not treated as placeholders.
+ */
+function isEmptyPlaceholder(attr) {
+    if (!attr) return false;
+
+    const attrs = Array.isArray(attr.attributes) ? attr.attributes : [];
+
+    return (
+        attr.placeholder === true ||
+        attr.isPlaceholder === true ||
+        attrs.includes('placeholder') ||
+        attrs.includes('empty-placeholder') ||
+        attrs.includes('empty')
+    );
 }
 
 	function isUndefinedExternalStub(attr) {
