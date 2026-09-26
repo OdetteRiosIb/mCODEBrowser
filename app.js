@@ -14,24 +14,39 @@ let treeInitialized = false;
  * synthetic "mCODE-ORCHID" root node, the same idea as EDAM's own root.
  */
 function buildHierarchyFromRegistry(registry) {
-    function buildNode(id, path) {
-        const node = registry[id];
-        if (!node || path.includes(id)) return null; // guards against cycles
-        const nextPath = [...path, id];
-        const children = (node.meta.subclasses || [])
-            .map(childId => buildNode(childId, nextPath))
-            .filter(Boolean);
+    const built = new Map();      // id -> finished node, computed only once ever
+    const inProgress = new Set(); // ids currently being built, guards against real cycles
 
-        return {
+    function buildNode(id) {
+        if (built.has(id)) {
+            // Already computed this class's subtree — reuse it, but return a fresh
+            // wrapper object so D3 treats each occurrence as its own node instance.
+            const cached = built.get(id);
+            return { id: cached.id, text: cached.text, meta: cached.meta, children: cached.children };
+        }
+        if (inProgress.has(id)) return null; // guards against a genuine cycle in the data
+
+        const node = registry[id];
+        if (!node) return null;
+
+        inProgress.add(id);
+        const children = (node.meta.subclasses || [])
+            .map(childId => buildNode(childId))
+            .filter(Boolean);
+        inProgress.delete(id);
+
+        const result = {
             id: node.id,
             text: node.text,
             meta: node.meta,
             children: children.length ? children : undefined
         };
+        built.set(id, result);
+        return result;
     }
 
     const rootIds = Object.keys(registry).filter(id => registry[id].meta.superclasses.length === 0);
-    const rootChildren = rootIds.map(id => buildNode(id, [])).filter(Boolean);
+    const rootChildren = rootIds.map(id => buildNode(id)).filter(Boolean);
 
     return { id: '__root__', text: 'mCODE-ORCHID', meta: {}, children: rootChildren };
 }
