@@ -588,6 +588,47 @@ body > div.tooltip {
 .ontology-pill-copy-icon {
     margin-left: 10px;
 }
+
+/* Relationship bubble diagram (Interactive View) */
+.bubble-diagram-wrapper {
+    width: 100%;
+    padding: 0 25px 25px 25px;
+    box-sizing: border-box;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+#bubble-diagram-svg-container {
+    width: 100%;
+    overflow-x: auto;
+}
+#bubble-diagram-svg-container svg {
+    display: block;
+    margin: 0 auto;
+}
+.bubble-empty-msg {
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+}
+.bubble-node circle {
+    cursor: pointer;
+    stroke-width: 1.6px;
+    transition: stroke-width 0.15s ease;
+}
+.bubble-node:hover circle {
+    stroke: #1f2937;
+    stroke-width: 3px;
+}
+.bubble-node text {
+    font: 12px Arial, sans-serif;
+    fill: #1f2937;
+    text-anchor: middle;
+    pointer-events: none;
+}
+.bubble-link-label {
+    font: 10px Arial, sans-serif;
+    fill: #555;
+}
 		
 #protege-sidebar { 
     width: 380px; 
@@ -641,8 +682,14 @@ body > div.tooltip {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     box-sizing: border-box;
+}
+
+#page-visualization.active {
+    overflow-y: auto;
+    align-items: flex-start;
 }
 
 .external-footer-text {
@@ -992,6 +1039,21 @@ body > div.tooltip {
 </div>
 
     </div>
+
+    <div class="bubble-diagram-wrapper">
+        <div class="metadata-card" id="bubble-card-container">
+            <div class="card-header" onclick="toggleBubbleBox()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="bubble-panel-title" class="pane-title" style="margin: 0; background: transparent;">Relationship Map</h3>
+                <span id="bubble-toggle-indicator" style="font-size: 0.9rem; font-weight: bold; color: #555;">[ - ]</span>
+            </div>
+            <div class="card-body" id="bubble-card-body-content">
+                <div id="bubble-diagram-svg-container">
+                    <p class="bubble-empty-msg">Select a class in the tree above to see its superclasses, subclasses, and properties as a bubble map.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="external-footer-text">
 	This visualization view was made possible by the open-source code by Brancotte et al., (2018). "A reusable tree-based web-visualization to browse EDAM ontology, and contribute to it". (<a href="url">https://doi.org/10.21105/joss.00698</a>)    	</div>
 	</div>
@@ -2028,6 +2090,19 @@ function toggleDetailsBox() {
     const card = document.getElementById('details-card-container');
     const indicator = document.getElementById('toggle-indicator');
     
+    if (card.classList.contains('collapsed')) {
+        card.classList.remove('collapsed');
+        indicator.textContent = '[ - ]';
+    } else {
+        card.classList.add('collapsed');
+        indicator.textContent = '[ + ]';
+    }
+}
+
+function toggleBubbleBox() {
+    const card = document.getElementById('bubble-card-container');
+    const indicator = document.getElementById('bubble-toggle-indicator');
+
     if (card.classList.contains('collapsed')) {
         card.classList.remove('collapsed');
         indicator.textContent = '[ - ]';
