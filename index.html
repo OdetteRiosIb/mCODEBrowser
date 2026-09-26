@@ -1169,6 +1169,8 @@ window.supabase = window.supabase.createClient(
 
     // 6. DATA PROCESSOR PIPELINE
     window.processOntologyData = function(vowlData) {
+		const DEBUG = false;
+		
         let rawClasses = vowlData.class || [];
         let attributesList = vowlData.classAttribute || [];
         let propertiesList = vowlData.property || [];
@@ -1181,8 +1183,8 @@ attributesList.forEach(a => {
         return;
     }
     const existing = attrMap[a.id];
-    console.warn(`Duplicate attribute record for id "${a.id}" — merging fields.`);
-    for (const key in a) {
+    if (DEBUG) console.warn(`Duplicate attribute record for id "${a.id}" — merging fields.`);
+	for (const key in a) {
         const newVal = a[key];
         const oldVal = existing[key];
         if (Array.isArray(newVal) || Array.isArray(oldVal)) {
@@ -1234,7 +1236,7 @@ attributesList.forEach(a => {
                     let cleanKey = key.toLowerCase();
                     let extractedVal = extractAnnotation(attr.annotations[key]);
 
-		    console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
+		            if (DEBUG) console.log(`[Annotation ID: ${uniqueId}] Key: "${key}" -> Extracted Value:`, extractedVal);
 
                     if (!extractedVal || extractedVal === 'None') continue;
 
