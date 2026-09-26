@@ -903,7 +903,11 @@ body > div.tooltip {
             <h3>Class Hierarchy</h3>
             <input type="text" id="protege-search" placeholder="Type to filter ontology elements...">
 			<div id="search-results-dropdown" style="display:none; background:#fff; border:1px solid #b5c7de; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
-			<div id="protege-tree">Assembling ontology nodes...</div>
+			<div id="protege-tree">
+    			<span style="color:#666; padding:10px; display:block;">
+       				 Preparing ontology browser...
+   				 </span>
+			</div>
             <button class="export-btn" id="exportFeedbackBtn">📥 Export All Feedback (.JSON)</button>
         </div>
 
@@ -1029,21 +1033,198 @@ window.supabase = window.supabase.createClient(
     let feedbackDatabase = {}; 
 	populateHomeMetadata();
     // 2. PAGE-LEVEL TAB SELECTION ARCHITECTURE
-    $('.global-tab-btn').on('click', function() {
+    // ============================================================
+// BACKGROUND ONTOLOGY LOADING
+// ============================================================
+
+let ontologyLoadPromise = null;
+let ontologyProcessed = false;
+let appJsLoadPromise = null;
+
+function loadScriptOnce(src, globalName, label) {
+    return new Promise((resolve, reject) => {
+
+        // Already loaded
+        if (globalName && typeof window[globalName] !== 'undefined') {
+            resolve();
+            return;
+        }
+
+        // Already being loaded
+        const existing = document.querySelector(
+            `script[data-lazy-src="${src}"]`
+        );
+
+        if (existing) {
+            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('error', () => {
+                reject(new Error(`Failed to load ${label}`));
+            }, { once: true });
+            return;
+        }
+
+        // Create script dynamically
+        const script = document.createElement('script');
+
+        script.src = src;
+        script.async = true;
+        script.dataset.lazySrc = src;
+
+        script.onload = () => resolve();
+
+        script.onerror = () => {
+            reject(new Error(`Failed to load ${label}`));
+        };
+
+        document.body.appendChild(script);
+    });
+}
+
+
+// ------------------------------------------------------------
+// Load ontology data
+// ------------------------------------------------------------
+
+function ensureOntologyLoaded() {
+
+    // Already completely processed
+    if (ontologyProcessed) {
+        return Promise.resolve();
+    }
+
+    // Already loading
+    if (ontologyLoadPromise) {
+        return ontologyLoadPromise;
+    }
+
+    ontologyLoadPromise = loadScriptOnce(
+        'https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js',
+        'vowlData',
+        'ontology data'
+    )
+    .then(() => {
+
+        // Give the browser a chance to render the page first
+        return new Promise(resolve => {
+
+            const process = () => {
+
+                window.processOntologyData(window.vowlData);
+
+                ontologyProcessed = true;
+
+                populateHomeMetadata();
+
+                resolve();
+            };
+
+            // Prefer idle time so this does not block the UI
+            if ('requestIdleCallback' in window) {
+
+                requestIdleCallback(process, {
+                    timeout: 3000
+                });
+
+            } else {
+
+                setTimeout(process, 100);
+            }
+        });
+
+    })
+    .catch(error => {
+
+        console.error('Ontology loading error:', error);
+
+        ontologyLoadPromise = null;
+
+        throw error;
+    });
+
+    return ontologyLoadPromise;
+}
+
+
+// ------------------------------------------------------------
+// Load visualization application
+// ------------------------------------------------------------
+
+function ensureAppJsLoaded() {
+
+    if (typeof window.initializeEdamGraphicView === 'function') {
+        return Promise.resolve();
+    }
+
+    if (appJsLoadPromise) {
+        return appJsLoadPromise;
+    }
+
+    appJsLoadPromise = loadScriptOnce(
+        './app.js',
+        null,
+        'visualization application'
+    );
+
+    return appJsLoadPromise;
+}
+
+
+// ============================================================
+// TAB HANDLER
+// ============================================================
+
+$('.global-tab-btn').on('click', async function() {
+
     const targetPage = $(this).data('target');
-    
-    // 1. Update Buttons
+
+    // Update navigation
     $('.global-tab-btn').removeClass('active');
     $(this).addClass('active');
-    
-    // 2. Update Panels (this hides all, then shows the target)
+
+    // Switch page
     $('.page-content').removeClass('active');
     $('#' + targetPage).addClass('active');
 
-    // 3. Optional: Trigger viz if needed
-    if (targetPage === 'page-visualization' && typeof window.initializeEdamGraphicView === 'function') {
-        window.initializeEdamGraphicView();
+
+    // Browser View
+    if (targetPage === 'page-browser') {
+
+        try {
+
+            await ensureOntologyLoaded();
+
+        } catch (error) {
+
+            console.error(error);
+
+            $('#protege-tree').html(
+                '<span style="color:#b42318; padding:10px; display:block;">' +
+                'Unable to load ontology data.' +
+                '</span>'
+            );
+        }
     }
+
+
+    // Visualization View
+    if (targetPage === 'page-visualization') {
+
+        try {
+
+            await ensureOntologyLoaded();
+
+            await ensureAppJsLoaded();
+
+            if (typeof window.initializeEdamGraphicView === 'function') {
+                window.initializeEdamGraphicView();
+            }
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    }
+
 });
 
     // 3. AUTOMATIC SEARCH & AUTO-RESET FILTER LISTENER
@@ -1839,15 +2020,7 @@ async function syncFeedbackFromDatabase() {
         return html;
     }
 
-    // 9. FINAL STEP: SAFE RUN POPULATOR
-    if (typeof window.vowlData !== 'undefined') {
-        setTimeout(function() {
-            window.processOntologyData(window.vowlData);
-        }, 150);
-    } else {
-        $('#protege-tree').html('<span style="color:red; font-size:0.9em; padding:10px; display:block;">Error: "ontology-data.js" not detected or missing window.vowlData object.</span>');
-    }
-});
+
 
 // 10. RE-ENGINEERED STANDALONE REGISTRY SEARCH WORKER
 function executeFastSearch(query) {
@@ -1937,10 +2110,7 @@ $(document).on('mouseenter', '.search-result-item', function() {
 </script>
 
 
-<!-- Run your application script -->
-<script type="module" src="app.js"></script>
-<!--  Local ontology data file -->
-<script src="https://github.com/OdetteRiosIb/mCODEBrowser/releases/download/v1.0.0.0.0-data/ontology-data.js"></script>
+<!-- app.js and ontology-data.js are loaded dynamically when needed -->
 </body>
 
 
