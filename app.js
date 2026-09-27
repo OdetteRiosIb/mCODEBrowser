@@ -133,7 +133,7 @@ function renderBubbleDiagram(nodeData) {
     cappedSuperclasses.forEach(supId => {
         satellites.push({
             id: supId, label: getRegistryLabel(supId), role: 'Superclass',
-            color: '#b6fca9', size: 40,
+            color: '#b2f5f7', size: 40,
             edge: { direction: 'outgoing', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
@@ -148,7 +148,7 @@ function renderBubbleDiagram(nodeData) {
     cappedSubclasses.forEach(subId => {
         satellites.push({
             id: subId, label: getRegistryLabel(subId), role: 'Subclass',
-            color: '#f9deff', size: 38,
+            color: '#c2ffce', size: 38,
             edge: { direction: 'incoming', label: 'subclassOf', dashed: true, color: '#999999' }
         });
     });
@@ -164,14 +164,14 @@ function renderBubbleDiagram(nodeData) {
         satellites.push({
             id: slot.range, label: getRegistryLabel(slot.range), role: 'Class',
             color: '#e3cfff', size: 36,
-            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#ff7f50' }
+            edge: { direction: 'outgoing', label: slot.name, dashed: false, color: '#02bac7' }
         });
     });
     if (overflowProperties.length) {
         satellites.push({
             id: null, label: `+${overflowProperties.length} more`, role: 'Class', isOverflow: true,
             overflowProps: overflowProperties, color: '#e2e8f0', size: 34,
-            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#ff7f50' }
+            edge: { direction: 'outgoing', label: 'relatesTo', dashed: false, color: '#02bac7' }
         });
     }
 
@@ -264,8 +264,8 @@ function renderBubbleDiagram(nodeData) {
         .attr('transform', `translate(${cx},${cy})`);
     centerGroup.append('circle')
         .attr('r', centerRadius)
-        .attr('fill', '#fcf4ac')
-        .attr('stroke', '#e08e00');
+        .attr('fill', '#87c5ff')
+        .attr('stroke', '#02bac7');
     const centerLines = [...wrapBubbleLabel(centerLabel, 14), '(Selected Class)'];
     centerLines.forEach((line, i) => {
         centerGroup.append('text')
